@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MoneySteps</string>
+    <string name="title_activity_main">MoneySteps</string>
+    <string name="package_name">com.moneysteps.app</string>
+    <string name="custom_url_scheme">com.moneysteps.app</string>
+</resources>

@@ -1,0 +1,16 @@
+{
+  "name": "pocket-money-tracker",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx serve . --listen 3000",
+    "build": "cp index.html config.js i18n.js manifest.json parent-insights.js parent-notifications.js patch_report.js sw.js translations.js favicon.svg netlify.toml dist/ && cp -r icons dist/",
+    "sync": "npm run build && npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/ios": "^8.3.0",
+    "web-push": "^3.6.7"
+  }
+}
