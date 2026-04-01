@@ -5353,7 +5353,7 @@ async function sendPushTo(who,payload){
   var sub=isChildSession(who)?(childCfg(who)&&childCfg(who).pushSub):(config[who]&&config[who].pushSub);
   if(!sub)return;
   try{
-    var res=await fetch('/.netlify/functions/send-push',{
+    var res=await fetch('/api/send-push',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({subscription:sub,payload:payload})
     });
