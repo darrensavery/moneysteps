@@ -10,8 +10,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Assets prefixed with /register/ so they don't clash with root index.html
   base: '/register/',
+  build: {
+    // Output to repo root /dist so Cloudflare Pages finds it
+    outDir: path.resolve(__dirname, '../dist'),
+    emptyOutDir: false, // don't wipe other files in /dist
+  },
   server: {
     port: 5173,
     proxy: {
