@@ -1,43 +1,86 @@
 @import "tailwindcss";
 
+/* ── LEMON MILK — wordmark font ────────────────────────────────────────────── */
+@font-face {
+  font-family: 'LEMON MILK';
+  src: url('/fonts/LEMONMILK-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'LEMON MILK';
+  src: url('/fonts/LEMONMILK-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
 @layer base {
+  /* ── Brand palette (Tier 1 tokens — never change these) ─────────────── */
   :root {
-    /* Morechard brand tokens */
+    --brand-primary:  #00959c;   /* Grove Teal   — buttons, active states    */
+    --brand-accent:   #e6b222;   /* Harvest Gold — flash badges, highlights  */
+    --brand-deep:     #1b2d2e;   /* Deep Canopy  — dark bg, dark text        */
+    --brand-parchment:#f9f7f2;   /* Parchment    — light bg, light surfaces  */
+
+    /* ── Semantic surface tokens (swap on dark theme) ─────────────────── */
+    --color-bg:           #f9f7f2;   /* page background        */
+    --color-surface:      #ffffff;   /* cards, sheets          */
+    --color-surface-alt:  #f3f2ee;   /* subtle alternate card  */
+    --color-border:       #D3D1C7;   /* dividers, input rings  */
+    --color-text:         #1C1C1A;   /* primary text           */
+    --color-text-muted:   #6b6a66;   /* secondary / label text */
+    --color-text-on-brand:#ffffff;   /* text on brand-primary  */
+
+    /* ── Tailwind-compat tokens (keep existing components working) ────── */
     --background: 0 0% 96%;        /* #F5F4F0 */
     --foreground: 0 1% 11%;        /* #1C1C1A */
-
     --card: 0 0% 100%;
     --card-foreground: 0 1% 11%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 0 1% 11%;
-
-    --primary: 123 47% 33%;        /* #2E7A33 Morechard green */
+    --primary: 182 100% 31%;       /* #00959c Grove Teal */
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 60 5% 93%;        /* #F1EFE8 */
+    --secondary: 60 5% 93%;
     --secondary-foreground: 0 1% 11%;
-
     --muted: 60 5% 93%;
-    --muted-foreground: 35 3% 42%; /* #6b6a66 */
-
-    --accent: 123 47% 33%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 72% 42%;      /* #B91C1C */
+    --muted-foreground: 35 3% 42%;
+    --accent: 44 87% 47%;          /* #e6b222 Harvest Gold */
+    --accent-foreground: 0 1% 11%;
+    --destructive: 0 72% 42%;
     --destructive-foreground: 0 0% 100%;
-
-    --border: 40 11% 82%;          /* #D3D1C7 */
+    --border: 40 11% 82%;
     --input: 40 11% 82%;
-    --ring: 123 47% 33%;
-
+    --ring: 182 100% 31%;
     --radius: 0.75rem;
-
-    /* Fintech extras */
     --amber: 38 93% 35%;
     --amber-light: 47 96% 89%;
-    --teal: 175 74% 26%;
-    --teal-light: 166 85% 97%;
+    --teal: 182 100% 31%;
+    --teal-light: 182 60% 95%;
+  }
+
+  /* ── Dark theme overrides ──────────────────────────────────────────── */
+  [data-theme="dark"] {
+    --color-bg:           #1b2d2e;
+    --color-surface:      #243637;   /* slightly lighter than deep canopy */
+    --color-surface-alt:  #1e2e2f;
+    --color-border:       #3a5254;
+    --color-text:         #f9f7f2;
+    --color-text-muted:   #9bb5b7;
+    --color-text-on-brand:#ffffff;
+
+    /* Tailwind-compat overrides */
+    --background: 185 25% 14%;     /* #1b2d2e */
+    --foreground: 45 27% 97%;      /* #f9f7f2 */
+    --card: 185 24% 17%;           /* #243637 */
+    --card-foreground: 45 27% 97%;
+    --popover: 185 24% 17%;
+    --popover-foreground: 45 27% 97%;
+    --muted: 185 20% 20%;
+    --muted-foreground: 185 15% 63%;
+    --border: 185 20% 27%;
+    --input: 185 20% 27%;
   }
 }
 
@@ -61,9 +104,12 @@
 }
 
 @keyframes treeSway {
-  0%, 100% { transform: rotate(0deg); }
-  25%       { transform: rotate(2deg); }
-  75%       { transform: rotate(-2deg); }
+  0%   { transform: rotate(0deg);    animation-timing-function: ease-in-out; }
+  20%  { transform: rotate(2.5deg);  animation-timing-function: ease-in-out; }
+  50%  { transform: rotate(-2deg);   animation-timing-function: ease-in-out; }
+  75%  { transform: rotate(0.8deg);  animation-timing-function: ease-in-out; }
+  90%  { transform: rotate(-0.3deg); animation-timing-function: ease-out;    }
+  100% { transform: rotate(0deg);    }
 }
 
 @keyframes leafFall {

@@ -74,7 +74,22 @@ For children and adolescents aged 10-16, Morechard serves as a behavioral mentor
     - "Locked: Trial Expired"
     - "Export Audit-Ready PDF"
 
-**7) Do/Don’t Guidelines**
+**7) Colour Palette (UI)**
+
+| Role | Name | Hex | Usage |
+|---|---|---|---|
+| Primary / Teal | Grove Teal | `#00959c` | Primary buttons, active states, balance card top border, day-strip active |
+| Accent / Gold | Harvest Gold | `#e6b222` | Flash/priority badges, financial highlights, warm accent |
+| Dark / Background | Deep Canopy | `#1b2d2e` | Header backgrounds (dark mode), high-contrast text on light surfaces |
+| Off-white / Surface | Parchment | `#f9f7f2` | App background, card surfaces, page fill |
+
+- All four are approved for both child view and teen/mature view.
+- **Grove Teal** is the single brand green — do not substitute with Tailwind `teal-600` (`#0d9488`) in new marketing assets; use `#00959c` exactly.
+- **Harvest Gold** is the only warm accent; never use yellow or orange as a primary CTA colour.
+- **Deep Canopy** replaces pure black (`#000000`) in all UI contexts.
+- **Parchment** replaces pure white (`#ffffff`) for backgrounds to keep the "warm orchard paper" feel.
+
+**8) Do/Don’t Guidelines**
 - **DO:** Use "Process Language" (e.g., "Next good rep"), provide "Just-in-Time" warnings for debt risks, and use LaTeX for all financial models.
 - **DON’T:** Allow deletion of transaction history, provide bailouts when funds are zero, or use "Small Talk" with Polish users.
 

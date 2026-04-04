@@ -19,35 +19,49 @@ import { JwtPayload } from '../lib/jwt.js';
 type AuthedRequest = Request & { auth: JwtPayload };
 
 // ----------------------------------------------------------------
-// GET /api/settings
+// GET /api/settings[?user_id=<child_id>]
+// Without user_id: returns caller's own settings.
+// With user_id:    parent fetches a child's settings (same family, role=parent required).
 // ----------------------------------------------------------------
 export async function handleSettingsGet(request: Request, env: Env): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
+  const url  = new URL(request.url);
+  const targetId = resolveTargetUserId(url, auth);
+  if (!targetId) return error('user_id required or must be a parent', 403);
 
   const settings = await env.DB
     .prepare('SELECT * FROM user_settings WHERE user_id = ?')
-    .bind(auth.sub).first();
+    .bind(targetId).first();
 
   if (!settings) {
-    // Auto-create defaults on first access
     const now = Math.floor(Date.now() / 1000);
     await env.DB
-      .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, updated_at)
-                VALUES (?,?,?,?,?) ON CONFLICT(user_id) DO NOTHING`)
-      .bind(auth.sub, 'bot', 'system', 'en', now).run();
-    return json({ user_id: auth.sub, avatar_id: 'bot', theme: 'system', locale: 'en' });
+      .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, teen_mode, updated_at)
+                VALUES (?,?,?,?,0,?) ON CONFLICT(user_id) DO NOTHING`)
+      .bind(targetId, 'bot', 'system', 'en', now).run();
+    return json({ user_id: targetId, avatar_id: 'bot', theme: 'system', locale: 'en', teen_mode: 0 });
   }
   return json(settings);
 }
 
 // ----------------------------------------------------------------
-// PATCH /api/settings
-// Body: { avatar_id?, theme?, locale? }
+// PATCH /api/settings[?user_id=<child_id>]
+// Body: { avatar_id?, theme?, locale?, teen_mode? }
+// teen_mode can only be set by a parent (for a child in same family).
 // ----------------------------------------------------------------
 export async function handleSettingsUpdate(request: Request, env: Env): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
+  const url  = new URL(request.url);
   const body = await parseBody(request);
   if (!body) return error('Invalid JSON');
+
+  const targetId = resolveTargetUserId(url, auth);
+  if (!targetId) return error('user_id required or must be a parent', 403);
+
+  // teen_mode can only be changed by a parent acting on a child
+  if ('teen_mode' in body && auth.role !== 'parent') {
+    return error('Only parents can change the view mode', 403);
+  }
 
   const VALID_THEMES  = ['light','dark','system'];
   const VALID_LOCALES = ['en','pl'];
@@ -72,25 +86,29 @@ export async function handleSettingsUpdate(request: Request, env: Env): Promise<
   if ('locale' in body) {
     if (!VALID_LOCALES.includes(body.locale as string)) return error('Invalid locale');
     updates.push('locale = ?'); values.push(body.locale);
-    // Also update user locale
     await env.DB.prepare('UPDATE users SET locale = ? WHERE id = ?')
-      .bind(body.locale, auth.sub).run();
+      .bind(body.locale, targetId).run();
+  }
+  if ('teen_mode' in body) {
+    const val = body.teen_mode === 1 || body.teen_mode === true ? 1 : 0;
+    updates.push('teen_mode = ?'); values.push(val);
   }
 
   if (updates.length === 0) return error('No valid fields to update');
 
   const now = Math.floor(Date.now() / 1000);
   updates.push('updated_at = ?'); values.push(now);
-  values.push(auth.sub);
+  values.push(targetId);
 
   await env.DB
-    .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, updated_at)
-              VALUES (?, COALESCE(?,?), COALESCE(?,?), COALESCE(?,?), ?)
-              ON CONFLICT(user_id) DO UPDATE SET ${updates.join(', ')}`)
-    .bind(auth.sub, body.avatar_id ?? null, 'bot', body.theme ?? null, 'system',
-      body.locale ?? null, 'en', now, ...values).run()
+    .prepare(`UPDATE user_settings SET ${updates.join(', ')} WHERE user_id = ?`)
+    .bind(...values).run()
     .catch(async () => {
-      // Fallback plain update if row exists
+      // Row may not exist yet — insert with defaults then retry
+      await env.DB
+        .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, teen_mode, updated_at)
+                  VALUES (?,?,?,?,0,?) ON CONFLICT(user_id) DO NOTHING`)
+        .bind(targetId, 'bot', 'system', 'en', now).run();
       await env.DB
         .prepare(`UPDATE user_settings SET ${updates.join(', ')} WHERE user_id = ?`)
         .bind(...values).run();
@@ -272,6 +290,16 @@ export async function handleParentMessageGet(request: Request, env: Env): Promis
   `).bind(auth.family_id, child_id, now).all();
 
   return json({ messages: msg.results });
+}
+
+// Returns the user_id to act on.
+// - No query param → caller's own ID.
+// - user_id param present → only allowed if caller is a parent.
+function resolveTargetUserId(url: URL, auth: JwtPayload): string | null {
+  const requested = url.searchParams.get('user_id');
+  if (!requested) return auth.sub;
+  if (auth.role !== 'parent') return null;  // children cannot target other users
+  return requested;
 }
 
 async function parseBody(request: Request): Promise<Record<string, unknown> | null> {

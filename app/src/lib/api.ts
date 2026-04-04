@@ -112,12 +112,21 @@ export async function getChildren(): Promise<{ children: ChildRecord[] }> {
 // ----------------------------------------------------------------
 // Settings
 // ----------------------------------------------------------------
-export async function getSettings(): Promise<{ avatar_id: string; theme: string; locale: string }> {
+export async function getSettings(): Promise<{ avatar_id: string; theme: string; locale: string; teen_mode: number }> {
   return request('/api/settings');
 }
 
-export async function updateSettings(body: { avatar_id?: string; theme?: string; locale?: string }): Promise<void> {
+export async function updateSettings(body: { avatar_id?: string; theme?: string; locale?: string; teen_mode?: number }): Promise<void> {
   await request('/api/settings', { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+// Parent reads/writes settings for a specific child
+export async function getChildSettings(child_id: string): Promise<{ avatar_id: string; theme: string; locale: string; teen_mode: number }> {
+  return request(`/api/settings?user_id=${encodeURIComponent(child_id)}`);
+}
+
+export async function updateChildSettings(child_id: string, body: { teen_mode?: number }): Promise<void> {
+  await request(`/api/settings?user_id=${encodeURIComponent(child_id)}`, { method: 'PATCH', body: JSON.stringify(body) });
 }
 
 // ----------------------------------------------------------------

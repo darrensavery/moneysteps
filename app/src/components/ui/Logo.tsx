@@ -2,11 +2,9 @@
  * Logo components — Morechard brand mark + wordmark.
  *
  * BrandMark   — the split-gradient 'M' tree icon (SVG paths only, no font dependency)
- * BrandWordmark — "morechard" text rendered with Manrope (project font stack).
- *                 NOTE: The original wordmark SVG uses LEMON MILK, a custom font
- *                 not bundled in this project. We replicate the colour split
- *                 (yellow M, teal "orechard") using our CSS variables + Manrope.
- *                 When LEMON MILK is added to the project, swap font-family here.
+ * BrandWordmark — "morechard" text in LEMON MILK Light (weight 300), matching
+ *                 the original wordmark SVG spec. Colour split: yellow M+e,
+ *                 teal or+chard — all via CSS variables.
  * FullLogo    — BrandMark + BrandWordmark side-by-side.
  *
  * All colours reference CSS variables so the logo responds to light/dark theme.
@@ -87,7 +85,7 @@ interface BrandWordmarkProps {
  *   e  → yellow  (var(--brand-accent))
  *   chard → teal (var(--brand-primary))
  *
- * Font: Manrope (project font). If LEMON MILK is added, update font-family here.
+ * Font: LEMON MILK Light (weight 300) — matches the original wordmark SVG spec.
  */
 export function BrandWordmark({ fontSize = 22, className = '' }: BrandWordmarkProps) {
   return (
@@ -95,8 +93,9 @@ export function BrandWordmark({ fontSize = 22, className = '' }: BrandWordmarkPr
       className={className}
       style={{
         fontSize,
-        fontWeight: 800,
-        letterSpacing: '-0.02em',
+        fontFamily: "'LEMON MILK', 'LEMONMILK-Light', sans-serif",
+        fontWeight: 300,
+        letterSpacing: '0.01em',
         lineHeight: 1,
         display: 'inline-flex',
         alignItems: 'baseline',

@@ -6,8 +6,21 @@ import {
   formatCurrency, getMondayISO,
 } from '../../lib/api'
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+declare const posthog: { capture: (event: string, props?: Record<string, unknown>) => void } | undefined
+
+const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const CURRENCY = 'GBP'
+
+// Maps UI label → D1 frequency value
+const FREQUENCY_OPTIONS: { label: string; value: string; recurring: boolean }[] = [
+  { label: 'One-off',          value: 'as_needed',   recurring: false },
+  { label: 'Daily',            value: 'daily',        recurring: true  },
+  { label: 'Weekly',           value: 'weekly',       recurring: true  },
+  { label: 'Fortnightly',      value: 'bi_weekly',    recurring: true  },
+  { label: 'Monthly',          value: 'monthly',      recurring: true  },
+  { label: 'School Days',      value: 'school_days',  recurring: true  },
+]
 
 interface Props {
   familyId: string
@@ -18,6 +31,7 @@ interface NewChoreForm {
   title: string
   reward_amount: string
   frequency: string
+  weekly_day: number   // 1=Mon … 7=Sun, used only when frequency=weekly
   description: string
   is_priority: boolean
   is_flash: boolean
@@ -26,7 +40,7 @@ interface NewChoreForm {
 }
 
 const BLANK_FORM: NewChoreForm = {
-  title: '', reward_amount: '', frequency: 'one-off',
+  title: '', reward_amount: '', frequency: 'as_needed', weekly_day: 1,
   description: '', is_priority: false, is_flash: false,
   flash_deadline: '', due_date: '',
 }
@@ -61,12 +75,18 @@ export function JobsTab({ familyId, child }: Props) {
 
   useEffect(() => { load() }, [load])
 
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title.trim() || !form.reward_amount) return
     setSaving(true)
     setError(null)
     try {
+      const isRecurring = FREQUENCY_OPTIONS.find(o => o.value === form.frequency)?.recurring ?? false
+
+      // For weekly, encode the chosen day into due_date as a sentinel day-name
+      // The child grove planner reads this to auto-plant on the right day.
+      const weeklyDay = form.frequency === 'weekly' ? String(form.weekly_day) : undefined
+
       await createChore({
         family_id: familyId,
         assigned_to: child.id,
@@ -78,8 +98,18 @@ export function JobsTab({ familyId, child }: Props) {
         is_priority: form.is_priority,
         is_flash: form.is_flash,
         flash_deadline: form.flash_deadline || undefined,
-        due_date: form.due_date || undefined,
+        due_date: weeklyDay ?? (form.due_date || undefined),
       })
+
+      if (isRecurring) {
+        try {
+          typeof posthog !== 'undefined' && posthog?.capture('recurring_chore_created', {
+            frequency: form.frequency,
+            child_id: child.id,
+          })
+        } catch { /* analytics must never break the flow */ }
+      }
+
       setForm(BLANK_FORM)
       setShowForm(false)
       await load()
@@ -110,20 +140,20 @@ export function JobsTab({ familyId, child }: Props) {
     await load()
   }
 
-  if (loading) return <div className="py-10 text-center text-[14px] text-[#6b6a66]">Loading…</div>
+  if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
 
   return (
     <div className="space-y-4">
       {/* Suggestions banner */}
       {suggestions.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5">
-          <p className="text-[13px] font-semibold text-blue-700 mb-2">
+        <div className="bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_25%,transparent)] rounded-xl p-3.5">
+          <p className="text-[13px] font-semibold text-[var(--brand-primary)] mb-2">
             {suggestions.length} suggestion{suggestions.length > 1 ? 's' : ''} from {child.display_name}
           </p>
           {suggestions.map(s => (
             <div key={s.id} className="flex items-center justify-between py-1.5">
-              <span className="text-[13px] text-[#1C1C1A]">{s.title}</span>
-              <span className="text-[13px] font-semibold text-blue-700">{formatCurrency(s.proposed_amount, CURRENCY)}</span>
+              <span className="text-[13px] text-[var(--color-text)]">{s.title}</span>
+              <span className="text-[13px] font-semibold text-[var(--brand-primary)]">{formatCurrency(s.proposed_amount, CURRENCY)}</span>
             </div>
           ))}
         </div>
@@ -131,8 +161,8 @@ export function JobsTab({ familyId, child }: Props) {
 
       {/* Active chores */}
       {chores.length === 0 ? (
-        <div className="bg-white border border-[#D3D1C7] rounded-xl p-6 text-center">
-          <p className="text-[14px] text-[#6b6a66]">No active jobs for {child.display_name}.</p>
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-6 text-center">
+          <p className="text-[14px] text-[var(--color-text-muted)]">No active jobs for {child.display_name}.</p>
         </div>
       ) : (
         <div className="space-y-2.5">
@@ -152,7 +182,7 @@ export function JobsTab({ familyId, child }: Props) {
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full border-2 border-dashed border-[#D3D1C7] rounded-xl py-3.5 text-[14px] font-semibold text-[#6b6a66] hover:border-green-600 hover:text-green-700 transition-colors cursor-pointer"
+          className="w-full border-2 border-dashed border-[var(--color-border)] rounded-xl py-3.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
         >
           + Add job
         </button>
@@ -160,13 +190,13 @@ export function JobsTab({ familyId, child }: Props) {
 
       {/* Create form */}
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-white border border-[#D3D1C7] rounded-xl p-4 space-y-3">
-          <p className="text-[15px] font-bold text-[#1C1C1A]">New job</p>
+        <form onSubmit={handleCreate} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
+          <p className="text-[15px] font-bold text-[var(--color-text)]">New job</p>
 
           {error && <p className="text-[13px] text-red-600">{error}</p>}
 
           <input
-            className="w-full border border-[#D3D1C7] rounded-lg px-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             placeholder="Job title"
             value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
@@ -174,9 +204,9 @@ export function JobsTab({ familyId, child }: Props) {
           />
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[#6b6a66]">£</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
               <input
-                className="w-full border border-[#D3D1C7] rounded-lg pl-7 pr-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-green-600"
+                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 placeholder="0.00"
                 type="number" min="0.01" step="0.01"
                 value={form.reward_amount}
@@ -184,30 +214,51 @@ export function JobsTab({ familyId, child }: Props) {
                 required
               />
             </div>
-            <select
-              className="border border-[#D3D1C7] rounded-lg px-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-green-600 bg-white"
-              value={form.frequency}
-              onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))}
-            >
-              <option value="one-off">One-off</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
+            <div className="flex flex-col gap-1 min-w-[130px]">
+              <select
+                className="border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                value={form.frequency}
+                onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))}
+                aria-label="How often?"
+              >
+                {FREQUENCY_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+              {/* Day-picker — only for Weekly */}
+              {form.frequency === 'weekly' && (
+                <div className="flex gap-0.5 mt-0.5">
+                  {DAYS_SHORT.map((day, i) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, weekly_day: i + 1 }))}
+                      className={`flex-1 py-1 rounded text-[10px] font-bold transition-colors cursor-pointer
+                        ${form.weekly_day === i + 1
+                          ? 'bg-[var(--brand-primary)] text-white'
+                          : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:opacity-80'
+                        }`}
+                    >
+                      {day[0]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <textarea
-            className="w-full border border-[#D3D1C7] rounded-lg px-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
+            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] resize-none"
             placeholder="Description (optional)"
             rows={2}
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           />
           <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-[13px] text-[#1C1C1A] cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-[13px] text-[var(--color-text)] cursor-pointer select-none">
               <input type="checkbox" checked={form.is_priority} onChange={e => setForm(f => ({ ...f, is_priority: e.target.checked }))} className="w-4 h-4 accent-amber-600" />
               Priority
             </label>
-            <label className="flex items-center gap-2 text-[13px] text-[#1C1C1A] cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-[13px] text-[var(--color-text)] cursor-pointer select-none">
               <input type="checkbox" checked={form.is_flash} onChange={e => setForm(f => ({ ...f, is_flash: e.target.checked }))} className="w-4 h-4 accent-red-600" />
               Flash job
             </label>
@@ -216,14 +267,14 @@ export function JobsTab({ familyId, child }: Props) {
             <button
               type="button"
               onClick={() => { setShowForm(false); setForm(BLANK_FORM); setError(null) }}
-              className="flex-1 border border-[#D3D1C7] rounded-xl py-2.5 text-[14px] font-semibold text-[#6b6a66] hover:bg-gray-50 cursor-pointer"
+              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-green-700 text-white rounded-xl py-2.5 text-[14px] font-semibold hover:bg-green-800 disabled:opacity-50 cursor-pointer"
+              className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Saving…' : 'Add job'}
             </button>
@@ -236,19 +287,19 @@ export function JobsTab({ familyId, child }: Props) {
         <div>
           <button
             onClick={() => setShowArchived(v => !v)}
-            className="text-[13px] font-semibold text-[#6b6a66] hover:text-[#1C1C1A] cursor-pointer"
+            className="text-[13px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer"
           >
             {showArchived ? '▲' : '▼'} Archived ({archived.length})
           </button>
           {showArchived && (
             <div className="mt-2 space-y-2">
               {archived.map(chore => (
-                <div key={chore.id} className="bg-white border border-[#D3D1C7] rounded-xl px-4 py-3 flex items-center justify-between opacity-60">
+                <div key={chore.id} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-3 flex items-center justify-between opacity-60">
                   <div>
-                    <p className="text-[14px] font-semibold text-[#1C1C1A]">{chore.title}</p>
-                    <p className="text-[12px] text-[#6b6a66]">{formatCurrency(chore.reward_amount, chore.currency)}</p>
+                    <p className="text-[14px] font-semibold text-[var(--color-text)]">{chore.title}</p>
+                    <p className="text-[12px] text-[var(--color-text-muted)]">{formatCurrency(chore.reward_amount, chore.currency)}</p>
                   </div>
-                  <button onClick={() => handleRestore(chore.id)} className="text-[13px] font-semibold text-green-700 hover:underline cursor-pointer">
+                  <button onClick={() => handleRestore(chore.id)} className="text-[13px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
                     Restore
                   </button>
                 </div>
@@ -258,6 +309,17 @@ export function JobsTab({ familyId, child }: Props) {
         </div>
       )}
     </div>
+  )
+}
+
+function RecurringIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block opacity-70">
+      <path d="M17 2l4 4-4 4"/>
+      <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+      <path d="M7 22l-4-4 4-4"/>
+      <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+    </svg>
   )
 }
 
@@ -280,13 +342,13 @@ function ChoreCard({ chore, plans, onArchive, onTogglePlan }: {
     : ''
 
   const bgClass = isOverdue && !chore.is_flash
-    ? 'bg-red-50'
+    ? 'bg-red-50 dark:bg-red-950/30'
     : chore.is_priority && !chore.is_flash
-    ? 'bg-amber-50'
-    : 'bg-white'
+    ? 'bg-amber-50 dark:bg-amber-950/30'
+    : 'bg-[var(--color-surface)]'
 
   return (
-    <div className={`${bgClass} border border-[#D3D1C7] ${borderClass} rounded-xl overflow-hidden`}>
+    <div className={`${bgClass} border border-[var(--color-border)] ${borderClass} rounded-xl overflow-hidden`}>
       <button
         className="w-full px-4 py-3 flex items-center justify-between cursor-pointer"
         onClick={() => setExpanded(v => !v)}
@@ -295,34 +357,42 @@ function ChoreCard({ chore, plans, onArchive, onTogglePlan }: {
           <div className="flex items-center gap-2">
             {chore.is_flash && <span className="text-[11px] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>}
             {chore.is_priority && !chore.is_flash && <span className="text-[11px] font-bold text-amber-600 bg-amber-100 rounded px-1.5 py-0.5">PRIORITY</span>}
-            <span className="text-[15px] font-semibold text-[#1C1C1A]">{chore.title}</span>
+            <span className="text-[15px] font-semibold text-[var(--color-text)]">{chore.title}</span>
           </div>
-          <p className="text-[13px] text-[#6b6a66] mt-0.5">
+          <p className="text-[13px] text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1.5">
             {formatCurrency(chore.reward_amount, chore.currency)}
-            {chore.frequency !== 'one-off' && <span className="ml-1">· {chore.frequency}</span>}
+            {chore.frequency !== 'as_needed' && chore.frequency !== 'one-off' && (
+              <>
+                <span>·</span>
+                <span className="inline-flex items-center gap-0.5">
+                  <RecurringIcon />
+                  {FREQUENCY_OPTIONS.find(o => o.value === chore.frequency)?.label ?? chore.frequency}
+                </span>
+              </>
+            )}
           </p>
         </div>
-        <span className="text-[#6b6a66] text-[18px] leading-none">{expanded ? '−' : '+'}</span>
+        <span className="text-[var(--color-text-muted)] text-[18px] leading-none">{expanded ? '−' : '+'}</span>
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-[#D3D1C7] pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-[var(--color-border)] pt-3">
           {chore.description && (
-            <p className="text-[13px] text-[#6b6a66]">{chore.description}</p>
+            <p className="text-[13px] text-[var(--color-text-muted)]">{chore.description}</p>
           )}
 
           {/* Weekly planner strip */}
           <div>
-            <p className="text-[12px] font-semibold text-[#6b6a66] mb-1.5">Plan this week</p>
+            <p className="text-[12px] font-semibold text-[var(--color-text-muted)] mb-1.5">Plan this week</p>
             <div className="flex gap-1.5">
               {DAYS.map((day, i) => (
                 <button
-                  key={day}
+                  key={`${day}-${i}`}
                   onClick={() => onTogglePlan(i)}
                   className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer
                     ${plannedDays.includes(i)
-                      ? 'bg-green-700 text-white'
-                      : 'bg-gray-100 text-[#6b6a66] hover:bg-gray-200'
+                      ? 'bg-[var(--brand-primary)] text-white'
+                      : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:opacity-80'
                     }`}
                 >
                   {day}

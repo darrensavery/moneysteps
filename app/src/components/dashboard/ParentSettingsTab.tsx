@@ -4,8 +4,10 @@ import type { ChildRecord } from '../../lib/api'
 import {
   getChildren, addChild, generateInvite,
   getFamily, getSettings, updateSettings,
+  getChildSettings, updateChildSettings,
 } from '../../lib/api'
 import { AvatarSVG, AVATARS, AVATAR_CATEGORIES } from '../../lib/avatars'
+import { ThemePicker } from '../../lib/theme'
 
 interface Props {
   familyId: string
@@ -33,6 +35,10 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
   const [inviteExpiry, setInviteExpiry] = useState<string | null>(null)
   const [genningInvite, setGenningInvite] = useState(false)
 
+  // Per-child teen_mode toggles: Record<child_id, 0|1>
+  const [teenModes, setTeenModes]       = useState<Record<string, number>>({})
+  const [teenModeBusy, setTeenModeBusy] = useState<string | null>(null)
+
   const load = useCallback(async () => {
     setLoading(true)
     const [c, f, s] = await Promise.all([
@@ -44,6 +50,11 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
     onChildrenChange(c)
     setFamily(f)
     setSettings(s)
+    // Load teen_mode for each child in parallel
+    const modes = await Promise.all(
+      c.map(child => getChildSettings(child.id).then(cs => [child.id, cs.teen_mode] as const).catch(() => [child.id, 0] as const))
+    )
+    setTeenModes(Object.fromEntries(modes))
     setLoading(false)
   }, [familyId, onChildrenChange])
 
@@ -82,6 +93,17 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
       setInviteExpiry(new Date(r.expires_at * 1000).toLocaleString('en-GB'))
     } finally {
       setGenningInvite(false)
+    }
+  }
+
+  async function handleTeenModeToggle(childId: string) {
+    const next = teenModes[childId] === 1 ? 0 : 1
+    setTeenModeBusy(childId)
+    try {
+      await updateChildSettings(childId, { teen_mode: next })
+      setTeenModes(prev => ({ ...prev, [childId]: next }))
+    } finally {
+      setTeenModeBusy(null)
     }
   }
 
@@ -158,17 +180,50 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
           </button>
         </div>
 
-        {children.map(child => (
-          <div key={child.id} className="px-4 py-3 flex items-center gap-3 border-b border-[#D3D1C7] last:border-0">
-            <AvatarSVG id={child.avatar_id ?? 'bot'} size={36} />
-            <div>
-              <p className="text-[14px] font-semibold text-[#1C1C1A]">{child.display_name}</p>
-              {child.locked_until && child.locked_until > Date.now() / 1000 && (
-                <p className="text-[12px] text-red-600 font-semibold">Locked</p>
-              )}
+        {children.map(child => {
+          const isTeen = teenModes[child.id] === 1
+          const isBusy = teenModeBusy === child.id
+          return (
+            <div key={child.id} className="px-4 py-3 border-b border-[#D3D1C7] last:border-0">
+              <div className="flex items-center gap-3">
+                <AvatarSVG id={child.avatar_id ?? 'bot'} size={36} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-semibold text-[#1C1C1A]">{child.display_name}</p>
+                  {child.locked_until && child.locked_until > Date.now() / 1000 && (
+                    <p className="text-[12px] text-red-600 font-semibold">Locked</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Mature View toggle */}
+              <div className="mt-2.5 flex items-start justify-between gap-3 pl-[52px]">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-[#1C1C1A]">Mature View (Ages 13+)</p>
+                  <p className="text-[12px] text-[#6b6a66] mt-0.5 leading-snug">
+                    Switches the dashboard to a minimalist, professional fintech layout.
+                  </p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={isTeen}
+                  onClick={() => handleTeenModeToggle(child.id)}
+                  disabled={isBusy}
+                  className={`
+                    shrink-0 relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600
+                    disabled:opacity-50
+                    ${isTeen ? 'bg-teal-600' : 'bg-[#D3D1C7]'}
+                  `}
+                >
+                  <span className={`
+                    absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200
+                    ${isTeen ? 'translate-x-5' : 'translate-x-0'}
+                  `} />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
 
         {children.length === 0 && !showAddChild && (
           <div className="px-4 py-6 text-center text-[14px] text-[#6b6a66]">No children yet.</div>
@@ -218,6 +273,11 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
             {genningInvite ? 'Generating…' : 'Generate invite code'}
           </button>
         )}
+      </section>
+
+      {/* Display mode */}
+      <section className="bg-white border border-[#D3D1C7] rounded-xl p-4">
+        <ThemePicker />
       </section>
 
       {/* Log out */}

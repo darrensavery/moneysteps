@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ThemeProvider } from './lib/theme'
 import { RegistrationShell } from './components/registration/RegistrationShell'
 import { LandingGate } from './screens/LandingGate'
 import { LockScreen } from './screens/LockScreen'
@@ -55,7 +56,12 @@ export default function App() {
     window.location.href = '/parent'
   }
 
+  // Read teen_mode from localStorage so ThemeProvider can bias 'system' → 'dark'
+  // for mature-view users before any API call completes.
+  const storedTeenMode = parseInt(localStorage.getItem('mc_teen_mode') ?? '0', 10)
+
   return (
+    <ThemeProvider teenMode={storedTeenMode}>
     <BrowserRouter>
       <Routes>
         <Route path="/"         element={<RootGate />} />
@@ -76,5 +82,6 @@ export default function App() {
         <Route path="*"       element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </ThemeProvider>
   )
 }
