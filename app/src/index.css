@@ -61,9 +61,15 @@
 }
 
 @keyframes treeSway {
-  0%, 100% { transform: rotate(0deg);     transform-origin: bottom center; }
-  25%       { transform: rotate(1.5deg);  transform-origin: bottom center; }
-  75%       { transform: rotate(-1.5deg); transform-origin: bottom center; }
+  0%, 100% { transform: rotate(0deg); }
+  25%       { transform: rotate(2deg); }
+  75%       { transform: rotate(-2deg); }
+}
+
+@keyframes leafFall {
+  0%   { transform: translateX(-50%) translateY(0)   rotate(0deg);   opacity: 1; }
+  40%  { transform: translateX(calc(-50% + var(--drift))) translateY(28px) rotate(40deg);  opacity: 0.9; }
+  100% { transform: translateX(calc(-50% + calc(var(--drift) * 2))) translateY(70px) rotate(90deg); opacity: 0; }
 }
 
 @keyframes shake {
