@@ -65,19 +65,19 @@ export function ParentDashboard() {
   }
 
   return (
-    <div className="min-h-svh bg-[#F5F4F0] flex flex-col">
+    <div className="min-h-svh bg-[var(--color-bg)] flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-[#D3D1C7] shadow-[0_1px_4px_rgba(0,0,0,.05)]">
+      <header className="sticky top-0 z-10 bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-[0_1px_4px_rgba(0,0,0,.05)]">
         <div className="max-w-[560px] mx-auto px-3.5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className={`w-[7px] h-[7px] rounded-full shrink-0 ${online ? 'bg-green-500' : 'bg-amber-500'}`} />
             <FullLogo iconSize={26} />
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[13px] text-[#6b6a66]">{getDeviceIdentity()?.display_name ?? 'Parent'}</span>
+            <span className="text-[13px] text-[var(--color-text-muted)]">{getDeviceIdentity()?.display_name ?? 'Parent'}</span>
             <button
               onClick={handleLock}
-              className="w-8 h-8 rounded-lg border border-[#D3D1C7] flex items-center justify-center text-[#6b6a66] hover:bg-gray-50 cursor-pointer"
+              className="w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
               title="Lock"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -98,7 +98,9 @@ export function ParentDashboard() {
                 className={`
                   shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold
                   transition-colors duration-100 cursor-pointer
-                  ${activeChild?.id === child.id ? 'bg-teal-600 text-white' : 'bg-gray-100 text-[#6b6a66] hover:bg-gray-200'}
+                  ${activeChild?.id === child.id
+                    ? 'bg-[var(--brand-primary)] text-white'
+                    : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:opacity-80'}
                 `}
               >
                 <AvatarSVG id={child.avatar_id ?? 'bot'} size={20} />
@@ -109,7 +111,7 @@ export function ParentDashboard() {
         )}
 
         {/* Tab bar */}
-        <div className="max-w-[560px] mx-auto border-t border-[#D3D1C7] flex overflow-x-auto scrollbar-hide">
+        <div className="max-w-[560px] mx-auto border-t border-[var(--color-border)] flex overflow-x-auto scrollbar-hide">
           {TABS.map(t => (
             <button
               key={t.id}
@@ -118,7 +120,7 @@ export function ParentDashboard() {
                 flex-1 shrink-0 px-3 py-2.5 text-[13px] font-semibold
                 relative flex items-center justify-center gap-1.5
                 transition-colors duration-100 cursor-pointer
-                ${tab === t.id ? 'text-green-700' : 'text-[#6b6a66] hover:text-[#1C1C1A]'}
+                ${tab === t.id ? 'text-[var(--brand-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}
               `}
             >
               {t.label}
@@ -128,7 +130,7 @@ export function ParentDashboard() {
                 </span>
               ) : null}
               {tab === t.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-green-600 rounded-t-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[var(--brand-primary)] rounded-t-full" />
               )}
             </button>
           ))}
@@ -149,20 +151,20 @@ export function ParentDashboard() {
           <ParentSettingsTab familyId={familyId} onChildrenChange={setChildren} />
         ) : (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center gap-5">
-            <div className="w-20 h-20 rounded-3xl bg-teal-50 border-2 border-teal-100 flex items-center justify-center text-4xl">
+            <div className="w-20 h-20 rounded-3xl bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border-2 border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] flex items-center justify-center text-4xl">
               👧
             </div>
             <div>
-              <h2 className="text-[18px] font-extrabold text-[#1C1C1A] tracking-tight mb-1.5">
+              <h2 className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight mb-1.5">
                 Add your first child
               </h2>
-              <p className="text-[13px] text-[#6b6a66] leading-relaxed max-w-[260px] mx-auto">
+              <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed max-w-[260px] mx-auto">
                 Once you add a child, you can set up chores, track their pocket money, and watch their savings grow.
               </p>
             </div>
             <button
               onClick={() => setTab('settings')}
-              className="h-12 px-6 bg-teal-600 text-white font-semibold text-[14px] rounded-2xl cursor-pointer hover:bg-teal-700 active:scale-[0.98] transition-all shadow-md"
+              className="h-12 px-6 bg-[var(--brand-primary)] text-white font-semibold text-[14px] rounded-2xl cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
             >
               Add a child →
             </button>

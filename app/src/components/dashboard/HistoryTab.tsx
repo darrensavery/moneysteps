@@ -107,13 +107,13 @@ export function HistoryTab({ familyId, child }: Props) {
       <div className="flex gap-2">
         <button
           onClick={() => setShowPayout(true)}
-          className="flex-1 bg-teal-600 text-white font-bold py-2.5 rounded-xl text-[14px] hover:bg-teal-700 cursor-pointer"
+          className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-2.5 rounded-xl text-[14px] hover:opacity-90 cursor-pointer"
         >
           Pay out
         </button>
         <button
           onClick={() => setShowBonus(true)}
-          className="flex-1 border border-[#D3D1C7] text-[#1C1C1A] font-bold py-2.5 rounded-xl text-[14px] hover:bg-gray-50 cursor-pointer"
+          className="flex-1 border border-[var(--color-border)] text-[var(--color-text)] font-bold py-2.5 rounded-xl text-[14px] hover:bg-[var(--color-surface-alt)] cursor-pointer"
         >
           + Bonus
         </button>
@@ -121,28 +121,28 @@ export function HistoryTab({ familyId, child }: Props) {
 
       {/* Payout modal */}
       {showPayout && (
-        <form onSubmit={handlePayout} className="bg-white border border-[#D3D1C7] rounded-xl p-4 space-y-3">
-          <p className="text-[15px] font-bold">Pay out to {child.display_name}</p>
+        <form onSubmit={handlePayout} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
+          <p className="text-[15px] font-bold text-[var(--color-text)]">Pay out to {child.display_name}</p>
           {payoutError && <p className="text-[13px] text-red-600">{payoutError}</p>}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[#6b6a66]">£</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
             <input
               type="number" min="0.01" step="0.01" required
-              className="w-full border border-[#D3D1C7] rounded-lg pl-7 pr-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-teal-600"
+              className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               placeholder="0.00"
               value={payoutAmount}
               onChange={e => setPayoutAmount(e.target.value)}
             />
           </div>
           <input
-            className="w-full border border-[#D3D1C7] rounded-lg px-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-teal-600"
+            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             placeholder="Note (optional)"
             value={payoutNote}
             onChange={e => setPayoutNote(e.target.value)}
           />
           <div className="flex gap-2">
-            <button type="button" onClick={() => setShowPayout(false)} className="flex-1 border border-[#D3D1C7] rounded-xl py-2.5 text-[14px] font-semibold text-[#6b6a66] cursor-pointer">Cancel</button>
-            <button type="submit" disabled={payoutBusy} className="flex-1 bg-teal-600 text-white rounded-xl py-2.5 text-[14px] font-bold hover:bg-teal-700 disabled:opacity-50 cursor-pointer">
+            <button type="button" onClick={() => setShowPayout(false)} className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">Cancel</button>
+            <button type="submit" disabled={payoutBusy} className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
               {payoutBusy ? 'Saving…' : 'Confirm'}
             </button>
           </div>
@@ -151,14 +151,14 @@ export function HistoryTab({ familyId, child }: Props) {
 
       {/* Bonus modal */}
       {showBonus && (
-        <form onSubmit={handleBonus} className="bg-white border border-[#D3D1C7] rounded-xl p-4 space-y-3">
-          <p className="text-[15px] font-bold">Add bonus for {child.display_name}</p>
+        <form onSubmit={handleBonus} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
+          <p className="text-[15px] font-bold text-[var(--color-text)]">Add bonus for {child.display_name}</p>
           {bonusError && <p className="text-[13px] text-red-600">{bonusError}</p>}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[#6b6a66]">£</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
             <input
               type="number" min="0.01" step="0.01" required
-              className="w-full border border-[#D3D1C7] rounded-lg pl-7 pr-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-green-600"
+              className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               placeholder="0.00"
               value={bonusAmount}
               onChange={e => setBonusAmount(e.target.value)}
@@ -166,14 +166,14 @@ export function HistoryTab({ familyId, child }: Props) {
           </div>
           <input
             required
-            className="w-full border border-[#D3D1C7] rounded-lg px-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-green-600"
+            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             placeholder="Reason (required)"
             value={bonusReason}
             onChange={e => setBonusReason(e.target.value)}
           />
           <div className="flex gap-2">
-            <button type="button" onClick={() => setShowBonus(false)} className="flex-1 border border-[#D3D1C7] rounded-xl py-2.5 text-[14px] font-semibold text-[#6b6a66] cursor-pointer">Cancel</button>
-            <button type="submit" disabled={bonusBusy} className="flex-1 bg-green-700 text-white rounded-xl py-2.5 text-[14px] font-bold hover:bg-green-800 disabled:opacity-50 cursor-pointer">
+            <button type="button" onClick={() => setShowBonus(false)} className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">Cancel</button>
+            <button type="submit" disabled={bonusBusy} className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
               {bonusBusy ? 'Saving…' : 'Add bonus'}
             </button>
           </div>
@@ -182,30 +182,30 @@ export function HistoryTab({ familyId, child }: Props) {
 
       {/* Recent payouts */}
       {payouts.length > 0 && (
-        <div className="bg-white border border-[#D3D1C7] rounded-xl divide-y divide-[#D3D1C7]">
-          <p className="px-4 py-2.5 text-[13px] font-bold text-[#6b6a66]">Recent payouts</p>
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl divide-y divide-[var(--color-border)]">
+          <p className="px-4 py-2.5 text-[13px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Recent payouts</p>
           {payouts.slice(0, 3).map(p => (
             <div key={p.id} className="px-4 py-3 flex items-center justify-between">
               <div>
-                <p className="text-[14px] font-semibold text-[#1C1C1A]">{formatCurrency(p.amount, p.currency)}</p>
-                <p className="text-[12px] text-[#6b6a66]">
+                <p className="text-[14px] font-semibold text-[var(--color-text)]">{formatCurrency(p.amount, p.currency)}</p>
+                <p className="text-[12px] text-[var(--color-text-muted)]">
                   {new Date(p.paid_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   {p.note && ` · ${p.note}`}
                 </p>
               </div>
-              <span className="text-[12px] font-semibold text-teal-700 bg-teal-100 rounded-full px-2 py-1">Paid</span>
+              <span className="text-[12px] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] rounded-full px-2 py-1">Paid</span>
             </div>
           ))}
         </div>
       )}
 
       {/* Job history */}
-      <div className="bg-white border border-[#D3D1C7] rounded-xl divide-y divide-[#D3D1C7]">
-        <p className="px-4 py-2.5 text-[13px] font-bold text-[#6b6a66]">Job history</p>
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl divide-y divide-[var(--color-border)]">
+        <p className="px-4 py-2.5 text-[13px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Job history</p>
         {loading && history.length === 0 ? (
-          <div className="px-4 py-6 text-center text-[14px] text-[#6b6a66]">Loading…</div>
+          <div className="px-4 py-6 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
         ) : history.length === 0 ? (
-          <div className="px-4 py-6 text-center text-[14px] text-[#6b6a66]">No history yet.</div>
+          <div className="px-4 py-6 text-center text-[14px] text-[var(--color-text-muted)]">No history yet.</div>
         ) : (
           <>
             {history.map(item => {
@@ -213,8 +213,8 @@ export function HistoryTab({ familyId, child }: Props) {
               return (
                 <div key={item.id} className="px-4 py-3 flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[14px] font-semibold text-[#1C1C1A] truncate">{item.chore_title}</p>
-                    <p className="text-[12px] text-[#6b6a66]">
+                    <p className="text-[14px] font-semibold text-[var(--color-text)] truncate">{item.chore_title}</p>
+                    <p className="text-[12px] text-[var(--color-text-muted)]">
                       {formatCurrency(item.reward_amount, item.currency)} ·{' '}
                       {new Date(item.submitted_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       {item.rejection_note && <span className="ml-1 italic text-red-500">"{item.rejection_note}"</span>}
@@ -229,7 +229,7 @@ export function HistoryTab({ familyId, child }: Props) {
             {hasMore && (
               <button
                 onClick={() => { setOffset(o => o + LIMIT); load() }}
-                className="w-full py-3 text-[13px] font-semibold text-[#6b6a66] hover:bg-gray-50 cursor-pointer"
+                className="w-full py-3 text-[13px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
               >
                 Load more
               </button>

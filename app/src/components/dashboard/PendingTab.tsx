@@ -60,14 +60,14 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-[14px] text-[#6b6a66]">Loading…</div>
+  if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
 
   if (completions.length === 0) {
     return (
-      <div className="bg-white border border-[#D3D1C7] rounded-xl p-8 text-center">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-8 text-center">
         <p className="text-[28px] mb-2">✓</p>
-        <p className="text-[15px] font-semibold text-[#1C1C1A]">All clear</p>
-        <p className="text-[13px] text-[#6b6a66] mt-1">Nothing waiting for approval.</p>
+        <p className="text-[15px] font-semibold text-[var(--color-text)]">All clear</p>
+        <p className="text-[13px] text-[var(--color-text-muted)] mt-1">Nothing waiting for approval.</p>
       </div>
     )
   }
@@ -78,23 +78,23 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
         <button
           onClick={handleApproveAll}
           disabled={approveAllBusy}
-          className="w-full bg-teal-600 text-white font-bold py-3 rounded-xl text-[15px] hover:bg-teal-700 disabled:opacity-50 cursor-pointer"
+          className="w-full bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[15px] hover:opacity-90 disabled:opacity-50 cursor-pointer"
         >
           {approveAllBusy ? 'Approving…' : `Approve all (${completions.length})`}
         </button>
       )}
 
       {completions.map(c => (
-        <div key={c.id} className="bg-white border border-[#D3D1C7] rounded-xl overflow-hidden">
+        <div key={c.id} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">
           <div className="px-4 py-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-[15px] font-semibold text-[#1C1C1A] truncate">{c.chore_title}</p>
-                <p className="text-[13px] text-[#6b6a66] mt-0.5">
+                <p className="text-[15px] font-semibold text-[var(--color-text)] truncate">{c.chore_title}</p>
+                <p className="text-[13px] text-[var(--color-text-muted)] mt-0.5">
                   {formatCurrency(c.reward_amount, c.currency)}
                   {c.note && <span className="ml-2 italic">"{c.note}"</span>}
                 </p>
-                <p className="text-[12px] text-[#6b6a66] mt-0.5">
+                <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
                   {new Date(c.submitted_at * 1000).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -105,9 +105,9 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
           </div>
 
           {rejectId === c.id ? (
-            <div className="px-4 pb-4 space-y-2 border-t border-[#D3D1C7] pt-3">
+            <div className="px-4 pb-4 space-y-2 border-t border-[var(--color-border)] pt-3">
               <textarea
-                className="w-full border border-[#D3D1C7] rounded-lg px-3 py-2 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
                 placeholder="Reason (optional)"
                 rows={2}
                 value={rejectNote}
@@ -116,7 +116,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
               <div className="flex gap-2">
                 <button
                   onClick={() => { setRejectId(null); setRejectNote('') }}
-                  className="flex-1 border border-[#D3D1C7] rounded-xl py-2.5 text-[14px] font-semibold text-[#6b6a66] hover:bg-gray-50 cursor-pointer"
+                  className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -130,7 +130,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
               </div>
             </div>
           ) : (
-            <div className="flex border-t border-[#D3D1C7]">
+            <div className="flex border-t border-[var(--color-border)]">
               <button
                 onClick={() => setRejectId(c.id)}
                 disabled={!!busy}
@@ -138,11 +138,11 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
               >
                 Reject
               </button>
-              <div className="w-px bg-[#D3D1C7]" />
+              <div className="w-px bg-[var(--color-border)]" />
               <button
                 onClick={() => handleApprove(c.id)}
                 disabled={!!busy}
-                className="flex-1 py-3 text-[14px] font-bold text-teal-700 hover:bg-teal-50 disabled:opacity-40 cursor-pointer transition-colors"
+                className="flex-1 py-3 text-[14px] font-bold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] disabled:opacity-40 cursor-pointer transition-colors"
               >
                 {busy === c.id ? 'Approving…' : 'Approve'}
               </button>
