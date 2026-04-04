@@ -54,11 +54,6 @@ function readStoredPreference(): ThemePreference {
   return 'system'
 }
 
-function readStoredTeenMode(): boolean {
-  try {
-    return parseInt(localStorage.getItem('mc_teen_mode') ?? '0', 10) === 1
-  } catch { return false }
-}
 
 function systemPrefersDark(): boolean {
   try {
