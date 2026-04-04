@@ -110,43 +110,58 @@ export function LandingGate() {
 
 // ── Tree ──────────────────────────────────────────────────────────────────────
 
-// Apple tree dimensions per size
-const TREE_CFG: Record<TreeSize, {
-  svgW:    number
-  svgH:    number
-  cx:      number   // canopy centre x
-  cy:      number   // canopy centre y
-  rx:      number   // canopy x-radius
-  ry:      number   // canopy y-radius
-  trunkW:  number
-  trunkH:  number
-  apples:  { x: number; y: number; r: number }[]
-}> = {
-  sm: {
-    svgW: 44, svgH: 64, cx: 22, cy: 26, rx: 18, ry: 16, trunkW: 6, trunkH: 16,
-    apples: [{ x: 15, y: 22, r: 2.2 }, { x: 27, y: 18, r: 2 }, { x: 24, y: 30, r: 1.8 }],
-  },
-  md: {
-    svgW: 54, svgH: 80, cx: 27, cy: 32, rx: 22, ry: 20, trunkW: 8, trunkH: 20,
-    apples: [{ x: 18, y: 27, r: 2.5 }, { x: 32, y: 22, r: 2.2 }, { x: 30, y: 38, r: 2.2 }, { x: 20, y: 38, r: 2 }],
-  },
-  lg: {
-    svgW: 66, svgH: 96, cx: 33, cy: 38, rx: 28, ry: 25, trunkW: 10, trunkH: 24,
-    apples: [{ x: 22, y: 32, r: 3 }, { x: 40, y: 26, r: 2.8 }, { x: 44, y: 42, r: 2.5 }, { x: 24, y: 46, r: 2.8 }, { x: 34, y: 50, r: 2.5 }],
-  },
-}
+/**
+ * Cloud-puff apple tree.
+ *
+ * Canopy = 7 overlapping circles arranged in an arc (like the reference image).
+ * Trunk  = wide tapered base with two branches splitting off.
+ * Apples = small red circles scattered through the lower canopy.
+ *
+ * All coordinates are in a 60×90 viewBox, scaled per size.
+ */
+
+// Puff circles that make up the canopy (cx, cy, r) in the 60×90 space
+const PUFFS = [
+  { cx: 30, cy: 26, r: 14 },   // centre — largest
+  { cx: 14, cy: 30, r: 11 },   // left
+  { cx: 46, cy: 30, r: 11 },   // right
+  { cx: 10, cy: 20, r:  9 },   // far left
+  { cx: 50, cy: 20, r:  9 },   // far right
+  { cx: 22, cy: 14, r: 10 },   // upper left
+  { cx: 38, cy: 14, r: 10 },   // upper right
+]
+
+const APPLES = [
+  { cx: 20, cy: 32, r: 2.4 },
+  { cx: 34, cy: 28, r: 2.2 },
+  { cx: 42, cy: 36, r: 2.2 },
+  { cx: 26, cy: 40, r: 2.4 },
+]
+
+// Trunk path: wide flared base, tapers up, splits into two branches
+// that reach into the canopy bottom (~y=40)
+const TRUNK_PATH = `
+  M 23 90
+  C 21 75 20 65 22 58
+  C 20 52 16 46 14 42
+  C 17 44 20 46 22 50
+  C 22 45 23 42 24 40
+  C 25 42 26 45 26 50
+  C 28 46 31 44 34 42
+  C 32 46 28 52 28 58
+  C 30 65 31 75 37 90
+  Z
+`
+
+const SIZE_SCALE: Record<TreeSize, number> = { sm: 0.72, md: 0.88, lg: 1.05 }
 
 function Tree({ size, swayOffset }: { size: TreeSize; swayOffset: number }) {
-  const cfg    = TREE_CFG[size]
-  const svgW   = cfg.svgW
-  const svgH   = cfg.svgH
-
-  // Canopy bottom y — where trunk meets canopy
-  const canopyBottomY = cfg.cy + cfg.ry
-  const trunkX        = cfg.cx - cfg.trunkW / 2
-  const trunkY        = canopyBottomY - 2   // overlap 2px so no gap
-  // Leaf fall starts from canopy mid-area
-  const leafStartY    = cfg.cy + cfg.ry * 0.2
+  const scale  = SIZE_SCALE[size]
+  const svgW   = Math.round(60 * scale)
+  const svgH   = Math.round(90 * scale)
+  // Leaves fall from the lower-centre of the canopy
+  const leafStartY = Math.round(36 * scale)
+  const cx         = Math.round(30 * scale)
 
   const [swaying, setSwaying] = useState(false)
   const [leaves,  setLeaves]  = useState<Leaf[]>([])
@@ -167,7 +182,7 @@ function Tree({ size, swayOffset }: { size: TreeSize; swayOffset: number }) {
     const count = Math.random() > 0.4 ? 2 : 1
     const newLeaves: Leaf[] = Array.from({ length: count }, (_, i) => ({
       id:    leafId.current++,
-      x:     (Math.random() - 0.5) * cfg.rx * 1.2,
+      x:     (Math.random() - 0.5) * svgW * 0.5,
       delay: i * 140,
       drift: (Math.random() - 0.5) * 2,
     }))
@@ -194,7 +209,7 @@ function Tree({ size, swayOffset }: { size: TreeSize; swayOffset: number }) {
       {leaves.map(leaf => (
         <FallingLeaf
           key={leaf.id}
-          startX={cfg.cx + leaf.x}
+          startX={cx + leaf.x}
           startY={leafStartY}
           drift={leaf.drift}
           delay={leaf.delay}
@@ -202,36 +217,41 @@ function Tree({ size, swayOffset }: { size: TreeSize; swayOffset: number }) {
         />
       ))}
 
-      <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} overflow="visible">
-        {/* Trunk — drawn first so canopy overlaps the top of it */}
-        <rect
-          x={trunkX} y={trunkY}
-          width={cfg.trunkW} height={cfg.trunkH + 2}
-          rx="2" fill="#92613a"
-        />
-        {/* Canopy shadow / depth — slightly larger, darker ellipse behind */}
-        <ellipse cx={cfg.cx + 1} cy={cfg.cy + 2} rx={cfg.rx} ry={cfg.ry} fill="#059669" opacity="0.35" />
-        {/* Main canopy */}
-        <ellipse cx={cfg.cx} cy={cfg.cy} rx={cfg.rx} ry={cfg.ry} fill="#34d399" />
-        {/* Highlight lobe — upper-left bright patch */}
-        <ellipse
-          cx={cfg.cx - cfg.rx * 0.25}
-          cy={cfg.cy - cfg.ry * 0.3}
-          rx={cfg.rx * 0.55}
-          ry={cfg.ry * 0.45}
-          fill="#6ee7b7"
-          opacity="0.55"
-        />
-        {/* Apples */}
-        {cfg.apples.map((a, i) => (
+      <svg
+        width={svgW} height={svgH}
+        viewBox="0 0 60 90"
+        overflow="visible"
+      >
+        {/* ── Trunk + branches ── */}
+        <path d={TRUNK_PATH} fill="#92613a" />
+
+        {/* ── Canopy shadow (offset dark layer) ── */}
+        <g transform="translate(1,2)" opacity="0.25">
+          {PUFFS.map((p, i) => <circle key={i} cx={p.cx} cy={p.cy} r={p.r} fill="#065f46" />)}
+        </g>
+
+        {/* ── Canopy fill ── */}
+        {PUFFS.map((p, i) => (
+          <circle key={i} cx={p.cx} cy={p.cy} r={p.r} fill="#34d399" />
+        ))}
+
+        {/* ── Highlight on upper-left puffs ── */}
+        {PUFFS.slice(0, 4).map((p, i) => (
+          <circle key={i} cx={p.cx - p.r * 0.2} cy={p.cy - p.r * 0.25} r={p.r * 0.5} fill="#6ee7b7" opacity="0.5" />
+        ))}
+
+        {/* ── Canopy outlines ── */}
+        {PUFFS.map((p, i) => (
+          <circle key={i} cx={p.cx} cy={p.cy} r={p.r} fill="none" stroke="#059669" strokeWidth="0.7" />
+        ))}
+
+        {/* ── Apples ── */}
+        {APPLES.map((a, i) => (
           <g key={i}>
-            <circle cx={a.x} cy={a.y} r={a.r} fill="#ef4444" />
-            {/* tiny stalk */}
-            <line x1={a.x} y1={a.y - a.r} x2={a.x} y2={a.y - a.r - 2} stroke="#92613a" strokeWidth="0.8" strokeLinecap="round" />
+            <circle cx={a.cx} cy={a.cy} r={a.r} fill="#ef4444" />
+            <line x1={a.cx} y1={a.cy - a.r} x2={a.cx} y2={a.cy - a.r - 2.5} stroke="#92613a" strokeWidth="0.9" strokeLinecap="round" />
           </g>
         ))}
-        {/* Canopy outline */}
-        <ellipse cx={cfg.cx} cy={cfg.cy} rx={cfg.rx} ry={cfg.ry} fill="none" stroke="#059669" strokeWidth="1" />
       </svg>
     </div>
   )
