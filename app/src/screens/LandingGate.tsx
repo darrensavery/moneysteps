@@ -59,7 +59,6 @@ export function LandingGate() {
             <p className="text-[15px] text-[#6b6a66] leading-relaxed max-w-[300px] mx-auto">
               Chores, pocket money, and savings goals — with a transparent record both parents can trust.
             </p>
-            <p className="text-[12px] text-[#9b9a96]">🔒 Private by design</p>
           </div>
 
           {/* CTAs */}
@@ -99,7 +98,7 @@ export function LandingGate() {
             </button>
 
             <p className="text-center text-[11px] text-[#9b9a96]">
-              Your data stays on your device and is never sold.
+              🔒 Private by design — your data stays on your device and is never sold.
             </p>
           </div>
 
