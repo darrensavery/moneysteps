@@ -21,7 +21,7 @@ import type { RegistrationState } from './RegistrationShell'
 
 interface Props {
   data: RegistrationState
-  onNext: (patch: Partial<RegistrationState>, authMethod: 'biometrics' | 'pin' | null) => void
+  onNext: (patch: Partial<RegistrationState>, authMethod: 'biometrics' | 'pin' | null, pin?: string) => void
   onBack: () => void
 }
 
@@ -93,7 +93,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
         setTimeout(() => confirmRefs.current[0]?.focus(), 50)
       } else {
         Sentry.setTag('auth_method', 'pin')
-        onNext({}, 'pin')
+        onNext({}, 'pin', entered)
       }
     }
   }

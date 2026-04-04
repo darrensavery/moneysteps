@@ -39,7 +39,9 @@ export interface RegistrationState {
   // Step 2
   base_currency?: 'GBP' | 'PLN'
 
-  // Step 3 — pin stored locally only, not in this state object
+  // Step 3 — children added here; pin stored locally only
+  children?: ChildRecord[]
+
   // Step 4
   coparent_invite_code?: string
   coparent_expires_at?:  number
@@ -150,8 +152,9 @@ export function RegistrationShell({ onComplete }: Props) {
     }
   }
 
-  function handleStep3(patch: Partial<RegistrationState>, method: 'biometrics' | 'pin' | null) {
+  function handleStep3(patch: Partial<RegistrationState>, method: 'biometrics' | 'pin' | null, pinValue?: string) {
     setAuthMethod(method)
+    if (pinValue) setPin(pinValue)
     advanceStep(patch)
   }
 

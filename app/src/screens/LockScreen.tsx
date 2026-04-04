@@ -32,11 +32,12 @@ export function LockScreen() {
   const destination = identity?.role === 'child' ? '/child' : '/parent'
 
   const unlock = useCallback((authMethod: 'biometrics' | 'pin' | 'none') => {
-    Sentry.setUser({ id: identity?.user_id })
-    analytics.identify(identity?.user_id ?? '', { role: identity?.role ?? '' })
+    if (!identity) return
+    Sentry.setUser({ id: identity.user_id })
+    analytics.identify(identity.user_id, { role: identity.role })
     track.lockScreenUnlocked({ auth_method: authMethod })
     navigate(destination, { replace: true })
-  }, [navigate, destination, identity?.user_id, identity?.role])
+  }, [navigate, destination, identity])
 
   const runBiometrics = useCallback(async () => {
     if (bioRunning) return
@@ -95,6 +96,7 @@ export function LockScreen() {
 
   function submitPin(entered: string) {
     if (entered.length < PIN_LENGTH) return
+    if (!identity) return
     setUnlocking(true)
     if (identity.pin && identity.pin !== entered) {
       setError('Wrong PIN — try again.')
@@ -108,6 +110,7 @@ export function LockScreen() {
   }
 
   function handleLogout() {
+    if (!identity) return
     if (!window.confirm(
       `Log out of ${identity.display_name}'s account?\n\nYour family's data stays safe — you'll need to log back in to use Morechard on this phone.`
     )) return
