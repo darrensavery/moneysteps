@@ -182,7 +182,7 @@ export async function handleMagicLinkRequest(request: Request, env: Env): Promis
     .run();
 
   // Send via Resend
-  const appUrl  = env.APP_URL ?? 'https://morechard.com';
+  const appUrl  = env.APP_URL ?? 'https://app.morechard.com';
   const link    = `${appUrl}/auth/verify?token=${rawToken}`;
 
   await sendMagicLinkEmail(normEmail, user.display_name, link, env);
