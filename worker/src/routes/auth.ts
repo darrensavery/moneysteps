@@ -48,8 +48,22 @@ export async function handleCreateFamily(request: Request, env: Env): Promise<Re
   if (!isValidEmail(normEmail)) return error('Invalid email address');
 
   const existing = await env.DB
-    .prepare('SELECT id FROM users WHERE email = ?').bind(normEmail).first();
-  if (existing) return error('Email already registered', 409);
+    .prepare('SELECT id, family_id, email_verified FROM users WHERE email = ?')
+    .bind(normEmail)
+    .first<{ id: string; family_id: string; email_verified: number }>();
+
+  // If the user exists and has already verified their email, block re-registration
+  if (existing && existing.email_verified === 1) return error('Email already registered', 409);
+
+  // If the user exists but never verified (e.g. previous registration hit an error),
+  // delete the orphaned record so they can start fresh cleanly
+  if (existing && existing.email_verified === 0) {
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM family_roles WHERE user_id = ?').bind(existing.id),
+      env.DB.prepare('DELETE FROM users WHERE id = ?').bind(existing.id),
+      env.DB.prepare('DELETE FROM families WHERE id = ?').bind(existing.family_id),
+    ]);
+  }
 
   const familyId     = nanoid();
   const userId       = nanoid();
@@ -379,7 +393,7 @@ async function sendMagicLinkEmail(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Morechard <onboarding@resend.dev>',
+      from: 'Morechard <noreply@mail.morechard.com>',
       to,
       subject: 'Your Morechard sign-in link',
       html: `
