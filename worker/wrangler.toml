@@ -30,4 +30,9 @@ crons = ["0 8 * * 6"]
 # Deploy with: wrangler deploy --env production
 [env.production]
 name = "morechard-api"
-vars = { ENVIRONMENT = "production", APP_URL = "https://app.morechard.com" }
+vars = { ENVIRONMENT = "production", APP_URL = "https://app.morechard.com", FIREBASE_PROJECT_ID = "pocket-money-85878" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "morechard"
+database_id = "5e8b4cd3-4807-43e4-bd84-4969da6e402c"
