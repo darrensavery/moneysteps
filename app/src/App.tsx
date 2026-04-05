@@ -19,16 +19,26 @@ import * as Sentry from '@sentry/react'
  * Consumes the token, marks email verified, then shows WelcomeOrchardScreen
  * (add first child or skip) before redirecting to the parent dashboard.
  */
+const ML_SESSION_KEY = 'mc_ml_verified'
+
 function MagicLinkVerifyScreen() {
   const [params]  = useSearchParams()
   const token     = params.get('token')
-  const [phase, setPhase]   = useState<'verifying' | 'welcome' | 'error'>('verifying')
+
+  // If we already verified this session, restore identity without re-calling the API
+  const cached = (() => {
+    try { return JSON.parse(sessionStorage.getItem(ML_SESSION_KEY) ?? 'null') } catch { return null }
+  })()
+
+  const [phase, setPhase]   = useState<'verifying' | 'welcome' | 'error'>(cached ? 'welcome' : 'verifying')
   const [errMsg, setErrMsg] = useState('')
   const [identity, setIdentity] = useState<{
     family_id: string; user_id: string; display_name: string;
-  } | null>(null)
+  } | null>(cached)
 
   useEffect(() => {
+    if (cached) return  // already verified this session — nothing to do
+
     if (!token) { setPhase('error'); setErrMsg('No token found in link.'); return }
 
     verifyMagicLink(token)
@@ -38,7 +48,9 @@ function MagicLinkVerifyScreen() {
         localStorage.setItem('mc_family_id', me.family_id)
         localStorage.setItem('mc_user_id',   me.id)
         localStorage.setItem('mc_role',      me.role)
-        setIdentity({ family_id: me.family_id, user_id: me.id, display_name: me.display_name })
+        const id = { family_id: me.family_id, user_id: me.id, display_name: me.display_name }
+        sessionStorage.setItem(ML_SESSION_KEY, JSON.stringify(id))
+        setIdentity(id)
         setPhase('welcome')
       })
       .catch(e => {
@@ -49,6 +61,7 @@ function MagicLinkVerifyScreen() {
 
   function handleWelcomeDone() {
     if (!identity) return
+    sessionStorage.removeItem(ML_SESSION_KEY)
     setDeviceIdentity({
       user_id:        identity.user_id,
       family_id:      identity.family_id,
