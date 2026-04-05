@@ -9,9 +9,10 @@ import { PendingTab }  from '../components/dashboard/PendingTab'
 import { HistoryTab }  from '../components/dashboard/HistoryTab'
 import { InsightsTab } from '../components/dashboard/InsightsTab'
 import { ParentSettingsTab } from '../components/dashboard/ParentSettingsTab'
+import { GoalBoostingTab }  from '../components/dashboard/GoalBoostingTab'
 import { FullLogo } from '../components/ui/Logo'
 
-type Tab = 'jobs' | 'pending' | 'history' | 'insights' | 'settings'
+type Tab = 'jobs' | 'pending' | 'history' | 'insights' | 'goals' | 'settings'
 
 export function ParentDashboard() {
   const navigate   = useNavigate()
@@ -57,6 +58,7 @@ export function ParentDashboard() {
     { id: 'pending',  label: 'Pending', badge: pendingCount || undefined },
     { id: 'history',  label: 'History' },
     { id: 'insights', label: 'Insights' },
+    { id: 'goals',    label: '🌳 Goals' },
     { id: 'settings', label: 'Settings' },
   ]
 
@@ -141,10 +143,11 @@ export function ParentDashboard() {
       <main className="flex-1 max-w-[560px] mx-auto w-full px-3.5 py-4">
         {activeChild ? (
           <>
-            {tab === 'jobs'     && <JobsTab     familyId={familyId} child={activeChild} />}
-            {tab === 'pending'  && <PendingTab  familyId={familyId} child={activeChild} onCountChange={setPendingCount} />}
-            {tab === 'history'  && <HistoryTab  familyId={familyId} child={activeChild} />}
-            {tab === 'insights' && <InsightsTab familyId={familyId} child={activeChild} />}
+            {tab === 'jobs'     && <JobsTab          familyId={familyId} child={activeChild} />}
+            {tab === 'pending'  && <PendingTab        familyId={familyId} child={activeChild} onCountChange={setPendingCount} />}
+            {tab === 'history'  && <HistoryTab        familyId={familyId} child={activeChild} />}
+            {tab === 'insights' && <InsightsTab       familyId={familyId} child={activeChild} />}
+            {tab === 'goals'    && <GoalBoostingTab   familyId={familyId} child={activeChild} />}
             {tab === 'settings' && <ParentSettingsTab familyId={familyId} onChildrenChange={setChildren} />}
           </>
         ) : tab === 'settings' ? (

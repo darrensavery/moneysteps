@@ -6,6 +6,8 @@
  * PATCH  /api/goals/:id                     Edit a goal
  * DELETE /api/goals/:id                     Archive a goal
  * POST   /api/goals/:id/reorder             Move goal up/down
+ * POST   /api/goals/:id/purchase            Mark goal reached + deduct balance
+ * POST   /api/goals/:id/contribute          Parent gifts a fixed amount to a goal
  */
 
 import { Env } from '../types.js';
@@ -40,7 +42,10 @@ export async function handleGoalCreate(request: Request, env: Env): Promise<Resp
   const body = await parseBody(request);
   if (!body) return error('Invalid JSON');
 
-  const { family_id, child_id, title, target_amount, currency, category, deadline, alloc_pct, match_rate } = body;
+  const {
+    family_id, child_id, title, target_amount, currency, category, deadline,
+    alloc_pct, match_rate, product_url, parent_match_pct, parent_fixed_contribution,
+  } = body;
   if (!family_id || family_id !== auth.family_id) return error('Forbidden', 403);
   if (!child_id  || typeof child_id !== 'string') return error('child_id required');
   if (!title     || typeof title    !== 'string') return error('title required');
@@ -64,8 +69,9 @@ export async function handleGoalCreate(request: Request, env: Env): Promise<Resp
   await env.DB.prepare(`
     INSERT INTO goals
       (id, family_id, child_id, title, target_amount, currency, category,
-       deadline, alloc_pct, match_rate, sort_order, created_at, updated_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+       deadline, alloc_pct, match_rate, sort_order, created_at, updated_at,
+       product_url, parent_match_pct, parent_fixed_contribution, status)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).bind(
     id, family_id, child_id as string,
     (title as string).trim(),
@@ -76,6 +82,10 @@ export async function handleGoalCreate(request: Request, env: Env): Promise<Resp
     match_rate ?? 0,
     (maxOrder?.m ?? -1) + 1,
     now, now,
+    product_url ? String(product_url).trim() : null,
+    Number.isInteger(parent_match_pct) ? parent_match_pct : 0,
+    Number.isInteger(parent_fixed_contribution) ? parent_fixed_contribution : 0,
+    'ACTIVE',
   ).run();
 
   const goal = await env.DB.prepare('SELECT * FROM goals WHERE id = ?').bind(id).first();
@@ -93,7 +103,10 @@ export async function handleGoalUpdate(request: Request, env: Env, id: string): 
   if (!goal) return error('Goal not found', 404);
   if (goal.family_id !== auth.family_id) return error('Forbidden', 403);
 
-  const allowed = ['title','target_amount','currency','category','deadline','alloc_pct','match_rate'];
+  const allowed = [
+    'title','target_amount','currency','category','deadline','alloc_pct','match_rate',
+    'product_url','parent_match_pct','parent_fixed_contribution','status',
+  ];
   const updates: string[] = [];
   const values: unknown[] = [];
 
@@ -154,6 +167,79 @@ export async function handleGoalReorder(request: Request, env: Env, id: string):
       .bind(goal.sort_order, now, neighbor.id),
   ]);
   return json({ ok: true });
+}
+
+// POST /api/goals/:id/purchase
+// Child marks goal as Reached. Deducts target_amount from balance via a spending record.
+export async function handleGoalPurchase(request: Request, env: Env, id: string): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
+
+  const goal = await env.DB
+    .prepare('SELECT * FROM goals WHERE id = ? AND archived = 0')
+    .bind(id).first<{
+      family_id: string; child_id: string; title: string;
+      target_amount: number; currency: string; status: string;
+    }>();
+  if (!goal) return error('Goal not found', 404);
+  if (goal.family_id !== auth.family_id) return error('Forbidden', 403);
+  if (auth.role === 'child' && goal.child_id !== auth.sub) return error('Forbidden', 403);
+  if (goal.status === 'REACHED') return error('Goal already reached', 409);
+
+  const now = Math.floor(Date.now() / 1000);
+  const spendId = nanoid();
+
+  // Insert spending record to deduct balance
+  await env.DB.prepare(`
+    INSERT INTO spending (id, family_id, child_id, title, amount, currency, note, goal_id, spent_at)
+    VALUES (?,?,?,?,?,?,?,?,?)
+  `).bind(
+    spendId, goal.family_id, goal.child_id,
+    `Purchased: ${goal.title}`,
+    goal.target_amount, goal.currency,
+    'Goal reached — item purchased', id, now,
+  ).run();
+
+  // Mark goal as REACHED
+  await env.DB
+    .prepare(`UPDATE goals SET status = 'REACHED', updated_at = ? WHERE id = ?`)
+    .bind(now, id).run();
+
+  return json({ ok: true, spend_id: spendId });
+}
+
+// POST /api/goals/:id/contribute
+// Parent makes a one-time fixed contribution to a child goal.
+// Body: { amount_pence: number }
+// Increments current_saved_pence on the goal.
+export async function handleGoalContribute(request: Request, env: Env, id: string): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
+  if (auth.role !== 'parent') return error('Only parents can contribute to goals', 403);
+
+  const body = await parseBody(request);
+  if (!body) return error('Invalid JSON');
+
+  const { amount_pence } = body;
+  if (!Number.isInteger(amount_pence) || (amount_pence as number) <= 0)
+    return error('amount_pence must be a positive integer');
+
+  const goal = await env.DB
+    .prepare('SELECT * FROM goals WHERE id = ? AND archived = 0')
+    .bind(id).first<{ family_id: string; status: string }>();
+  if (!goal) return error('Goal not found', 404);
+  if (goal.family_id !== auth.family_id) return error('Forbidden', 403);
+  if (goal.status === 'REACHED') return error('Goal already reached', 409);
+
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(`
+    UPDATE goals
+    SET current_saved_pence = current_saved_pence + ?,
+        parent_fixed_contribution = parent_fixed_contribution + ?,
+        updated_at = ?
+    WHERE id = ?
+  `).bind(amount_pence, amount_pence, now, id).run();
+
+  const updated = await env.DB.prepare('SELECT * FROM goals WHERE id = ?').bind(id).first();
+  return json(updated);
 }
 
 async function parseBody(request: Request): Promise<Record<string, unknown> | null> {

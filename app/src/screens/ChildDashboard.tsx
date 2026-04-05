@@ -1,13 +1,14 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   getChores, submitChore, getBalance, getGoals,
   getCompletions, getSettings, getFamilyId, getUserId,
-  formatCurrency,
+  formatCurrency, purchaseGoal, effectiveTarget,
 } from '../lib/api'
 import type { Chore, BalanceSummary, Goal, Completion } from '../lib/api'
 import { useTone } from '../lib/useTone'
 import { ThemePicker } from '../lib/theme'
+import { SavingsGrove } from '../components/dashboard/SavingsGrove'
 
 // ─── localStorage grove planner ──────────────────────────────────────────────
 // Key: `grove_plans_${userId}`
@@ -79,6 +80,9 @@ export function ChildDashboard() {
   const [loading,      setLoading]      = useState(true)
   const [teenMode,     setTeenMode]     = useState(0)
   const [showSettings, setShowSettings] = useState(false)
+  const [showGrove,    setShowGrove]    = useState(false)
+  const [weeklyAllowancePence, setWeeklyAllowancePence] = useState(0)
+  const [purchasing,   setPurchasing]   = useState<string | null>(null)
   const [goalBarPct, setGoalBarPct] = useState(0)   // starts at 0 so the CSS transition has room to grow
   const goalBarTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -106,6 +110,14 @@ export function ChildDashboard() {
       setPending(p)
       const tm = s.teen_mode ?? 0
       setTeenMode(tm)
+      // Estimate weekly allowance as sum of all weekly/daily chore rewards
+      const weekly = c.reduce((sum, chore) => {
+        if (chore.frequency === 'weekly') return sum + chore.reward_amount
+        if (chore.frequency === 'daily')  return sum + chore.reward_amount * 5
+        if (chore.frequency === 'school_days') return sum + chore.reward_amount * 5
+        return sum
+      }, 0)
+      setWeeklyAllowancePence(weekly)
       // Keep localStorage in sync so the anti-flicker script and ThemeProvider
       // both see the latest value on the next cold start.
       try { localStorage.setItem('mc_teen_mode', String(tm)) } catch { /* ignore */ }
@@ -168,6 +180,17 @@ export function ChildDashboard() {
     }
   }
 
+  // ── Goal purchase ──────────────────────────────────────────────────────────
+
+  async function handlePurchase(goalId: string) {
+    setPurchasing(goalId)
+    try {
+      await purchaseGoal(goalId)
+      await load()
+    } catch { /* ignore — goal already reached */ }
+    finally { setPurchasing(null) }
+  }
+
   // ── Filtered chores for active day ────────────────────────────────────────
 
   const dayChores = chores.filter(c => {
@@ -192,7 +215,7 @@ export function ChildDashboard() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-[0_1px_4px_rgba(0,0,0,.05)]">
         <div className="max-w-[560px] mx-auto px-3.5 py-3 flex items-center justify-between">
-          <span className="text-[17px] font-extrabold text-[var(--color-text)] tracking-tight">Morechard</span>
+          <span className="text-[17px] font-extrabold text-[var(--brand-deep)] tracking-tight">Morechard</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowSettings(true)}
@@ -264,15 +287,19 @@ export function ChildDashboard() {
             goalBarPct={goalBarPct}
             submitted={submitted}
             submitting={submitting}
+            purchasing={purchasing}
             noteChore={noteChore}
             noteText={noteText}
             submitErr={submitErr}
             cardClass={cardClass}
+            weeklyAllowancePence={weeklyAllowancePence}
             isPlanted={isPlanted}
             togglePlant={togglePlant}
             handleDone={handleDone}
+            handlePurchase={handlePurchase}
             setNoteChore={setNoteChore}
             setNoteText={setNoteText}
+            onPlantGoal={() => setShowGrove(true)}
           />
         ) : (
           /* ═══════════════════════════════════════════════════════════
@@ -297,6 +324,20 @@ export function ChildDashboard() {
         )}
 
       </main>
+
+      {/* Savings Grove — goal creation sheet */}
+      {showGrove && (
+        <SavingsGrove
+          familyId={familyId}
+          childId={userId}
+          currency={balance ? (chores[0]?.currency ?? 'GBP') : 'GBP'}
+          chores={chores}
+          teenMode={teenMode}
+          weeklyAllowancePence={weeklyAllowancePence}
+          onCreated={() => { setShowGrove(false); load() }}
+          onClose={() => setShowGrove(false)}
+        />
+      )}
     </div>
   )
 }
@@ -487,24 +528,49 @@ interface OrchardViewProps {
   goalBarPct: number
   submitted: Set<string>
   submitting: string | null
+  purchasing: string | null
   noteChore: string | null
   noteText: string
   submitErr: string | null
   cardClass: string
+  weeklyAllowancePence: number
   isPlanted: (c: Chore) => boolean
   togglePlant: (c: Chore, day: number) => void
   handleDone: (id: string, note?: string) => Promise<void>
+  handlePurchase: (id: string) => Promise<void>
   setNoteChore: (id: string | null) => void
   setNoteText: (t: string) => void
+  onPlantGoal: () => void
 }
 
 function OrchardView({
-  balance, chores, pending, goals: _goals, tone,
+  balance, chores, pending, goals, tone,
   activeDay, setActiveDay, grovePlans, dayChores, unplannedChores,
-  activeTopGoal, goalBarPct, submitted, submitting,
-  noteChore, noteText, submitErr, cardClass,
-  isPlanted, togglePlant, handleDone, setNoteChore, setNoteText,
+  activeTopGoal, goalBarPct, submitted, submitting, purchasing,
+  noteChore, noteText, submitErr, cardClass, weeklyAllowancePence,
+  isPlanted, togglePlant, handleDone, handlePurchase,
+  setNoteChore, setNoteText, onPlantGoal,
 }: OrchardViewProps) {
+  // Best chore for effort calc
+  const bestChore = useMemo(() => {
+    const active = chores.filter(c => !c.archived)
+    if (!active.length) return null
+    return active.reduce((a, b) => a.reward_amount >= b.reward_amount ? a : b)
+  }, [chores])
+
+  function effortLabel(targetPence: number): string {
+    if (bestChore && bestChore.reward_amount > 0) {
+      const n = Math.ceil(targetPence / bestChore.reward_amount)
+      return `${n} × ${bestChore.title}`
+    }
+    if (weeklyAllowancePence > 0) {
+      const weeks = Math.ceil(targetPence / weeklyAllowancePence)
+      return `${weeks} week${weeks !== 1 ? 's' : ''} of Harvest`
+    }
+    return formatCurrency(targetPence, 'GBP')
+  }
+
+  const activeGoals = goals.filter(g => g.status === 'ACTIVE' || !g.status)
   return (
     <>
       {/* Balance card */}
@@ -631,28 +697,126 @@ function OrchardView({
         </div>
       )}
 
-      {/* Top savings goal */}
-      {activeTopGoal && (
-        <div className="bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)] p-4">
-          <h2 className="text-[15px] font-bold text-[var(--color-text)] mb-3">Saving up for</h2>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-2xl">🎯</span>
-            <div className="flex-1 min-w-0">
-              <div className="text-[14px] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</div>
-              <div className="text-[12px] text-[var(--color-text-muted)] tabular-nums">
-                {formatCurrency(balance?.available ?? 0, activeTopGoal.currency)} of {formatCurrency(activeTopGoal.target_amount, activeTopGoal.currency)}
-              </div>
-            </div>
-          </div>
-          <div className="w-full h-3 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
-            <div className="h-full bg-[var(--brand-primary)] rounded-full" style={{ width: `${goalBarPct}%`, transition: 'width 1.1s cubic-bezier(0.25, 1, 0.5, 1)' }} />
-          </div>
-          <div className="flex justify-between mt-1.5">
-            <span className="text-[12px] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(balance?.available ?? 0, activeTopGoal.currency)}</span>
-            <span className="text-[12px] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(activeTopGoal.target_amount, activeTopGoal.currency)}</span>
-          </div>
+      {/* ── Savings Grove: Effort-to-Earn Mentor ──────────────────────────── */}
+      <div className="bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden">
+        <div className="px-4 pt-4 pb-3 flex items-center justify-between">
+          <h2 className="text-[15px] font-bold text-[var(--color-text)]">🌳 Savings Grove</h2>
+          <button
+            onClick={onPlantGoal}
+            className="flex items-center gap-1.5 text-[12px] font-bold text-[var(--brand-primary)] border border-[var(--brand-primary)] rounded-lg px-2.5 py-1 hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
+          >
+            <span>+</span> Plant Goal
+          </button>
         </div>
-      )}
+
+        {activeGoals.length === 0 ? (
+          <div className="px-4 pb-5 text-center">
+            <p className="text-[28px] mb-1">🌱</p>
+            <p className="text-[13px] font-semibold text-[var(--color-text)]">No goals yet</p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">Tap "Plant Goal" to start saving for something exciting!</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[var(--color-border)]">
+            {/* Primary goal — full effort mentor card */}
+            {activeTopGoal && (() => {
+              const avail = balance?.available ?? 0
+              const effTarget = effectiveTarget(activeTopGoal)
+              const pct = Math.min(100, Math.round((avail / effTarget) * 100))
+              const remaining = Math.max(0, effTarget - avail)
+              const isReady = avail >= effTarget
+
+              // Velocity: weeks until reached
+              const weeklyIncome = weeklyAllowancePence || (bestChore ? bestChore.reward_amount * 4 : 0)
+              const weeksLeft = weeklyIncome > 0 && remaining > 0
+                ? Math.ceil(remaining / weeklyIncome)
+                : null
+              const arrivalDate = weeksLeft
+                ? new Date(Date.now() + weeksLeft * 7 * 86_400_000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                : null
+
+              return (
+                <div className="px-4 py-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl mt-0.5">🎯</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[14px] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</div>
+                      {activeTopGoal.parent_match_pct > 0 && (
+                        <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">
+                          🤝 Parent matches {activeTopGoal.parent_match_pct}% — you only need {formatCurrency(effTarget, activeTopGoal.currency)}!
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="space-y-1">
+                    <div className="w-full h-4 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[var(--brand-primary)] rounded-full"
+                        style={{ width: `${goalBarPct}%`, transition: 'width 1.1s cubic-bezier(0.25, 1, 0.5, 1)' }}
+                      />
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[11px] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(avail, activeTopGoal.currency)} saved</span>
+                      <span className="text-[11px] text-[var(--color-text-muted)] tabular-nums">{pct}% • {formatCurrency(effTarget, activeTopGoal.currency)}</span>
+                    </div>
+                  </div>
+
+                  {/* Effort labels */}
+                  <div className="rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] px-3.5 py-2.5 space-y-1.5">
+                    <div className="flex items-center gap-2 text-[12px]">
+                      <span>💪</span>
+                      <span className="text-[var(--color-text-muted)]">Total cost:</span>
+                      <span className="font-semibold text-[var(--color-text)]">{effortLabel(activeTopGoal.target_amount)}</span>
+                    </div>
+                    {remaining > 0 && (
+                      <div className="flex items-center gap-2 text-[12px]">
+                        <span>🌿</span>
+                        <span className="text-[var(--color-text-muted)]">Still need:</span>
+                        <span className="font-semibold text-[var(--color-text)]">{effortLabel(remaining)}</span>
+                      </div>
+                    )}
+                    {arrivalDate && (
+                      <div className="flex items-center gap-2 text-[12px]">
+                        <span>📅</span>
+                        <span className="text-[var(--color-text-muted)]">Estimated arrival:</span>
+                        <span className="font-semibold text-emerald-600">{arrivalDate}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Purchase button when funded */}
+                  {isReady && (
+                    <button
+                      onClick={() => handlePurchase(activeTopGoal.id)}
+                      disabled={purchasing === activeTopGoal.id}
+                      className="w-full rounded-xl bg-emerald-500 text-white font-bold py-2.5 text-[13px] hover:bg-emerald-600 disabled:opacity-60 transition-colors cursor-pointer"
+                    >
+                      {purchasing === activeTopGoal.id ? '🌸 Blossoming…' : '🌸 Mark as Purchased!'}
+                    </button>
+                  )}
+                </div>
+              )
+            })()}
+
+            {/* Trade-off tool: secondary goals in same effort unit */}
+            {activeGoals.length > 1 && (
+              <div className="px-4 py-3 space-y-2">
+                <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">All goals — effort comparison</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {activeGoals.map((g, i) => (
+                    <div key={g.id} className={`flex items-center gap-2 rounded-lg px-3 py-2 border ${i === 0 ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)]' : 'border-[var(--color-border)] bg-[var(--color-bg)]'}`}>
+                      <span className="text-base">{i === 0 ? '🎯' : '🌱'}</span>
+                      <span className="flex-1 text-[12px] font-semibold text-[var(--color-text)] truncate">{g.title}</span>
+                      <span className="text-[11px] text-[var(--color-text-muted)] shrink-0">{effortLabel(g.target_amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {unplannedChores.length > 0 && (
         <p className="text-center text-[12px] text-[var(--color-text-muted)]">

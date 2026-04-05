@@ -127,7 +127,7 @@ export function Stage4CoParentBridge({ data, onNext, onBack }: Props) {
       <div className="space-y-1">
         <h2 className="text-2xl font-bold tracking-tight">Co-Parent Bridge</h2>
         <p className="text-muted-foreground text-sm leading-relaxed">
-          Invite your co-parent to join as a Verified Custodian. This step is optional
+          Invite your co-parent to join as a Verified Orchard Lead. This step is optional
           — you can invite them later from Settings.
         </p>
       </div>
@@ -140,7 +140,7 @@ export function Stage4CoParentBridge({ data, onNext, onBack }: Props) {
         </AlertTitle>
         <AlertDescription>
           {isStandard
-            ? 'Invite a co-parent as a Verified Custodian. Email authentication is required to maintain a high-integrity audit trail and ensure all approvals are formally logged.'
+            ? 'Invite a co-parent as a Verified Parent. Email authentication is required to maintain a high-integrity audit trail and ensure all approvals are formally logged.'
             : "Invite a co-parent to help manage chores and goals. Email verification ensures your family data stays private and stays in sync across everyone's phones."
           }
         </AlertDescription>
@@ -182,7 +182,7 @@ export function Stage4CoParentBridge({ data, onNext, onBack }: Props) {
           <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-5 space-y-4">
             <div className="flex items-center justify-between">
               <p className="font-semibold text-sm">Co-parent invite code</p>
-              <Badge variant="warning">Custodian access</Badge>
+              <Badge variant="warning">Parent access</Badge>
             </div>
             <div className="flex items-center justify-center">
               <span className="font-mono text-4xl font-extrabold tracking-[0.4em] tabular-nums bg-white rounded-xl px-6 py-3 border border-primary/20 select-all">

@@ -130,7 +130,7 @@ wrangler deploy
 - [ ] Implement Parent Approval -> Immutable Ledger Write
 
 ### **Phase 4: Behavioral Education (The "Simulator" Logic)**
-- [ ] Build 'Goal Planning' Module (Visualizing long-term saving)
+- [x] Build 'Goal Planning' Module — Savings Grove with effort-to-earn mentor, goal creation sheet, purchase flow, parental boosting portal
 - [ ] Implement 'Real-World' explainers for Ledger entries (e.g., Inflation/Interest)
 - [ ] Create Child 'Equity' Dashboard (Unified view of all virtual assets)
 

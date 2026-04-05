@@ -52,6 +52,7 @@ import {
 import {
   handleGoalList, handleGoalCreate, handleGoalUpdate,
   handleGoalDelete, handleGoalReorder,
+  handleGoalPurchase, handleGoalContribute,
 } from './routes/goals.js';
 import {
   handleSpendingCreate, handleSpendingList,
@@ -378,6 +379,10 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (goalIdMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleGoalDelete(req, e, goalIdMatch[1]));
   const goalReorderMatch = path.match(/^\/api\/goals\/([^/]+)\/reorder$/);
   if (goalReorderMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleGoalReorder(req, e, goalReorderMatch[1]));
+  const goalPurchaseMatch = path.match(/^\/api\/goals\/([^/]+)\/purchase$/);
+  if (goalPurchaseMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleGoalPurchase(req, e, goalPurchaseMatch[1]));
+  const goalContributeMatch = path.match(/^\/api\/goals\/([^/]+)\/contribute$/);
+  if (goalContributeMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleGoalContribute(req, e, goalContributeMatch[1]));
 
   // Finance write — parent only
   if (path === '/api/payouts' && method === 'POST')        return withAuth(request, auth, env, handlePayoutCreate);

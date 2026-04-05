@@ -251,10 +251,25 @@ export async function getBalance(family_id: string, child_id: string): Promise<B
 // Goals
 // ----------------------------------------------------------------
 export interface Goal {
-  id: string; child_id: string; title: string; target_amount: number; currency: string;
-  category: string; deadline: string | null; alloc_pct: number; match_rate: number;
-  sort_order: number; archived: number; created_at: number;
+  id: string; child_id: string; family_id: string; title: string;
+  target_amount: number; currency: string; category: string;
+  deadline: string | null; alloc_pct: number; match_rate: number;
+  sort_order: number; archived: number; created_at: number; updated_at: number;
+  // Savings Grove fields (migration 0013)
+  status: 'ACTIVE' | 'REACHED' | 'ARCHIVED';
+  current_saved_pence: number;
+  product_url: string | null;
+  parent_match_pct: number;
+  parent_fixed_contribution: number;
 }
+
+/** Effective child-only target accounting for parent match */
+export function effectiveTarget(goal: Goal): number {
+  if (goal.parent_match_pct <= 0) return goal.target_amount;
+  // child needs to save X so that X + X*(match_pct/100) = target
+  return Math.ceil(goal.target_amount / (1 + goal.parent_match_pct / 100));
+}
+
 export async function getGoals(family_id: string, child_id: string): Promise<{ goals: Goal[] }> {
   return request(`/api/goals?family_id=${family_id}&child_id=${child_id}`);
 }
@@ -266,6 +281,12 @@ export async function updateGoal(id: string, body: Partial<Goal>): Promise<Goal>
 }
 export async function deleteGoal(id: string): Promise<void> {
   await request(`/api/goals/${id}`, { method: 'DELETE' });
+}
+export async function purchaseGoal(id: string): Promise<{ ok: boolean; spend_id: string }> {
+  return request(`/api/goals/${id}/purchase`, { method: 'POST' });
+}
+export async function contributeToGoal(id: string, amount_pence: number): Promise<Goal> {
+  return request(`/api/goals/${id}/contribute`, { method: 'POST', body: JSON.stringify({ amount_pence }) });
 }
 
 // ----------------------------------------------------------------

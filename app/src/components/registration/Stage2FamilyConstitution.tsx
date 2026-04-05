@@ -128,7 +128,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
         </div>
       </section>
 
-      {/* Governance model — co-parenting only */}
+      {/* Approval model — co-parenting only */}
       {isCoParenting && (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
