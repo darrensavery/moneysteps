@@ -81,7 +81,7 @@ export function RegistrationShell({ onComplete }: Props) {
   const totalSteps    = isCoParenting ? 4 : 3
   const progress      = Math.round((step / totalSteps) * 100)
 
-  async function advanceStep(patch: Partial<RegistrationState>, nextStep?: number) {
+  async function advanceStep(patch: Partial<RegistrationState>) {
     setError('')
     setSaving(true)
 
@@ -90,6 +90,13 @@ export function RegistrationShell({ onComplete }: Props) {
 
     try {
       if (step === 1) {
+        // Step 1 just collects identity — advance to Step 2 (currency) first
+        setSaving(false)
+        setStep(2)
+        return
+      }
+
+      if (step === 2) {
         // Create account only once — skip if already done (user went back)
         if (!merged.family_id) {
           const familyResult = await createFamily({
@@ -110,19 +117,9 @@ export function RegistrationShell({ onComplete }: Props) {
           await requestMagicLink(merged.email!)
         }
 
-        // Show "check your email" screen — steps 2-4 run after email verified
+        // Show "check your email" screen — steps 3+ run after email verified
         setSaving(false)
         setAwaitingEmail(true)
-        return
-      }
-
-      if (step === 2) {
-        await saveRegistrationStep(2, {
-          base_currency:   merged.base_currency,
-          governance_mode: merged.governance_mode,
-        })
-        setStep(nextStep ?? 3)
-        setSaving(false)
         return
       }
 

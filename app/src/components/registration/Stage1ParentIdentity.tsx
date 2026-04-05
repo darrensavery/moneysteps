@@ -118,14 +118,14 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
             onClick={() => setParentingMode('single')}
             icon={<User size={22} />}
             title="Single Parent"
-            description="I manage this record alone"
+            description="I'm the sole lead"
           />
           <ModeCard
             active={parentingMode === 'co-parenting'}
             onClick={() => setParentingMode('co-parenting')}
             icon={<Users size={22} />}
             title="Co-Parenting"
-            description="Two custodians share governance"
+            description="Share the journey with a co-parent."
           />
         </div>
         {parentingMode === 'co-parenting' && (
@@ -133,7 +133,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
             <ShieldCheck size={13} className="text-teal-600 mt-0.5 shrink-0" />
             <p className="text-xs text-teal-800 leading-relaxed">
               Dual-approval governance will be enabled. Your co-parent joins via
-              a secure invite code in Stage 4.
+              a secure invite code in Step 4.
             </p>
           </div>
         )}

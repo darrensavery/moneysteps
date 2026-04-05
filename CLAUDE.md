@@ -153,3 +153,6 @@ wrangler deploy
 - [x] Add Sentry Error Tracking (24/7 solo-dev monitoring)
 - [ ] Implement PostHog Session Replays (UX friction hunting)
 - [ ] Final PWA Optimization (Offline caching & Push notifications)
+
+### **Infrastructure**
+- [ ] Set up Cloudflare staging environment (staging worker + staging D1 + staging Pages branch) with GitHub Actions auto-deploy to production on merge to main
