@@ -206,7 +206,7 @@ export function WelcomeOrchardScreen({ displayName, onDone }: Props) {
         </div>
 
         {error && (
-          <p className="text-[13px] font-medium text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <p className="text-[13px] font-medium text-red-600 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
             {error}
           </p>
         )}
