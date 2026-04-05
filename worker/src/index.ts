@@ -267,7 +267,7 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (path === '/auth/register'      && method === 'POST') return handleRegister(request, env);
   if (path === '/auth/login'       && method === 'POST') return handleLogin(request, env);
   if (path === '/auth/magic-link'  && method === 'POST') return handleMagicLinkRequest(request, env);
-  if (path === '/auth/verify'      && method === 'GET')  return handleMagicLinkVerify(request, env);
+  if (path === '/api/auth/verify'  && method === 'GET')  return handleMagicLinkVerify(request, env);
   if (path === '/auth/child/login'   && method === 'POST') return handleChildLogin(request, env);
   if (path === '/auth/invite/peek'   && method === 'POST') return handlePeekInvite(request, env);
   if (path === '/auth/invite/redeem' && method === 'POST') return handleRedeemInvite(request, env);

@@ -79,7 +79,7 @@ export async function requestMagicLink(email: string): Promise<{ sent: boolean }
 }
 
 export async function verifyMagicLink(token: string): Promise<LoginResult & { family_id: string; user_id: string; role: string }> {
-  return request(`/auth/verify?token=${encodeURIComponent(token)}`);
+  return request(`/api/auth/verify?token=${encodeURIComponent(token)}`);
 }
 
 export async function childLogin(family_id: string, child_id: string, pin: string): Promise<LoginResult> {
