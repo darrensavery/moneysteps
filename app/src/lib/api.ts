@@ -180,6 +180,7 @@ export async function createChore(body: {
   reward_amount: number; currency: string; frequency?: string;
   due_date?: string; description?: string; is_priority?: boolean;
   is_flash?: boolean; flash_deadline?: string;
+  proof_required?: boolean; auto_approve?: boolean;
 }): Promise<Chore> {
   return request('/api/chores', { method: 'POST', body: JSON.stringify(body) });
 }
@@ -206,7 +207,13 @@ export async function submitChore(id: string, note?: string): Promise<{ id: stri
 export interface Completion {
   id: string; chore_id: string; child_id: string; child_name: string;
   chore_title: string; reward_amount: number; currency: string;
-  note: string | null; rejection_note: string | null; status: string;
+  note: string | null;
+  /** @deprecated use parent_notes */
+  rejection_note: string | null;
+  parent_notes: string | null;
+  proof_url: string | null;      // R2 object key — fetch presigned URL separately
+  attempt_count: number;         // > 1 means resubmission
+  status: 'awaiting_review' | 'completed' | 'needs_revision' | 'pending';
   rating: number; submitted_at: number; resolved_at: number | null;
 }
 
@@ -232,8 +239,34 @@ export async function approveCompletion(id: string): Promise<{ ledger_id: number
   return request(`/api/completions/${id}/approve`, { method: 'POST' });
 }
 
+/** @deprecated use reviseCompletion */
 export async function rejectCompletion(id: string, rejection_note?: string): Promise<void> {
-  await request(`/api/completions/${id}/reject`, { method: 'POST', body: JSON.stringify({ rejection_note }) });
+  await request(`/api/completions/${id}/revise`, { method: 'POST', body: JSON.stringify({ parent_notes: rejection_note }) });
+}
+
+export async function reviseCompletion(id: string, parent_notes: string): Promise<void> {
+  await request(`/api/completions/${id}/revise`, { method: 'POST', body: JSON.stringify({ parent_notes }) });
+}
+
+/** Upload photo evidence for a completion. Returns the R2 object key. */
+export async function uploadProof(completionId: string, file: File): Promise<{ proof_url: string }> {
+  const token = getToken();
+  const res = await fetch(`/api/completions/${completionId}/proof`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: file,
+  });
+  const data = await res.json() as { proof_url?: string; error?: string };
+  if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+  return { proof_url: data.proof_url ?? '' };
+}
+
+/** Get a short-lived presigned URL for a completion's proof photo. */
+export async function getProofUrl(completionId: string): Promise<{ url: string }> {
+  return request(`/api/completions/${completionId}/proof`);
 }
 
 export async function approveAll(family_id: string, child_id: string): Promise<{ approved: number }> {

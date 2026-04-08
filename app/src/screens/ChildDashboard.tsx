@@ -10,6 +10,7 @@ import { useTone } from '../lib/useTone'
 import { ThemePicker } from '../lib/theme'
 import { SavingsGrove } from '../components/dashboard/SavingsGrove'
 import { FullLogo } from '../components/ui/Logo'
+import { EarnTab } from '../components/dashboard/EarnTab'
 
 // ─── localStorage grove planner ──────────────────────────────────────────────
 // Key: `grove_plans_${userId}`
@@ -88,6 +89,7 @@ export function ChildDashboard() {
   const goalBarTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Per-chore submission state
+  const [childTab,   setChildTab]   = useState<'home' | 'earn'>('home')
   const [submitting, setSubmitting] = useState<string | null>(null)
   const [submitted,  setSubmitted]  = useState<Set<string>>(new Set())
   const [noteChore,  setNoteChore]  = useState<string | null>(null)
@@ -240,6 +242,23 @@ export function ChildDashboard() {
             </button>
           </div>
         </div>
+
+        {/* Tab bar */}
+        <div className="max-w-[560px] mx-auto border-t border-[var(--color-border)] flex">
+          {([['home', 'Home'], ['earn', 'Tasks']] as const).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setChildTab(id)}
+              className={`flex-1 py-2.5 text-[13px] font-semibold relative transition-colors cursor-pointer
+                ${childTab === id ? 'text-[var(--brand-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}`}
+            >
+              {label}
+              {childTab === id && (
+                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[var(--brand-primary)] rounded-t-full" />
+              )}
+            </button>
+          ))}
+        </div>
       </header>
 
       {/* Settings bottom sheet */}
@@ -267,7 +286,9 @@ export function ChildDashboard() {
       )}
 
       <main className="flex-1 max-w-[560px] mx-auto w-full px-3.5 py-4 flex flex-col gap-4">
-        {loading ? (
+        {childTab === 'earn' ? (
+          <EarnTab familyId={familyId} childId={userId} currency={chores[0]?.currency ?? 'GBP'} />
+        ) : loading ? (
           <div className="py-16 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
         ) : tone.isChild ? (
           /* ═══════════════════════════════════════════════════════════

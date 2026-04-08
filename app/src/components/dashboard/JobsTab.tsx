@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Chore, Suggestion, Plan, ChildRecord } from '../../lib/api'
 import {
-  getChores, createChore, archiveChore, restoreChore,
+  getChores, archiveChore, restoreChore,
   getSuggestions, getPlans, createPlan, deletePlan,
   formatCurrency, getMondayISO,
 } from '../../lib/api'
+import { CreateChoreSheet } from './CreateChoreSheet'
 
-declare const posthog: { capture: (event: string, props?: Record<string, unknown>) => void } | undefined
-
-const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const CURRENCY = 'GBP'
 
@@ -27,35 +25,14 @@ interface Props {
   child: ChildRecord
 }
 
-interface NewChoreForm {
-  title: string
-  reward_amount: string
-  frequency: string
-  weekly_day: number   // 1=Mon … 7=Sun, used only when frequency=weekly
-  description: string
-  is_priority: boolean
-  is_flash: boolean
-  flash_deadline: string
-  due_date: string
-}
-
-const BLANK_FORM: NewChoreForm = {
-  title: '', reward_amount: '', frequency: 'as_needed', weekly_day: 1,
-  description: '', is_priority: false, is_flash: false,
-  flash_deadline: '', due_date: '',
-}
-
 export function JobsTab({ familyId, child }: Props) {
   const [chores, setChores]           = useState<Chore[]>([])
   const [archived, setArchived]       = useState<Chore[]>([])
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [plans, setPlans]             = useState<Plan[]>([])
   const [loading, setLoading]         = useState(true)
-  const [showForm, setShowForm]       = useState(false)
+  const [showSheet, setShowSheet]     = useState(false)
   const [showArchived, setShowArchived] = useState(false)
-  const [form, setForm]               = useState<NewChoreForm>(BLANK_FORM)
-  const [saving, setSaving]           = useState(false)
-  const [error, setError]             = useState<string | null>(null)
   const weekStart = getMondayISO()
 
   const load = useCallback(async () => {
@@ -74,51 +51,6 @@ export function JobsTab({ familyId, child }: Props) {
   }, [familyId, child.id, weekStart])
 
   useEffect(() => { load() }, [load])
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault()
-    if (!form.title.trim() || !form.reward_amount) return
-    setSaving(true)
-    setError(null)
-    try {
-      const isRecurring = FREQUENCY_OPTIONS.find(o => o.value === form.frequency)?.recurring ?? false
-
-      // For weekly, encode the chosen day into due_date as a sentinel day-name
-      // The child grove planner reads this to auto-plant on the right day.
-      const weeklyDay = form.frequency === 'weekly' ? String(form.weekly_day) : undefined
-
-      await createChore({
-        family_id: familyId,
-        assigned_to: child.id,
-        title: form.title.trim(),
-        reward_amount: Math.round(parseFloat(form.reward_amount) * 100),
-        currency: CURRENCY,
-        frequency: form.frequency,
-        description: form.description || undefined,
-        is_priority: form.is_priority,
-        is_flash: form.is_flash,
-        flash_deadline: form.flash_deadline || undefined,
-        due_date: weeklyDay ?? (form.due_date || undefined),
-      })
-
-      if (isRecurring) {
-        try {
-          typeof posthog !== 'undefined' && posthog?.capture('recurring_chore_created', {
-            frequency: form.frequency,
-            child_id: child.id,
-          })
-        } catch { /* analytics must never break the flow */ }
-      }
-
-      setForm(BLANK_FORM)
-      setShowForm(false)
-      await load()
-    } catch (err: unknown) {
-      setError((err as Error).message)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   async function handleArchive(id: string) {
     await archiveChore(id)
@@ -179,107 +111,22 @@ export function JobsTab({ familyId, child }: Props) {
       )}
 
       {/* Add job button */}
-      {!showForm && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="w-full border-2 border-dashed border-[var(--color-border)] rounded-xl py-3.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
-        >
-          + Add job
-        </button>
-      )}
+      <button
+        onClick={() => setShowSheet(true)}
+        className="w-full border-2 border-dashed border-[var(--color-border)] rounded-xl py-3.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
+      >
+        + Add task
+      </button>
 
-      {/* Create form */}
-      {showForm && (
-        <form onSubmit={handleCreate} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
-          <p className="text-[15px] font-bold text-[var(--color-text)]">New job</p>
-
-          {error && <p className="text-[13px] text-red-600">{error}</p>}
-
-          <input
-            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-            placeholder="Job title"
-            value={form.title}
-            onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            required
-          />
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
-              <input
-                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-                placeholder="0.00"
-                type="number" min="0.01" step="0.01"
-                value={form.reward_amount}
-                onChange={e => setForm(f => ({ ...f, reward_amount: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1 min-w-[130px]">
-              <select
-                className="border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-                value={form.frequency}
-                onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))}
-                aria-label="How often?"
-              >
-                {FREQUENCY_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-              {/* Day-picker — only for Weekly */}
-              {form.frequency === 'weekly' && (
-                <div className="flex gap-0.5 mt-0.5">
-                  {DAYS_SHORT.map((day, i) => (
-                    <button
-                      key={day}
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, weekly_day: i + 1 }))}
-                      className={`flex-1 py-1 rounded text-[10px] font-bold transition-colors cursor-pointer
-                        ${form.weekly_day === i + 1
-                          ? 'bg-[var(--brand-primary)] text-white'
-                          : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:opacity-80'
-                        }`}
-                    >
-                      {day[0]}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          <textarea
-            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] resize-none"
-            placeholder="Description (optional)"
-            rows={2}
-            value={form.description}
-            onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-          />
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-[13px] text-[var(--color-text)] cursor-pointer select-none">
-              <input type="checkbox" checked={form.is_priority} onChange={e => setForm(f => ({ ...f, is_priority: e.target.checked }))} className="w-4 h-4 accent-amber-600" />
-              Priority
-            </label>
-            <label className="flex items-center gap-2 text-[13px] text-[var(--color-text)] cursor-pointer select-none">
-              <input type="checkbox" checked={form.is_flash} onChange={e => setForm(f => ({ ...f, is_flash: e.target.checked }))} className="w-4 h-4 accent-red-600" />
-              Flash job
-            </label>
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => { setShowForm(false); setForm(BLANK_FORM); setError(null) }}
-              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
-            >
-              {saving ? 'Saving…' : 'Add job'}
-            </button>
-          </div>
-        </form>
+      {/* Create chore sheet */}
+      {showSheet && (
+        <CreateChoreSheet
+          familyId={familyId}
+          child={child}
+          currency={CURRENCY}
+          onCreated={() => { setShowSheet(false); load() }}
+          onClose={() => setShowSheet(false)}
+        />
       )}
 
       {/* Archived toggle */}
