@@ -119,65 +119,105 @@ export function HistoryTab({ familyId, child }: Props) {
         </button>
       </div>
 
-      {/* Payout modal */}
+      {/* Payout bottom sheet */}
       {showPayout && (
-        <form onSubmit={handlePayout} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
-          <p className="text-[15px] font-bold text-[var(--color-text)]">Pay out to {child.display_name}</p>
-          {payoutError && <p className="text-[13px] text-red-600">{payoutError}</p>}
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={e => { if (e.target === e.currentTarget) { setShowPayout(false); setPayoutError(null) } }}
+        >
+          <form
+            onSubmit={handlePayout}
+            className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl p-5 space-y-3 pb-safe"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[15px] font-bold text-[var(--color-text)]">Pay out to {child.display_name}</p>
+              <button type="button" onClick={() => { setShowPayout(false); setPayoutError(null) }}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            {payoutError && <p className="text-[13px] text-red-600">{payoutError}</p>}
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
+              <input
+                type="number" min="0.01" step="0.01" required autoFocus
+                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                placeholder="0.00"
+                value={payoutAmount}
+                onChange={e => setPayoutAmount(e.target.value)}
+              />
+            </div>
             <input
-              type="number" min="0.01" step="0.01" required
-              className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-              placeholder="0.00"
-              value={payoutAmount}
-              onChange={e => setPayoutAmount(e.target.value)}
+              className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+              placeholder="Note (optional)"
+              value={payoutNote}
+              onChange={e => setPayoutNote(e.target.value)}
             />
-          </div>
-          <input
-            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-            placeholder="Note (optional)"
-            value={payoutNote}
-            onChange={e => setPayoutNote(e.target.value)}
-          />
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setShowPayout(false)} className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">Cancel</button>
-            <button type="submit" disabled={payoutBusy} className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
-              {payoutBusy ? 'Saving…' : 'Confirm'}
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-2 pt-1">
+              <button type="button" onClick={() => { setShowPayout(false); setPayoutError(null) }}
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" disabled={payoutBusy}
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                {payoutBusy ? 'Saving…' : 'Confirm'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
-      {/* Bonus modal */}
+      {/* Bonus bottom sheet */}
       {showBonus && (
-        <form onSubmit={handleBonus} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-4 space-y-3">
-          <p className="text-[15px] font-bold text-[var(--color-text)]">Add bonus for {child.display_name}</p>
-          {bonusError && <p className="text-[13px] text-red-600">{bonusError}</p>}
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={e => { if (e.target === e.currentTarget) { setShowBonus(false); setBonusError(null) } }}
+        >
+          <form
+            onSubmit={handleBonus}
+            className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl p-5 space-y-3 pb-safe"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[15px] font-bold text-[var(--color-text)]">Add bonus for {child.display_name}</p>
+              <button type="button" onClick={() => { setShowBonus(false); setBonusError(null) }}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            {bonusError && <p className="text-[13px] text-red-600">{bonusError}</p>}
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">£</span>
+              <input
+                type="number" min="0.01" step="0.01" required autoFocus
+                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                placeholder="0.00"
+                value={bonusAmount}
+                onChange={e => setBonusAmount(e.target.value)}
+              />
+            </div>
             <input
-              type="number" min="0.01" step="0.01" required
-              className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-              placeholder="0.00"
-              value={bonusAmount}
-              onChange={e => setBonusAmount(e.target.value)}
+              required
+              className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+              placeholder="Reason (required)"
+              value={bonusReason}
+              onChange={e => setBonusReason(e.target.value)}
             />
-          </div>
-          <input
-            required
-            className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-            placeholder="Reason (required)"
-            value={bonusReason}
-            onChange={e => setBonusReason(e.target.value)}
-          />
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setShowBonus(false)} className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">Cancel</button>
-            <button type="submit" disabled={bonusBusy} className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
-              {bonusBusy ? 'Saving…' : 'Add bonus'}
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-2 pt-1">
+              <button type="button" onClick={() => { setShowBonus(false); setBonusError(null) }}
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" disabled={bonusBusy}
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                {bonusBusy ? 'Saving…' : 'Add bonus'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Recent payouts */}
