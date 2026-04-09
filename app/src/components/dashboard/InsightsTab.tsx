@@ -1,16 +1,14 @@
 /**
  * InsightsTab — Parent behavioural dashboard for each child.
  *
- * Sections:
- *  1. Child selector (only when family has > 1 child)
- *  2. Period toggle (This week / This month / All time)
- *  3. Balance status bar (available | saved in goals | lifetime earned)
- *  4. Mentor Executive Briefing slot
- *     - Discovery phase: "Observation Phase: Initializing" with coaching strategy
- *     - Live phase: reserved AI slot placeholder
- *  5. Three SVG arc gauges: Responsibility · Consistency · Savings Orientation
- *  6. Effort Preference habit tag
- *  7. Supporting stats row
+ * Layout order:
+ *  1. Child selector (multi-child only)
+ *  2. Period toggle
+ *  3. Balance bar (available | allocated savings | lifetime)
+ *  4. KPI gauges (Responsibility · Consistency · Savings)
+ *  5. Effort preference tag
+ *  6. PremiumMentorCard(s) — carousel when > 1 card
+ *  7. Period breakdown stats
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -18,9 +16,65 @@ import type { ChildRecord, InsightsData, TrendEntry, MentorBriefing } from '../.
 import { getInsights, formatCurrency } from '../../lib/api'
 import { AvatarSVG } from '../../lib/avatars'
 
+// ── Premium Shell CSS — injected once ────────────────────────────────────────
+// Animated gradient border uses a pseudo-element trick via a wrapper div +
+// a conic-gradient that rotates. Because Tailwind can't do this, we inject
+// a <style> block on first render.
+
+const PREMIUM_STYLES = `
+@keyframes premiumBorderSpin {
+  0%   { --border-angle: 0deg; }
+  100% { --border-angle: 360deg; }
+}
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.premium-shell {
+  --border-angle: 0deg;
+  animation: premiumBorderSpin 4s linear infinite;
+  background:
+    linear-gradient(#0f1a14, #0f1a14) padding-box,
+    conic-gradient(
+      from var(--border-angle),
+      #0d9488 0%,
+      #d4a017 30%,
+      #0d9488 60%,
+      #d4a017 80%,
+      #0d9488 100%
+    ) border-box;
+  border: 1.5px solid transparent;
+}
+.premium-shell-static {
+  background:
+    linear-gradient(#0f1a14, #0f1a14) padding-box,
+    linear-gradient(135deg, #0d9488 0%, #d4a017 50%, #0d9488 100%) border-box;
+  border: 1.5px solid transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .premium-shell { animation: none; }
+  .premium-shell { background:
+    linear-gradient(#0f1a14, #0f1a14) padding-box,
+    linear-gradient(135deg, #0d9488 0%, #d4a017 50%, #0d9488 100%) border-box;
+  }
+}
+`
+
+let stylesInjected = false
+function injectPremiumStyles() {
+  if (stylesInjected || typeof document === 'undefined') return
+  const el = document.createElement('style')
+  el.textContent = PREMIUM_STYLES
+  document.head.appendChild(el)
+  stylesInjected = true
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 interface Props {
   familyId: string
-  child: ChildRecord
+  child:    ChildRecord
   children: ChildRecord[]
 }
 
@@ -32,6 +86,8 @@ const PERIOD_LABELS: Record<Period, string> = {
   all:   'All time',
 }
 
+// ── Root component ────────────────────────────────────────────────────────────
+
 export function InsightsTab({ familyId, child, children }: Props) {
   const [selectedChild, setSelectedChild] = useState<ChildRecord>(child)
   const [period,        setPeriod]        = useState<Period>('week')
@@ -39,7 +95,7 @@ export function InsightsTab({ familyId, child, children }: Props) {
   const [loading,       setLoading]       = useState(true)
   const [error,         setError]         = useState(false)
 
-  // Sync if parent switches active child via header selector
+  useEffect(() => { injectPremiumStyles() }, [])
   useEffect(() => { setSelectedChild(child) }, [child.id])
 
   const load = useCallback(async () => {
@@ -57,12 +113,12 @@ export function InsightsTab({ familyId, child, children }: Props) {
 
   useEffect(() => { load() }, [load])
 
-  const currency = 'GBP' // TODO: pull from child record once currency is stored there
+  const currency = 'GBP'
 
   return (
     <div className="space-y-4">
 
-      {/* ── Child selector (multi-child families only) ── */}
+      {/* ── Child selector ── */}
       {children.length > 1 && (
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
           {children.map(c => (
@@ -113,7 +169,7 @@ export function InsightsTab({ familyId, child, children }: Props) {
   )
 }
 
-// ── InsightsDashboard ────────────────────────────────────────────────────────
+// ── InsightsDashboard ─────────────────────────────────────────────────────────
 
 function InsightsDashboard({
   data, child, currency,
@@ -121,10 +177,10 @@ function InsightsDashboard({
   return (
     <div className="space-y-4">
 
-      {/* ── Balance status bar ── */}
+      {/* 1. Balance bar */}
       <BalanceBar data={data} currency={currency} />
 
-      {/* ── KPI gauges — shown first for at-a-glance status ── */}
+      {/* 2. KPI gauges — at-a-glance before the AI narrative */}
       <div className="grid grid-cols-3 gap-2.5">
         <GaugeCard
           label="Responsibility"
@@ -136,7 +192,7 @@ function InsightsDashboard({
         />
         <GaugeCard
           label="Consistency"
-          sublabel="Weekly volume stability"
+          sublabel="Weekly volume"
           value={data.is_discovery_phase ? null : data.consistency_score}
           isDiscovery={data.is_discovery_phase}
           color="#f59e0b"
@@ -144,29 +200,29 @@ function InsightsDashboard({
         />
         <GaugeCard
           label="Savings"
-          sublabel="Of disposable income saved"
+          sublabel="Of income saved"
           value={data.is_discovery_phase ? null : data.savings_consistency}
           isDiscovery={data.is_discovery_phase}
-          color="#8b5cf6"
+          color="#10b981"
           trend={data.trends?.horizon ?? null}
         />
       </div>
 
-      {/* ── Effort preference tag ── */}
+      {/* 3. Effort preference tag */}
       {!data.is_discovery_phase && data.effort_preference && (
         <EffortTag preference={data.effort_preference} child={child} />
       )}
 
-      {/* ── Mentor Executive Briefing — always visible, glassmorphism ── */}
-      <BriefingSlot data={data} child={child} />
+      {/* 4. Premium Mentor section */}
+      <MentorSection data={data} child={child} />
 
-      {/* ── Supporting stats ── */}
+      {/* 5. Period stats */}
       <SupportingStats data={data} currency={currency} />
     </div>
   )
 }
 
-// ── Balance status bar ────────────────────────────────────────────────────────
+// ── Balance bar ───────────────────────────────────────────────────────────────
 
 function BalanceBar({ data, currency }: { data: InsightsData; currency: string }) {
   return (
@@ -185,7 +241,7 @@ function BalanceBar({ data, currency }: { data: InsightsData; currency: string }
           position="center"
         />
         <BalanceStat
-          label="Lifetime earned"
+          label="Lifetime Earned"
           value={formatCurrency(data.lifetime_earned_pence, currency)}
           valueColor="text-[var(--color-text)]"
           position="right"
@@ -207,212 +263,317 @@ function BalanceStat({
   )
 }
 
-// ── Mentor Executive Briefing slot ───────────────────────────────────────────
+// ── Mentor section — carousel when > 1 card ───────────────────────────────────
 
-function BriefingSlot({ data, child }: { data: InsightsData; child: ChildRecord }) {
+function MentorSection({ data, child }: { data: InsightsData; child: ChildRecord }) {
   const name = child.display_name.split(' ')[0]
 
+  // Discovery phase: single initialisation card
   if (data.is_discovery_phase) {
+    return <DiscoveryCard data={data} name={name} />
+  }
+
+  // Live phase: single briefing card (carousel-ready: wrap in array)
+  const cards = data.mentor_briefing
+    ? [{ id: 'coach', briefing: data.mentor_briefing, persona: 'coach' as const }]
+    : []
+
+  if (cards.length === 0) {
+    return <PremiumShell><BriefingSkeleton /></PremiumShell>
+  }
+
+  // Single card — no carousel chrome
+  if (cards.length === 1) {
     return (
-      <div className="relative rounded-2xl overflow-hidden"
-           style={{
-             background: 'color-mix(in_srgb, var(--brand-primary) 6%, var(--color-surface))',
-             border: '1px solid color-mix(in_srgb, var(--brand-primary) 30%, transparent)',
-             backdropFilter: 'blur(12px)',
-             WebkitBackdropFilter: 'blur(12px)',
-             boxShadow: '0 4px 24px color-mix(in_srgb, var(--brand-primary) 10%, transparent)',
-           }}>
-        {/* Teal gradient accent bar */}
-        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--brand-primary)] to-transparent" />
-
-        <div className="px-4 pt-4 pb-4">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
-                  Mentor Executive Briefing
-                </span>
-              </div>
-              <p className="text-[15px] font-extrabold text-[var(--color-text)] tracking-tight">
-                Observation Phase: Initializing
-              </p>
-            </div>
-            <div className="shrink-0 w-9 h-9 rounded-xl bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-            </div>
-          </div>
-
-          {/* Body */}
-          <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed mb-3">
-            To provide high-integrity coaching, I need to observe{' '}
-            <strong className="text-[var(--color-text)] font-semibold">{name}'s</strong>{' '}
-            work and spending habits for a few more days. To accelerate this process, I recommend:
-          </p>
-
-          {/* Recommendations */}
-          <div className="space-y-2">
-            <RecommendationRow
-              icon={
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                </svg>
-              }
-              text="Assign 2–3 small daily tasks to establish a Consistency baseline."
-            />
-            <RecommendationRow
-              icon={
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-                </svg>
-              }
-              text={`Encourage ${name} to set their first Savings Goal to define their Planning Horizon.`}
-            />
-            <RecommendationRow
-              icon={
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                  <circle cx="12" cy="13" r="4"/>
-                </svg>
-              }
-              text="Enable Photo Proof on at least one task to begin measuring Responsibility."
-            />
-          </div>
-
-          {/* Progress indicator */}
-          <div className="mt-3.5 pt-3 border-t border-[var(--color-border)]">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] text-[var(--color-text-muted)]">Baseline progress</span>
-              <span className="text-[11px] font-semibold text-[var(--color-text)] tabular-nums">
-                {data.all_time_completed} / 3 tasks
-              </span>
-            </div>
-            <div className="h-1.5 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[var(--brand-primary)] rounded-full transition-all duration-700"
-                style={{ width: `${Math.min(100, Math.round((data.all_time_completed / 3) * 100))}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <LiveBriefingCard
+        briefing={cards[0].briefing}
+        child={child}
+        name={name}
+        persona="coach"
+        isTeenMode={data.velocity_context?.mode === 'professional'}
+      />
     )
   }
 
-  // Live phase — AI briefing card
-  return <LiveBriefingCard data={data} child={child} name={name} />
+  // Multiple cards — horizontal carousel
+  return <MentorCarousel cards={cards} child={child} name={name} data={data} />
+}
+
+// ── Carousel (for when multiple AI cards exist) ───────────────────────────────
+
+function MentorCarousel({
+  cards, child, name, data,
+}: {
+  cards: { id: string; briefing: MentorBriefing; persona: 'coach' | 'accountant' | 'analyst' }[]
+  child: ChildRecord
+  name:  string
+  data:  InsightsData
+}) {
+  const [active, setActive] = useState(0)
+  const trackRef = useRef<HTMLDivElement>(null)
+
+  function scrollTo(idx: number) {
+    setActive(idx)
+    trackRef.current?.children[idx]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Scroll track */}
+      <div
+        ref={trackRef}
+        className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        onScroll={e => {
+          const el = e.currentTarget
+          const idx = Math.round(el.scrollLeft / el.clientWidth)
+          setActive(idx)
+        }}
+      >
+        {cards.map(card => (
+          <div key={card.id} className="snap-center shrink-0 w-full">
+            <LiveBriefingCard
+              briefing={card.briefing}
+              child={child}
+              name={name}
+              persona={card.persona}
+              isTeenMode={data.velocity_context?.mode === 'professional'}
+            />
+          </div>
+        ))}
+      </div>
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-1.5">
+        {cards.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => scrollTo(i)}
+            className={`rounded-full transition-all duration-200 cursor-pointer ${
+              i === active ? 'w-4 h-1.5 bg-[var(--brand-primary)]' : 'w-1.5 h-1.5 bg-[var(--color-border)]'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Premium Shell wrapper ─────────────────────────────────────────────────────
+
+function PremiumShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative rounded-2xl premium-shell overflow-hidden"
+         style={{ boxShadow: '0 0 32px rgba(13,148,136,0.15), 0 4px 16px rgba(0,0,0,0.3)' }}>
+      {/* Radial glow layer */}
+      <div className="absolute inset-0 pointer-events-none"
+           style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(13,148,136,0.12) 0%, transparent 70%)' }} />
+      {children}
+    </div>
+  )
+}
+
+// ── Discovery card ────────────────────────────────────────────────────────────
+
+function DiscoveryCard({ data, name }: { data: InsightsData; name: string }) {
+  return (
+    <PremiumShell>
+      <div className="px-4 pt-5 pb-4 relative z-10">
+
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            {/* Mentor avatar */}
+            <MentorAvatar />
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#9ca3af' }}>
+                  Orchard Mentor
+                </span>
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              </div>
+              <p className="text-[15px] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+                Getting to know {name}
+              </p>
+            </div>
+          </div>
+          <ProBadge />
+        </div>
+
+        {/* Body — advisor prose style */}
+        <p className="text-[13px] leading-relaxed mb-4" style={{ color: '#a7c4b5' }}>
+          I'm building a picture of how <span style={{ color: '#e2f5ee', fontWeight: 600 }}>{name}</span> approaches their responsibilities.
+          Once I've seen a few more completed tasks, I'll have enough to give you genuinely useful, specific coaching — not generic tips.
+        </p>
+        <p className="text-[12px] leading-relaxed mb-4" style={{ color: '#6b9e87' }}>
+          To speed this up, try these three things this week:
+        </p>
+
+        {/* Action list */}
+        <div className="space-y-2.5 mb-4">
+          <DiscoveryAction
+            step="01"
+            text={`Assign 2–3 small daily tasks so I can spot ${name}'s consistency patterns.`}
+          />
+          <DiscoveryAction
+            step="02"
+            text={`Help ${name} set a savings goal — even a small one — so I can track their planning instincts.`}
+          />
+          <DiscoveryAction
+            step="03"
+            text="Turn on photo check-in for one task, so I can measure follow-through accurately."
+          />
+        </div>
+
+        {/* Baseline progress */}
+        <div className="pt-3.5 border-t" style={{ borderColor: 'rgba(13,148,136,0.2)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-semibold" style={{ color: '#6b9e87' }}>Baseline progress</span>
+            <span className="text-[11px] font-bold tabular-nums" style={{ color: '#a7c4b5' }}>
+              {data.all_time_completed} / 3 tasks
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${Math.min(100, Math.round((data.all_time_completed / 3) * 100))}%`,
+                background: 'linear-gradient(90deg, #0d9488, #d4a017)',
+              }}
+            />
+          </div>
+        </div>
+
+      </div>
+    </PremiumShell>
+  )
+}
+
+function DiscoveryAction({ step, text }: { step: string; text: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="shrink-0 text-[9px] font-black tracking-wider tabular-nums mt-0.5"
+            style={{ color: '#0d9488' }}>
+        {step}
+      </span>
+      <p className="text-[12px] leading-relaxed" style={{ color: '#a7c4b5' }}>{text}</p>
+    </div>
+  )
 }
 
 // ── Live Briefing Card ────────────────────────────────────────────────────────
 
+const PERSONA_CONFIG = {
+  coach:      { label: 'Coach',      accent: '#0d9488', accentDim: 'rgba(13,148,136,0.15)'  },
+  accountant: { label: 'Accountant', accent: '#d4a017', accentDim: 'rgba(212,160,23,0.15)'  },
+  analyst:    { label: 'Analyst',    accent: '#8b5cf6', accentDim: 'rgba(139,92,246,0.15)'  },
+}
+
 function LiveBriefingCard({
-  data, child, name,
-}: { data: InsightsData; child: ChildRecord; name: string }) {
-  const briefing = data.mentor_briefing
-  const animate  = briefing?.source === 'ai'
-
+  briefing, child, name, persona, isTeenMode,
+}: {
+  briefing:   MentorBriefing
+  child:      ChildRecord
+  name:       string
+  persona:    'coach' | 'accountant' | 'analyst'
+  isTeenMode: boolean
+}) {
   const [modalOpen, setModalOpen] = useState(false)
-
-  // If no briefing yet (shouldn't happen outside discovery, but guard anyway)
-  if (!briefing) {
-    return (
-      <div className="relative rounded-2xl overflow-hidden"
-           style={{
-             background: 'color-mix(in_srgb, var(--brand-primary) 6%, var(--color-surface))',
-             border: '1px solid color-mix(in_srgb, var(--brand-primary) 30%, transparent)',
-             backdropFilter: 'blur(12px)',
-             WebkitBackdropFilter: 'blur(12px)',
-             boxShadow: '0 4px 24px color-mix(in_srgb, var(--brand-primary) 10%, transparent)',
-           }}>
-        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--brand-primary)] to-transparent" />
-        <BriefingSkeleton />
-      </div>
-    )
-  }
-
-  const isTeenMode = data.velocity_context?.mode === 'professional'
+  const animate = briefing.source === 'ai'
+  const p = PERSONA_CONFIG[persona]
 
   return (
     <>
-      <div className="relative rounded-2xl overflow-hidden"
-           style={{
-             background: 'color-mix(in_srgb, var(--brand-primary) 6%, var(--color-surface))',
-             border: '1px solid color-mix(in_srgb, var(--brand-primary) 30%, transparent)',
-             backdropFilter: 'blur(12px)',
-             WebkitBackdropFilter: 'blur(12px)',
-             boxShadow: '0 4px 24px color-mix(in_srgb, var(--brand-primary) 10%, transparent)',
-           }}>
-        {/* Luminous teal accent line */}
-        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--brand-primary)] to-transparent" />
+      <PremiumShell>
+        <div className="px-4 pt-5 pb-4 relative z-10 space-y-4">
 
-        <div className="px-4 pt-4 pb-4 space-y-3">
           {/* Header */}
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-[var(--brand-primary)]" />
-                <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
-                  Mentor Briefing
-                </span>
-                <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
-                      style={{ background: 'color-mix(in_srgb, var(--brand-primary) 15%, transparent)', color: 'var(--brand-primary)' }}>
-                  Coach
-                </span>
+            <div className="flex items-center gap-3">
+              <MentorAvatar accent={p.accent} />
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                    Orchard Mentor
+                  </span>
+                  {/* Persona lens pill */}
+                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                        style={{ background: p.accentDim, color: p.accent }}>
+                    {p.label}
+                  </span>
+                </div>
+                <p className="text-[15px] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+                  This Week's Coaching Note
+                </p>
               </div>
-              <p className="text-[15px] font-extrabold text-[var(--color-text)] tracking-tight">
-                Weekly Behavior Analysis
-              </p>
             </div>
-            <div className="shrink-0 w-9 h-9 rounded-xl bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] flex items-center justify-center">
-              {/* Leaf / insight icon */}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
-                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+            <ProBadge />
+          </div>
+
+          {/* Advisory prose — Problem → Insight → Action, no section headers */}
+          <div className="space-y-2.5">
+            <TypewriterText
+              text={briefing.observation}
+              animate={animate}
+              delay={0}
+              style={{ fontSize: 13, lineHeight: 1.65, color: '#c4ddd4', fontWeight: 500 }}
+            />
+            <TypewriterText
+              text={briefing.behavioral_root}
+              animate={animate}
+              delay={animate ? briefing.observation.length * 18 + 300 : 0}
+              style={{ fontSize: 13, lineHeight: 1.65, color: '#8ab8a4' }}
+            />
+          </div>
+
+          {/* The Nudge — highlighted action block */}
+          <div className="rounded-xl px-3.5 py-3"
+               style={{ background: 'rgba(13,148,136,0.12)', border: '1px solid rgba(13,148,136,0.2)' }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              {/* Sparkle icon */}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
               </svg>
+              <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: '#0d9488' }}>
+                Recommended action
+              </span>
             </div>
+            <p className="text-[13px] leading-relaxed" style={{ color: '#e2f5ee' }}>
+              {briefing.the_nudge}
+            </p>
           </div>
 
-          {/* Observation */}
-          <div>
-            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">Observation</p>
-            <TypewriterText text={briefing.observation} animate={animate} className="text-[13px] text-[var(--color-text)] leading-relaxed font-medium" />
+          {/* CTA row */}
+          <div className="flex gap-2 pt-0.5">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer transition-opacity hover:opacity-85 active:opacity-70"
+              style={{ background: 'linear-gradient(135deg, #0d9488, #0a7c70)', color: '#fff' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <path d="M8.59 13.51 15.42 17.49M15.41 6.51 8.59 10.49"/>
+              </svg>
+              Share with {name}
+            </button>
+            <button
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer transition-opacity hover:opacity-85"
+              style={{ background: 'rgba(255,255,255,0.07)', color: '#a7c4b5', border: '1px solid rgba(255,255,255,0.1)' }}
+              onClick={() => {/* future: deep-link to relevant tab */}}
+            >
+              View trends
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
           </div>
 
-          {/* Behavioural Root */}
-          <div>
-            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">Behavioural Root</p>
-            <TypewriterText text={briefing.behavioral_root} animate={animate} delay={animate ? briefing.observation.length * 18 + 200 : 0} className="text-[13px] text-[var(--color-text-muted)] leading-relaxed" />
-          </div>
+          {/* Pro attribution footer */}
+          <p className="text-[10px] text-center" style={{ color: 'rgba(107,158,135,0.7)' }}>
+            ✦ Orchard Pro · AI-generated coaching note
+          </p>
 
-          {/* Divider */}
-          <div className="border-t border-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)]" />
-
-          {/* The Nudge */}
-          <div>
-            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">The Nudge</p>
-            <p className="text-[13px] text-[var(--color-text)] leading-relaxed">{briefing.the_nudge}</p>
-          </div>
-
-          {/* Share button */}
-          <button
-            onClick={() => setModalOpen(true)}
-            className="w-full mt-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90 active:opacity-80"
-            style={{ background: 'var(--brand-primary)' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-              <path d="M8.59 13.51 15.42 17.49M15.41 6.51 8.59 10.49"/>
-            </svg>
-            Share Nudge with {name}
-          </button>
         </div>
-      </div>
+      </PremiumShell>
 
-      {/* Modal */}
       {modalOpen && (
         <ShareNudgeModal
           briefing={briefing}
@@ -425,22 +586,45 @@ function LiveBriefingCard({
   )
 }
 
-function RecommendationRow({ icon, text }: { icon: React.ReactNode; text: string }) {
+// ── Mentor Avatar ─────────────────────────────────────────────────────────────
+
+function MentorAvatar({ accent = '#0d9488' }: { accent?: string }) {
   return (
-    <div className="flex items-start gap-2.5">
-      <div className="shrink-0 w-5 h-5 rounded-md bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] text-[var(--brand-primary)] flex items-center justify-center mt-0.5">
-        {icon}
-      </div>
-      <p className="text-[12px] text-[var(--color-text)] leading-relaxed">{text}</p>
+    <div className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
+         style={{
+           background: `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.15), transparent 60%), ${accent}22`,
+           border: `1.5px solid ${accent}55`,
+         }}>
+      {/* Leaf / spark mark */}
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
+        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+      </svg>
     </div>
+  )
+}
+
+// ── PRO badge ─────────────────────────────────────────────────────────────────
+
+function ProBadge() {
+  return (
+    <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
+          style={{
+            background: 'rgba(212,160,23,0.15)',
+            color:      '#d4a017',
+            border:     '1px solid rgba(212,160,23,0.3)',
+            letterSpacing: '0.1em',
+          }}>
+      ✦ Pro
+    </span>
   )
 }
 
 // ── Typewriter text ───────────────────────────────────────────────────────────
 
 function TypewriterText({
-  text, animate, delay = 0, className,
-}: { text: string; animate: boolean; delay?: number; className?: string }) {
+  text, animate, delay = 0, style,
+}: { text: string; animate: boolean; delay?: number; style?: React.CSSProperties }) {
   const [displayed, setDisplayed] = useState(animate ? '' : text)
   const frameRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -448,7 +632,7 @@ function TypewriterText({
     if (!animate) { setDisplayed(text); return }
     setDisplayed('')
     let i = 0
-    const CHAR_DELAY = 18 // ms per character
+    const CHAR_DELAY = 16
 
     const start = setTimeout(() => {
       const tick = () => {
@@ -467,24 +651,28 @@ function TypewriterText({
     }
   }, [text, animate, delay])
 
-  return <p className={className}>{displayed}<span className="opacity-0">.</span></p>
+  return <p style={style}>{displayed}<span style={{ opacity: 0 }}>.</span></p>
 }
 
-// ── Briefing skeleton (shown when briefing is null post-discovery) ─────────────
+// ── Briefing skeleton ─────────────────────────────────────────────────────────
 
 function BriefingSkeleton() {
   return (
-    <div className="px-4 pt-4 pb-4 space-y-3 animate-pulse">
-      <div className="h-3 w-32 bg-[var(--color-surface-alt)] rounded-full" />
-      <div className="h-5 w-48 bg-[var(--color-surface-alt)] rounded-full" />
-      <div className="space-y-1.5">
-        <div className="h-3 w-full bg-[var(--color-surface-alt)] rounded-full" />
-        <div className="h-3 w-4/5 bg-[var(--color-surface-alt)] rounded-full" />
+    <div className="px-4 pt-5 pb-4 space-y-3 animate-pulse">
+      <div className="flex items-center gap-3 mb-1">
+        <div className="w-9 h-9 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+        <div className="space-y-1.5">
+          <div className="h-2 w-24 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          <div className="h-3.5 w-40 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+        </div>
       </div>
-      <div className="space-y-1.5">
-        <div className="h-3 w-full bg-[var(--color-surface-alt)] rounded-full" />
-        <div className="h-3 w-3/5 bg-[var(--color-surface-alt)] rounded-full" />
+      <div className="space-y-2">
+        {[1, 0.8, 0.9, 0.6].map((w, i) => (
+          <div key={i} className="h-2.5 rounded-full" style={{ width: `${w * 100}%`, background: 'rgba(255,255,255,0.06)' }} />
+        ))}
       </div>
+      <div className="h-16 rounded-xl" style={{ background: 'rgba(13,148,136,0.08)' }} />
+      <div className="h-10 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }} />
     </div>
   )
 }
@@ -494,52 +682,45 @@ function BriefingSkeleton() {
 function ShareNudgeModal({
   briefing, child, isTeenMode, onClose,
 }: {
-  briefing: MentorBriefing
-  child: ChildRecord
+  briefing:   MentorBriefing
+  child:      ChildRecord
   isTeenMode: boolean
-  onClose: () => void
+  onClose:    () => void
 }) {
   const name = child.display_name.split(' ')[0]
   const [copied, setCopied] = useState(false)
 
   const message = isTeenMode
-    ? `Hey ${name}, your consistency this week is building real momentum. We're thinking of introducing a High-Integrity Bonus for your next streak — it tracks first-time passes, which is the metric that matters most in the real world. Worth a conversation? 🧭`
-    : `Hey ${name}! Every task you finish is like watering the tree — you might not see it grow day by day, but the roots are getting stronger. We've spotted some great work in the Orchard this week. Keep it up and the harvest will come! 🌱`
+    ? `Hey ${name}, your consistency this week is building real momentum. We're thinking of introducing a bonus for your next streak — it tracks first-time completions, which is the skill that matters most long-term. Worth a conversation? 🧭`
+    : `Hey ${name}! Every task you finish is a step forward — you might not notice it day to day, but the effort is adding up. We spotted some great work this week. Keep going! 🌱`
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(message)
       setCopied(true)
       setTimeout(() => setCopied(false), 2500)
-    } catch {
-      // Fallback: select text for manual copy
-    }
+    } catch { /* silent */ }
   }
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.45)' }}
+      style={{ background: 'rgba(0,0,0,0.55)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl overflow-hidden shadow-xl">
-        {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[var(--color-border)]">
           <div>
-            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Share Nudge</p>
-            <p className="text-[15px] font-extrabold text-[var(--color-text)] tracking-tight">Draft Message for {name}</p>
+            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Share coaching note</p>
+            <p className="text-[15px] font-extrabold text-[var(--color-text)] tracking-tight">Message for {name}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer transition-colors"
-          >
+          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 6 6 18M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        {/* Draft message */}
         <div className="px-4 py-3.5">
           <div
             className="rounded-xl px-3.5 py-3 text-[13px] leading-relaxed text-[var(--color-text)] border border-[var(--color-border)]"
@@ -547,41 +728,24 @@ function ShareNudgeModal({
           >
             {message}
           </div>
-
-          {/* Nudge source label */}
           <p className="text-[10px] text-[var(--color-text-muted)] mt-2 text-center">
             Based on: "{briefing.the_nudge.length > 72 ? briefing.the_nudge.slice(0, 72) + '…' : briefing.the_nudge}"
           </p>
         </div>
 
-        {/* Copy button */}
         <div className="px-4 pb-4 space-y-2">
           <button
             onClick={handleCopy}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90 active:opacity-80"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90"
             style={{ background: copied ? '#16a34a' : 'var(--brand-primary)' }}
           >
             {copied ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6 9 17l-5-5"/>
-                </svg>
-                Copied to clipboard
-              </>
+              <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Copied</>
             ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-                </svg>
-                Copy Message
-              </>
+              <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy Message</>
             )}
           </button>
-
-          {/* Mentor attribution */}
-          <p className="text-[10px] text-[var(--color-text-muted)] text-center">
-            Drafted by your Orchard Mentor.
-          </p>
+          <p className="text-[10px] text-[var(--color-text-muted)] text-center">✦ Drafted by your Orchard Mentor</p>
         </div>
       </div>
     </div>
@@ -592,21 +756,16 @@ function ShareNudgeModal({
 
 function TrendIndicator({ trend }: { trend: TrendEntry | null }) {
   if (!trend || trend.direction === null) return null
-  if (trend.direction === 'up') {
-    return (
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 19V5M5 12l7-7 7 7"/>
-      </svg>
-    )
-  }
-  if (trend.direction === 'down') {
-    return (
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 5v14M5 12l7 7 7-7"/>
-      </svg>
-    )
-  }
-  // flat
+  if (trend.direction === 'up') return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 19V5M5 12l7-7 7 7"/>
+    </svg>
+  )
+  if (trend.direction === 'down') return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+  )
   return (
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 12h14"/>
@@ -617,98 +776,55 @@ function TrendIndicator({ trend }: { trend: TrendEntry | null }) {
 function GaugeCard({
   label, sublabel, value, isDiscovery, color, trend,
 }: {
-  label: string
-  sublabel: string
-  value: number | null
-  isDiscovery: boolean
-  color: string
-  trend: TrendEntry | null
+  label: string; sublabel: string; value: number | null
+  isDiscovery: boolean; color: string; trend: TrendEntry | null
 }) {
-  const size   = 72
-  const stroke = 7
-  const r      = (size - stroke) / 2
-  const cx     = size / 2
-  const cy     = size / 2
-
-  // Arc spans 220° (from 160° to 380° = 20° past horizontal right)
-  const arcDeg = 220
-  const startAngle = 160
-  const endAngle   = startAngle + arcDeg
+  const size = 72, stroke = 7
+  const r = (size - stroke) / 2
+  const cx = size / 2, cy = size / 2
+  const arcDeg = 220, startAngle = 160, endAngle = startAngle + arcDeg
 
   function polarToCartesian(angle: number) {
     const rad = (angle * Math.PI) / 180
-    return {
-      x: cx + r * Math.cos(rad),
-      y: cy + r * Math.sin(rad),
-    }
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
   }
 
   function arcPath(fromDeg: number, toDeg: number) {
-    const s   = polarToCartesian(fromDeg)
-    const e   = polarToCartesian(toDeg)
-    const lg  = toDeg - fromDeg > 180 ? 1 : 0
-    return `M ${s.x} ${s.y} A ${r} ${r} 0 ${lg} 1 ${e.x} ${e.y}`
+    const s = polarToCartesian(fromDeg), e = polarToCartesian(toDeg)
+    return `M ${s.x} ${s.y} A ${r} ${r} 0 ${toDeg - fromDeg > 180 ? 1 : 0} 1 ${e.x} ${e.y}`
   }
 
-  const filled    = isDiscovery || value === null ? 0 : value
-  const fillEnd   = startAngle + (arcDeg * filled) / 100
+  const filled   = isDiscovery || value === null ? 0 : value
+  const fillEnd  = startAngle + (arcDeg * filled) / 100
   const trackPath = arcPath(startAngle, endAngle)
   const fillPath  = filled > 0 ? arcPath(startAngle, fillEnd) : null
-
-  const displayText = isDiscovery
-    ? value === null
-      ? '—'
-      : `${value}%`
-    : value === null
-    ? '—'
-    : `${value}%`
-
-  const subText = isDiscovery ? 'Establishing...' : value === null ? 'No data' : null
+  const displayText = value === null ? '—' : `${value}%`
+  const subText = isDiscovery ? 'Establishing…' : value === null ? 'No data' : null
 
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
-      {/* SVG arc */}
       <div className="relative">
         <svg width={size} height={size * 0.72} viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
-          {/* Track */}
-          <path
-            d={trackPath}
-            fill="none"
-            stroke="var(--color-surface-alt)"
-            strokeWidth={stroke}
-            strokeLinecap="round"
-          />
-          {/* Fill */}
+          <path d={trackPath} fill="none" stroke="var(--color-surface-alt)" strokeWidth={stroke} strokeLinecap="round" />
           {fillPath && !isDiscovery && (
-            <path
-              d={fillPath}
-              fill="none"
-              stroke={color}
-              strokeWidth={stroke}
-              strokeLinecap="round"
-            />
+            <path d={fillPath} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" />
           )}
         </svg>
-        {/* Centre label */}
         <div className="absolute inset-0 flex items-center justify-center">
           <span
-            className={`text-[14px] font-extrabold tabular-nums leading-none ${isDiscovery ? 'text-[var(--color-text-muted)]' : 'text-[var(--color-text)]'}`}
+            className={`text-[14px] font-extrabold tabular-nums leading-none ${isDiscovery ? 'text-[var(--color-text-muted)]' : ''}`}
             style={!isDiscovery && value !== null ? { color } : undefined}
           >
             {displayText}
           </span>
         </div>
       </div>
-
-      {/* Labels */}
       <div className="text-center">
         <div className="flex items-center justify-center gap-1">
           <p className="text-[11px] font-bold text-[var(--color-text)] leading-tight">{label}</p>
           {!isDiscovery && <TrendIndicator trend={trend} />}
         </div>
-        <p className="text-[9.5px] text-[var(--color-text-muted)] leading-tight mt-0.5">
-          {subText ?? sublabel}
-        </p>
+        <p className="text-[9.5px] text-[var(--color-text-muted)] leading-tight mt-0.5">{subText ?? sublabel}</p>
       </div>
     </div>
   )
@@ -716,41 +832,38 @@ function GaugeCard({
 
 // ── Effort preference tag ─────────────────────────────────────────────────────
 
-function EffortTag({
-  preference, child,
-}: { preference: 'high_yield' | 'steady'; child: ChildRecord }) {
+function EffortTag({ preference, child }: { preference: 'high_yield' | 'steady'; child: ChildRecord }) {
   const name = child.display_name.split(' ')[0]
-
-  const config = preference === 'high_yield'
+  const cfg = preference === 'high_yield'
     ? {
-        label: 'Preference: High-Yield / Heavy',
-        description: `${name} consistently chooses higher-value tasks. Strong work ethic; monitor for burnout on streaks.`,
-        bgColor: 'bg-[color-mix(in_srgb,#f59e0b_10%,transparent)]',
-        borderColor: 'border-[color-mix(in_srgb,#f59e0b_25%,transparent)]',
-        textColor: 'text-amber-700 dark:text-amber-400',
-        dotColor: 'bg-amber-400',
+        label:       'High-Yield Preference',
+        description: `${name} consistently picks higher-value tasks. Strong work ethic — keep an eye out for burnout during long streaks.`,
+        bg:          'bg-[color-mix(in_srgb,#f59e0b_10%,transparent)]',
+        border:      'border-[color-mix(in_srgb,#f59e0b_25%,transparent)]',
+        text:        'text-amber-700 dark:text-amber-400',
+        dot:         'bg-amber-400',
       }
     : {
-        label: 'Preference: Steady / Light',
-        description: `${name} gravitates toward routine, lower-value tasks. Reliable baseline; consider introducing stretch goals.`,
-        bgColor: 'bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)]',
-        borderColor: 'border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)]',
-        textColor: 'text-[var(--brand-primary)]',
-        dotColor: 'bg-[var(--brand-primary)]',
+        label:       'Steady Preference',
+        description: `${name} gravitates toward routine tasks. Reliable and consistent — try introducing a stretch goal to build ambition.`,
+        bg:          'bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)]',
+        border:      'border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)]',
+        text:        'text-[var(--brand-primary)]',
+        dot:         'bg-[var(--brand-primary)]',
       }
 
   return (
-    <div className={`${config.bgColor} ${config.borderColor} border rounded-2xl px-4 py-3 flex items-start gap-3`}>
-      <div className={`shrink-0 w-2 h-2 rounded-full ${config.dotColor} mt-1.5`} />
+    <div className={`${cfg.bg} ${cfg.border} border rounded-2xl px-4 py-3 flex items-start gap-3`}>
+      <div className={`shrink-0 w-2 h-2 rounded-full ${cfg.dot} mt-1.5`} />
       <div>
-        <p className={`text-[12px] font-bold ${config.textColor} uppercase tracking-wide`}>{config.label}</p>
-        <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-relaxed">{config.description}</p>
+        <p className={`text-[12px] font-bold ${cfg.text} uppercase tracking-wide`}>{cfg.label}</p>
+        <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-relaxed">{cfg.description}</p>
       </div>
     </div>
   )
 }
 
-// ── Supporting stats ─────────────────────────────────────────────────────────
+// ── Supporting stats ──────────────────────────────────────────────────────────
 
 function SupportingStats({ data, currency }: { data: InsightsData; currency: string }) {
   return (
@@ -759,12 +872,12 @@ function SupportingStats({ data, currency }: { data: InsightsData; currency: str
         <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Period breakdown</p>
       </div>
       <div className="grid grid-cols-2 divide-x divide-y divide-[var(--color-border)]">
-        <StatCell label="Tasks completed" value={String(data.tasks_completed)} />
-        <StatCell label="Needed revision"  value={String(data.tasks_revised)} />
-        <StatCell label="Earned"           value={formatCurrency(data.total_earned_pence, currency)} />
-        <StatCell label="Spent"            value={formatCurrency(data.total_spent_pence,  currency)} />
-        <StatCell label="Saved to goals"   value={formatCurrency(data.total_saved_pence,  currency)} />
-        <StatCell label="Planning horizon" value={data.planning_horizon !== null ? `${data.planning_horizon}%` : '—'} />
+        <StatCell label="Chores completed"  value={String(data.tasks_completed)} />
+        <StatCell label="Needed revision"   value={String(data.tasks_revised)} />
+        <StatCell label="Earned"            value={formatCurrency(data.total_earned_pence, currency)} />
+        <StatCell label="Spent"             value={formatCurrency(data.total_spent_pence,  currency)} />
+        <StatCell label="Saved to goals"    value={formatCurrency(data.total_saved_pence,  currency)} />
+        <StatCell label="Planning horizon"  value={data.planning_horizon !== null ? `${data.planning_horizon}%` : '—'} />
       </div>
     </div>
   )
@@ -785,13 +898,11 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-16" />
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-44" />
       <div className="grid grid-cols-3 gap-2.5">
-        {[0, 1, 2].map(i => (
-          <div key={i} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-28" />
-        ))}
+        {[0,1,2].map(i => <div key={i} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-28" />)}
       </div>
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-24" />
+      <div className="rounded-2xl h-56" style={{ background: 'rgba(15,26,20,0.8)', border: '1.5px solid rgba(13,148,136,0.3)' }} />
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-40" />
     </div>
   )
 }
@@ -803,10 +914,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-8 text-center space-y-3">
       <p className="text-[14px] font-semibold text-[var(--color-text)]">Unable to load insights</p>
       <p className="text-[12px] text-[var(--color-text-muted)]">Check your connection and try again.</p>
-      <button
-        onClick={onRetry}
-        className="text-[13px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer"
-      >
+      <button onClick={onRetry} className="text-[13px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
         Retry
       </button>
     </div>
