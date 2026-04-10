@@ -97,6 +97,7 @@ import {
   handleSetChildPin,
   handleLogout,
   handleMe,
+  handleMePatch,
 } from './routes/auth.js';
 import { requireAuth, requireRole, requireFamilyMatch } from './lib/middleware.js';
 import { checkTrialStatus, getTrialStatus } from './lib/trial.js';
@@ -283,6 +284,7 @@ async function route(request: Request, env: Env, method: string, path: string): 
 
   // ── Authenticated — any role ──────────────────────────────────
   if (path === '/auth/me'     && method === 'GET')  return withAuth(request, auth, env, handleMe);
+  if (path === '/auth/me'     && method === 'PATCH') return withAuth(request, auth, env, handleMePatch);
   if (path === '/auth/logout' && method === 'POST') return withAuth(request, auth, env, handleLogout);
 
   // Settings (any role — children can update their own avatar/theme)
