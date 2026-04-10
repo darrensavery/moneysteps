@@ -98,6 +98,9 @@ import {
   handleLogout,
   handleMe,
   handleMePatch,
+  handleFamilyLeads,
+  handleLeaveFamily,
+  handleDeleteFamily,
 } from './routes/auth.js';
 import { requireAuth, requireRole, requireFamilyMatch } from './lib/middleware.js';
 import { checkTrialStatus, getTrialStatus } from './lib/trial.js';
@@ -286,6 +289,11 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (path === '/auth/me'     && method === 'GET')  return withAuth(request, auth, env, handleMe);
   if (path === '/auth/me'     && method === 'PATCH') return withAuth(request, auth, env, handleMePatch);
   if (path === '/auth/logout' && method === 'POST') return withAuth(request, auth, env, handleLogout);
+
+  // Co-parent-aware account deletion — placed before trial check so expired-trial users can still delete
+  if (path === '/auth/family/leads' && method === 'GET')    return withAuth(request, auth, env, handleFamilyLeads);
+  if (path === '/auth/me/leave'     && method === 'DELETE') return withAuth(request, auth, env, handleLeaveFamily);
+  if (path === '/auth/family'       && method === 'DELETE') return withAuth(request, auth, env, handleDeleteFamily);
 
   // Settings (any role — children can update their own avatar/theme)
   if (path === '/api/settings' && method === 'GET')   return withAuth(request, auth, env, handleSettingsGet);
