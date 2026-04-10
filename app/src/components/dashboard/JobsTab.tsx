@@ -25,7 +25,7 @@ interface Props {
   child: ChildRecord
 }
 
-export function JobsTab({ familyId, child }: Props) {
+export function ChoresTab({ familyId, child }: Props) {
   const [chores, setChores]           = useState<Chore[]>([])
   const [archived, setArchived]       = useState<Chore[]>([])
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])

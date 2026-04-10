@@ -4,9 +4,9 @@ import type { ChildRecord } from '../lib/api'
 import { getChildren, getCompletions } from '../lib/api'
 import { getDeviceIdentity } from '../lib/deviceIdentity'
 import { AvatarSVG } from '../lib/avatars'
-import { JobsTab }     from '../components/dashboard/JobsTab'
+import { ChoresTab }   from '../components/dashboard/JobsTab'
 import { PendingTab }  from '../components/dashboard/PendingTab'
-import { HistoryTab }  from '../components/dashboard/HistoryTab'
+import { ActivityTab } from '../components/dashboard/HistoryTab'
 import { InsightsTab } from '../components/dashboard/InsightsTab'
 import { ParentSettingsTab } from '../components/dashboard/ParentSettingsTab'
 import { GoalBoostingTab }  from '../components/dashboard/GoalBoostingTab'
@@ -260,9 +260,9 @@ export function ParentDashboard() {
       <main className="flex-1 max-w-[560px] mx-auto w-full px-3.5 py-4">
         {activeChild ? (
           <>
-            {tab === 'chores'    && <JobsTab          familyId={familyId} child={activeChild} />}
+            {tab === 'chores'    && <ChoresTab        familyId={familyId} child={activeChild} />}
             {tab === 'approvals' && <PendingTab        familyId={familyId} child={activeChild} onCountChange={setPendingCount} />}
-            {tab === 'activity'  && <HistoryTab        familyId={familyId} child={activeChild} />}
+            {tab === 'activity'  && <ActivityTab       familyId={familyId} child={activeChild} />}
             {tab === 'insights'  && <InsightsTab       familyId={familyId} child={activeChild} children={children} />}
             {tab === 'goals'     && <GoalBoostingTab   familyId={familyId} child={activeChild} />}
           </>

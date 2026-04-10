@@ -18,7 +18,7 @@ const STATUS_STYLES: Record<string, { label: string; bg: string; text: string }>
   suggestion: { label: 'Suggestion', bg: 'bg-blue-100',   text: 'text-blue-700' },
 }
 
-export function HistoryTab({ familyId, child }: Props) {
+export function ActivityTab({ familyId, child }: Props) {
   const [history, setHistory]   = useState<Completion[]>([])
   const [payouts, setPayouts]   = useState<PayoutRecord[]>([])
   const [loading, setLoading]   = useState(true)
