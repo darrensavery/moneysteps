@@ -43,8 +43,16 @@ function MagicLinkVerifyScreen() {
 
     verifyMagicLink(token)
       .then(async (result) => {
+        // Store token only after getMe() confirms it's valid
         setToken(result.token)
-        const me = await getMe()
+        let me: Awaited<ReturnType<typeof getMe>>
+        try {
+          me = await getMe()
+        } catch (e) {
+          // Token invalid — clear it so the app doesn't get stuck
+          localStorage.removeItem('mc_token')
+          throw e
+        }
         localStorage.setItem('mc_family_id', me.family_id)
         localStorage.setItem('mc_user_id',   me.id)
         localStorage.setItem('mc_role',      me.role)

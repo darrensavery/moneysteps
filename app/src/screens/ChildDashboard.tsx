@@ -98,7 +98,7 @@ export function ChildDashboard() {
   const [submitErr,  setSubmitErr]  = useState<string | null>(null)
 
   const load = useCallback(async () => {
-    if (!familyId || !userId) { navigate('/'); return }
+    if (!familyId || !userId) { navigate('/lock'); return }
     setLoading(true)
     try {
       const [c, b, g, p, s] = await Promise.all([
@@ -139,13 +139,16 @@ export function ChildDashboard() {
         }, 80)
       }
     } catch {
-      navigate('/')
+      navigate('/lock')
     } finally {
       setLoading(false)
     }
   }, [familyId, userId, navigate])
 
   useEffect(() => { load() }, [load])
+
+  // Clean up goal bar timer on unmount
+  useEffect(() => () => { if (goalBarTimer.current) clearTimeout(goalBarTimer.current) }, [])
 
   // ── Grove planner helpers ──────────────────────────────────────────────────
 

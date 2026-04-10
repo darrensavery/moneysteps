@@ -1122,7 +1122,7 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
           onClick={() => {
             if (!window.confirm("Log out? Your family's data stays safe.")) return
             clearDeviceIdentity()
-            sessionStorage.clear()
+            sessionStorage.removeItem('mc_parent_tab')
             localStorage.removeItem('mc_parent_avatar')
             window.location.replace('/')
           }}
