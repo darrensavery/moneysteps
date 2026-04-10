@@ -87,7 +87,7 @@ export function ParentDashboard() {
   }
 
   return (
-    <div className="min-h-svh bg-[var(--color-bg)] flex flex-col">
+    <div className="min-h-svh bg-[var(--color-bg)] flex flex-col" style={{ overscrollBehaviorY: 'none' }}>
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-[0_1px_4px_rgba(0,0,0,.05)]">
         <div className="max-w-[560px] mx-auto px-3.5 py-3 flex items-center justify-between">

@@ -145,7 +145,11 @@ function MagicLinkVerifyScreen() {
 /** Root — cold start shows landing page, returning user goes to lock screen. */
 function RootGate() {
   const identity = getDeviceIdentity()
-  return identity ? <Navigate to="/lock" replace /> : <LandingGate />
+  // If identity exists, redirect immediately with no intermediate render.
+  // Rendering LandingGate even for one frame causes a visible flash on
+  // pull-to-refresh and after logout.
+  if (identity) return <Navigate to="/lock" replace />
+  return <LandingGate />
 }
 
 /** Guard dashboards — needs identity + session token, otherwise send to lock. */
