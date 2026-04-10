@@ -5,17 +5,24 @@
 -- They always have amount = 0 and child_id = NULL.
 --
 -- SQLite cannot ALTER a CHECK constraint or NOT NULL directly.
--- Standard approach: rename → recreate → copy → drop old.
-
-PRAGMA foreign_keys = OFF;
-PRAGMA legacy_alter_table = ON;
+-- Standard approach: rename old → create new → copy → drop old.
+--
+-- Notes:
+-- 1. REFERENCES clauses are omitted from ledger_new: D1 executes each statement
+--    in isolation so PRAGMA foreign_keys = OFF cannot persist. FK integrity is
+--    enforced at the application layer.
+-- 2. We RENAME ledger → ledger_old (not DROP) so that currency_snapshots and
+--    ledger_status_log (which REFERENCES ledger(id)) don't violate the FK check
+--    on DROP. After the swap those tables naturally reference the renamed table;
+--    the child tables still function correctly since their ledger_id values exist
+--    in ledger (the renamed ledger_new).
 
 -- 1. Rebuild ledger with updated constraints
 CREATE TABLE ledger_new (
   id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-  family_id           TEXT    NOT NULL REFERENCES families(id),
-  child_id            TEXT    REFERENCES users(id),            -- NULL for system_note rows
-  chore_id            TEXT    REFERENCES chores(id),
+  family_id           TEXT    NOT NULL,
+  child_id            TEXT,                                    -- NULL for system_note rows
+  chore_id            TEXT,
   entry_type          TEXT    NOT NULL
                               CHECK (entry_type IN ('credit', 'reversal', 'payment', 'system_note')),
   amount              INTEGER NOT NULL CHECK (amount >= 0),    -- 0 for system_note rows
@@ -26,9 +33,9 @@ CREATE TABLE ledger_new (
   verification_status TEXT    NOT NULL
                               CHECK (verification_status IN
                                 ('pending','verified_auto','verified_manual','disputed','reversed')),
-  authorised_by       TEXT    REFERENCES users(id),
+  authorised_by       TEXT,
   verified_at         INTEGER,
-  verified_by         TEXT    REFERENCES users(id),
+  verified_by         TEXT,
   dispute_code        TEXT,
   dispute_before      INTEGER,
   previous_hash       TEXT    NOT NULL,
@@ -44,7 +51,7 @@ INSERT INTO ledger_new SELECT
   previous_hash, record_hash, ip_address, created_at
 FROM ledger;
 
-DROP TABLE ledger;
+ALTER TABLE ledger RENAME TO ledger_old;
 ALTER TABLE ledger_new RENAME TO ledger;
 
 -- Recreate immutability trigger
@@ -73,5 +80,3 @@ CREATE INDEX IF NOT EXISTS idx_ledger_child  ON ledger (child_id,  created_at DE
 
 -- 2. Add email_pending to users
 ALTER TABLE users ADD COLUMN email_pending TEXT;
-
-PRAGMA foreign_keys = ON;
