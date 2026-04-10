@@ -482,6 +482,175 @@ export async function handleMePatch(request: Request, env: Env): Promise<Respons
 }
 
 // ----------------------------------------------------------------
+// GET /auth/family/leads
+// Returns the count of lead parents in the calling user's family.
+// Used by the frontend to decide between "Leave Family" and "Delete Account".
+// Auth: any authenticated parent.
+// ----------------------------------------------------------------
+export async function handleFamilyLeads(request: Request & { auth?: JwtPayload }, env: Env): Promise<Response> {
+  const auth = (request as Request & { auth?: JwtPayload }).auth;
+  if (!auth) return error('Authorisation required', 401);
+
+  const row = await env.DB
+    .prepare(`SELECT COUNT(*) AS lead_count FROM family_roles WHERE family_id = ? AND role = 'parent' AND parent_role = 'lead'`)
+    .bind(auth.family_id)
+    .first<{ lead_count: number }>();
+
+  return json({ lead_count: row?.lead_count ?? 0 });
+}
+
+// ----------------------------------------------------------------
+// DELETE /auth/me/leave
+// Removes the calling parent from the family.
+//
+// Safety gates:
+//   1. Empty Orchard Guard — rejects if no other parent exists.
+//   2. Succession Gate — if caller is the last lead but co_parents exist,
+//      promotes one co_parent to lead before departing.
+// ----------------------------------------------------------------
+export async function handleLeaveFamily(request: Request & { auth?: JwtPayload }, env: Env): Promise<Response> {
+  const auth = (request as Request & { auth?: JwtPayload }).auth;
+  if (!auth) return error('Authorisation required', 401);
+
+  const userId   = auth.sub;
+  const familyId = auth.family_id;
+  const ip       = clientIp(request);
+
+  // Fetch caller's current parent_role and display_name
+  const caller = await env.DB
+    .prepare(`SELECT u.display_name, fr.parent_role FROM users u JOIN family_roles fr ON fr.user_id = u.id WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'parent'`)
+    .bind(userId, familyId)
+    .first<{ display_name: string; parent_role: string | null }>();
+
+  if (!caller) return error('Parent record not found', 404);
+
+  // Count all other parents in the family (any parent_role)
+  const others = await env.DB
+    .prepare(`SELECT COUNT(*) AS cnt FROM family_roles WHERE family_id = ? AND role = 'parent' AND user_id != ?`)
+    .bind(familyId, userId)
+    .first<{ cnt: number }>();
+
+  // Empty Orchard Guard — must use Delete Account instead
+  if ((others?.cnt ?? 0) === 0) {
+    return error('Cannot leave an empty orchard. Use Delete Account instead.', 400);
+  }
+
+  // Succession Gate — if caller is a lead, check whether other leads exist
+  const otherLeads = await env.DB
+    .prepare(`SELECT COUNT(*) AS cnt FROM family_roles WHERE family_id = ? AND role = 'parent' AND parent_role = 'lead' AND user_id != ?`)
+    .bind(familyId, userId)
+    .first<{ cnt: number }>();
+
+  // Find a co_parent to promote if no other lead exists
+  let promotionStmt: ReturnType<typeof env.DB.prepare> | null = null;
+  if ((otherLeads?.cnt ?? 0) === 0) {
+    const coParent = await env.DB
+      .prepare(`SELECT user_id FROM family_roles WHERE family_id = ? AND role = 'parent' AND parent_role = 'co_parent' LIMIT 1`)
+      .bind(familyId)
+      .first<{ user_id: string }>();
+
+    if (coParent) {
+      promotionStmt = env.DB
+        .prepare(`UPDATE family_roles SET parent_role = 'lead' WHERE user_id = ? AND family_id = ?`)
+        .bind(coParent.user_id, familyId);
+    }
+  }
+
+  // Ledger: compute hash chain
+  const prevRow = await env.DB
+    .prepare('SELECT id, record_hash FROM ledger WHERE family_id = ? ORDER BY id DESC LIMIT 1')
+    .bind(familyId)
+    .first<{ id: number; record_hash: string }>();
+  const maxRow = await env.DB
+    .prepare('SELECT COALESCE(MAX(id), 0) AS max_id FROM ledger WHERE family_id = ?')
+    .bind(familyId)
+    .first<{ max_id: number }>();
+  const previousHash = prevRow?.record_hash ?? GENESIS_HASH;
+  const newId        = (maxRow?.max_id ?? 0) + 1;
+  const recordHash   = await computeRecordHash(newId, familyId, null, 0, 'GBP', 'system_note', previousHash);
+
+  const capturedName = caller.display_name;
+
+  const batch: ReturnType<typeof env.DB.prepare>[] = [
+    // Anonymise caller
+    env.DB.prepare(`UPDATE users SET display_name = 'Former Co-Parent', email = NULL, email_pending = NULL, password_hash = NULL, pin_hash = NULL WHERE id = ?`)
+      .bind(userId),
+    // Revoke all sessions
+    env.DB.prepare(`UPDATE sessions SET revoked_at = unixepoch() WHERE user_id = ? AND revoked_at IS NULL`)
+      .bind(userId),
+    // Remove family_roles row
+    env.DB.prepare(`DELETE FROM family_roles WHERE user_id = ? AND family_id = ?`)
+      .bind(userId, familyId),
+    // Audit note
+    env.DB.prepare(`INSERT INTO ledger (id, family_id, child_id, entry_type, amount, currency, description, verification_status, previous_hash, record_hash, ip_address) VALUES (?,?,NULL,'system_note',0,'GBP',?,'verified_auto',?,?,?)`)
+      .bind(newId, familyId, `🌱 ${capturedName} has left the orchard.`, previousHash, recordHash, ip),
+  ];
+
+  if (promotionStmt) batch.unshift(promotionStmt); // promote first, then remove
+
+  await env.DB.batch(batch);
+
+  return json({ ok: true, action: 'left' });
+}
+
+// ----------------------------------------------------------------
+// DELETE /auth/family
+// Soft-deletes the entire family. Lead-only. Only callable when
+// the caller is the last lead.
+//
+// Safety gates:
+//   1. Lead-only — rejects if caller's parent_role != 'lead'.
+//   2. Last Lead Guard — rejects if other leads exist in the family.
+// ----------------------------------------------------------------
+export async function handleDeleteFamily(request: Request & { auth?: JwtPayload }, env: Env): Promise<Response> {
+  const auth = (request as Request & { auth?: JwtPayload }).auth;
+  if (!auth) return error('Authorisation required', 401);
+
+  const userId   = auth.sub;
+  const familyId = auth.family_id;
+
+  // Lead-only check
+  const callerRole = await env.DB
+    .prepare(`SELECT parent_role FROM family_roles WHERE user_id = ? AND family_id = ? AND role = 'parent'`)
+    .bind(userId, familyId)
+    .first<{ parent_role: string | null }>();
+
+  if (!callerRole || callerRole.parent_role !== 'lead') {
+    return error('Only a Lead parent can delete the family.', 403);
+  }
+
+  // Last Lead Guard
+  const leadCount = await env.DB
+    .prepare(`SELECT COUNT(*) AS cnt FROM family_roles WHERE family_id = ? AND role = 'parent' AND parent_role = 'lead'`)
+    .bind(familyId)
+    .first<{ cnt: number }>();
+
+  if ((leadCount?.cnt ?? 0) > 1) {
+    return error('An orchard cannot be uprooted while another guardian is present.', 403);
+  }
+
+  await env.DB.batch([
+    // Soft-delete the family
+    env.DB.prepare(`UPDATE families SET deleted_at = unixepoch() WHERE id = ?`)
+      .bind(familyId),
+    // Anonymise all users in the family
+    env.DB.prepare(`UPDATE users SET display_name = 'Deleted User', email = NULL, email_pending = NULL, password_hash = NULL, pin_hash = NULL WHERE family_id = ?`)
+      .bind(familyId),
+    // Revoke all sessions for all family users
+    env.DB.prepare(`UPDATE sessions SET revoked_at = unixepoch() WHERE user_id IN (SELECT id FROM users WHERE family_id = ?) AND revoked_at IS NULL`)
+      .bind(familyId),
+    // Delete invite codes
+    env.DB.prepare(`DELETE FROM invite_codes WHERE family_id = ?`)
+      .bind(familyId),
+    // Delete registration progress
+    env.DB.prepare(`DELETE FROM registration_progress WHERE family_id = ?`)
+      .bind(familyId),
+  ]);
+
+  return json({ ok: true, action: 'uprooted' });
+}
+
+// ----------------------------------------------------------------
 // Internal helpers
 // ----------------------------------------------------------------
 
