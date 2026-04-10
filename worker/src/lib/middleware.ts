@@ -34,6 +34,16 @@ export async function requireAuth(request: Request, env: Env): Promise<JwtPayloa
   if (!session)             return error('Session not found', 401);
   if (session.revoked_at)   return error('Session revoked — please log in again', 401);
 
+  // Check the family has not been soft-deleted
+  const family = await env.DB
+    .prepare('SELECT deleted_at FROM families WHERE id = ?')
+    .bind(payload.family_id)
+    .first<{ deleted_at: number | null }>();
+
+  if (!family || family.deleted_at !== null) {
+    return error('This family has been deleted.', 403);
+  }
+
   return payload;
 }
 
