@@ -224,7 +224,7 @@ async function redeemCoParentInvite(
       VALUES (?, ?, ?, ?, 'en', ?, 0)
     `).bind(userId, familyId, display_name, email, passwordHash),
 
-    env.DB.prepare(`INSERT INTO family_roles (user_id, family_id, role) VALUES (?, ?, 'parent')`)
+    env.DB.prepare(`INSERT INTO family_roles (user_id, family_id, role, parent_role) VALUES (?, ?, 'parent', 'co_parent')`)
       .bind(userId, familyId),
 
     env.DB.prepare(`UPDATE invite_codes SET redeemed_by = ?, redeemed_at = ? WHERE code = ?`)
