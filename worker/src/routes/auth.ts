@@ -16,7 +16,7 @@ import { json, error, clientIp } from '../lib/response.js';
 import { hashPassword, verifyPassword } from '../lib/crypto.js';
 import { signJwt, verifyJwt } from '../lib/jwt.js';
 import { nanoid } from '../lib/nanoid.js';
-import { sha256 } from '../lib/hash.js';
+import { sha256, computeRecordHash, GENESIS_HASH } from '../lib/hash.js';
 
 const MAGIC_LINK_EXPIRY  = 15 * 60;       // 15 minutes
 const PARENT_JWT_EXPIRY  = 7 * 24 * 3600; // 7 days
@@ -354,12 +354,131 @@ export async function handleMe(request: Request, env: Env): Promise<Response> {
   if (!caller) return error('Unauthorised', 401);
 
   const user = await env.DB
-    .prepare('SELECT id, display_name, email, locale, email_verified FROM users WHERE id = ?')
+    .prepare('SELECT id, display_name, email, locale, email_verified, email_pending FROM users WHERE id = ?')
     .bind(caller.sub)
     .first();
 
   if (!user) return error('User not found', 404);
   return json({ ...user, family_id: caller.family_id, role: caller.role });
+}
+
+// ----------------------------------------------------------------
+// PATCH /auth/me
+// Update display name and/or email. Writes a system_note ledger
+// entry for each field changed to maintain the audit trail.
+// ----------------------------------------------------------------
+export async function handleMePatch(request: Request, env: Env): Promise<Response> {
+  const callerRaw = (request as AuthedRequest).auth;
+  if (!callerRaw) return error('Unauthorised', 401);
+  const caller = callerRaw;
+
+  let body: { display_name?: string; email?: string };
+  try {
+    body = await request.json() as { display_name?: string; email?: string };
+  } catch {
+    return error('Invalid JSON', 400);
+  }
+
+  const { display_name, email } = body;
+
+  if (!display_name && !email) {
+    return error('Nothing to update', 400);
+  }
+
+  const ip = clientIp(request);
+
+  // Fetch current user
+  const user = await env.DB
+    .prepare('SELECT id, display_name, email, locale, email_verified, email_pending FROM users WHERE id = ?')
+    .bind(caller.sub)
+    .first<{ id: string; display_name: string; email: string | null; locale: string; email_verified: number; email_pending: string | null }>();
+  if (!user) return error('User not found', 404);
+
+  // Fetch family default_currency for ledger entries
+  const family = await env.DB
+    .prepare('SELECT default_currency FROM families WHERE id = ?')
+    .bind(caller.family_id)
+    .first<{ default_currency: string }>();
+  const currency = family?.default_currency ?? 'GBP';
+
+  // Helper: write a system_note ledger entry
+  async function writeSystemNote(description: string): Promise<void> {
+    const prevRow = await env.DB
+      .prepare('SELECT id, record_hash FROM ledger WHERE family_id = ? ORDER BY id DESC LIMIT 1')
+      .bind(caller.family_id)
+      .first<{ id: number; record_hash: string }>();
+    const previousHash = prevRow?.record_hash ?? GENESIS_HASH;
+
+    const maxRow = await env.DB
+      .prepare('SELECT COALESCE(MAX(id), 0) AS max_id FROM ledger')
+      .first<{ max_id: number }>();
+    const newId = (maxRow?.max_id ?? 0) + 1;
+
+    const recordHash = await computeRecordHash(
+      newId,
+      caller.family_id,
+      'NULL',         // child_id is NULL for system notes — stringify for hash input
+      0,              // amount
+      currency,
+      'system_note',
+      previousHash,
+    );
+
+    await env.DB
+      .prepare(`
+        INSERT INTO ledger
+          (id, family_id, child_id, chore_id, entry_type, amount, currency,
+           description, verification_status, authorised_by,
+           previous_hash, record_hash, ip_address)
+        VALUES (?,?,NULL,NULL,'system_note',0,?,?,'verified_auto',?,?,?,?)
+      `)
+      .bind(newId, caller.family_id, currency, description, caller.sub, previousHash, recordHash, ip)
+      .run();
+  }
+
+  // ── Display name update ──────────────────────────────────────
+  if (display_name !== undefined) {
+    const trimmed = display_name.trim();
+    if (trimmed.length < 2 || trimmed.length > 40) {
+      return error('Display name must be 2–40 characters', 400);
+    }
+    await env.DB
+      .prepare('UPDATE users SET display_name = ? WHERE id = ?')
+      .bind(trimmed, caller.sub)
+      .run();
+    await writeSystemNote(`🌱 ${trimmed} updated their family name`);
+  }
+
+  // ── Email update ─────────────────────────────────────────────
+  if (email !== undefined) {
+    const trimmedEmail = email.trim().toLowerCase();
+    // Basic RFC-ish format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      return error('Please enter a valid email address', 400);
+    }
+    // Uniqueness check — reject if another verified account has this address
+    const conflict = await env.DB
+      .prepare('SELECT id FROM users WHERE email = ? AND email_verified = 1 AND id != ?')
+      .bind(trimmedEmail, caller.sub)
+      .first<{ id: string }>();
+    if (conflict) {
+      return error('That email address is already registered', 409);
+    }
+    await env.DB
+      .prepare('UPDATE users SET email = ?, email_verified = 0 WHERE id = ?')
+      .bind(trimmedEmail, caller.sub)
+      .run();
+    await writeSystemNote('🌱 Contact email was updated');
+  }
+
+  // Return updated profile
+  const updated = await env.DB
+    .prepare('SELECT id, display_name, email, locale, email_verified, email_pending FROM users WHERE id = ?')
+    .bind(caller.sub)
+    .first();
+  if (!updated) return error('User not found', 404);
+
+  return json({ ...updated, family_id: caller.family_id, role: caller.role });
 }
 
 // ----------------------------------------------------------------
