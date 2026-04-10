@@ -94,12 +94,23 @@ export function ParentDashboard() {
           <FullLogo iconSize={26} />
           <div className="flex items-center gap-2">
             {/* Parent avatar */}
-            <div
-              className="w-8 h-8 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[11px] font-bold tracking-wide shrink-0"
-              title={getDeviceIdentity()?.display_name ?? 'Parent'}
-            >
-              {getDeviceIdentity()?.initials ?? 'P'}
-            </div>
+            {(() => {
+              const avatarId = localStorage.getItem('mc_parent_avatar')
+              const identity = getDeviceIdentity()
+              return avatarId ? (
+                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)]"
+                     title={identity?.display_name ?? 'Parent'}>
+                  <AvatarSVG id={avatarId} size={32} />
+                </div>
+              ) : (
+                <div
+                  className="w-8 h-8 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[11px] font-bold tracking-wide shrink-0"
+                  title={identity?.display_name ?? 'Parent'}
+                >
+                  {identity?.initials ?? 'P'}
+                </div>
+              )
+            })()}
             {/* Connectivity icon */}
             <span
               title={online ? 'Online' : 'Offline'}

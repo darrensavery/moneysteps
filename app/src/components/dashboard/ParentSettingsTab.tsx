@@ -295,6 +295,7 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
     onChildrenChange(c)
     setFamily(f)
     setSettings(s)
+    if (s?.avatar_id) localStorage.setItem('mc_parent_avatar', s.avatar_id)
     const [modes, growths] = await Promise.all([
       Promise.all(
         c.map(child => getChildSettings(child.id).then(cs => [child.id, cs.teen_mode] as const).catch(() => [child.id, 0] as const))
@@ -330,6 +331,7 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
     setSavingAvatar(true)
     try {
       await updateSettings({ avatar_id: id })
+      localStorage.setItem('mc_parent_avatar', id)
       await load()
       setShowAvatarPicker(false)
     } finally {
@@ -1120,7 +1122,9 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
           onClick={() => {
             if (!window.confirm("Log out? Your family's data stays safe.")) return
             clearDeviceIdentity()
-            window.location.href = '/'
+            sessionStorage.clear()
+            localStorage.removeItem('mc_parent_avatar')
+            window.location.replace('/')
           }}
           className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] cursor-pointer transition-colors text-left rounded-xl"
         >
