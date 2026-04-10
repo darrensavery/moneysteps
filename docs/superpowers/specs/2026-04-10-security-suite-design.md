@@ -43,14 +43,17 @@ All routes live in `worker/src/routes/auth.ts` and are registered in `worker/src
 ### `POST /auth/pin/set`
 
 - **Auth:** any authenticated parent
-- **Body:** `{ password: string, new_pin: string }` — `password` is the parent's email/password credential (re-auth before setting PIN)
+- **Body:** `{ password: string, new_pin: string }` — `password` is **always** required (the master key). This applies to both first-time PIN setup and PIN change. There is no `current_pin` shortcut — the philosophy is: to change the locks, use the master key, not the daily key.
 - **Validation:**
   - `new_pin` must be exactly 4 digits (`/^\d{4}$/`)
-  - Verify `password` against `users.password_hash` before writing
+  - `password` must be present and verified against `users.password_hash`
+  - If `password_hash` is NULL (magic-link-only account) → `400: "Set a password first to enable PIN."`
 - **Write:** `UPDATE users SET parent_pin_hash = ?, pin_attempt_count = 0, pin_locked_until = NULL WHERE id = ?`
 - **Response:** `{ ok: true }`
 
-**Note:** If the parent has no `password_hash` (magic-link-only account), return `400: "Set a password first to enable PIN."` — edge case to handle in Phase 8 when we add magic-link-only flows to the settings surface.
+**Frontend pre-flight:** `GET /auth/me` already returns the current user. If `has_password` is false (derived from `password_hash IS NOT NULL`), the PIN Management entry row in `SecuritySettings` renders with label "Set a Password First" and routes to a password-set screen instead of the PIN pad. The parent cannot reach the PIN pad until a password exists.
+
+**Note:** `GET /auth/me` must include `has_password: boolean` in its response (add to the route's SELECT).
 
 ---
 
@@ -162,8 +165,8 @@ function useGatekeeper(): {
    - Denied/unavailable → show PIN overlay.
 3. PIN overlay: parent types 4 digits → call `verifyPin()`.
    - 200 → write `mc_gk_verified_at`, dismiss modal, call `onSuccess()`.
-   - 401 → show error in overlay ("Incorrect PIN"), increment local visual attempt counter.
-   - 429 → show lockout timer ("Try again in Xs").
+   - 401 → shake the dot row, show "Incorrect PIN" error below, increment local visual attempt counter.
+   - 429 → **dim the entire digit pad** (opacity 40%, pointer-events none), show a visible countdown timer ("Locked for 28s…") that ticks down using `setInterval`. Pad re-enables when the countdown reaches 0. No shake on 429 — dimming communicates "stop tapping" more clearly than animation.
 
 **GatekeeperModal renders:**
 - 4 dot indicators (filled/empty)
@@ -196,18 +199,15 @@ function useGatekeeper(): {
 | `forgot` | User taps "Forgot PIN?" — enters email password instead |
 
 **Verify-current step:**
-- 4-dot pad + digit keyboard
-- "Forgot PIN? Reset with password." link below pad → switches to `forgot` state
-- Wrong PIN: shake animation, "Incorrect PIN" below dots
-- After 3 wrong: "Too many attempts. Try again in 30s." — input disabled, countdown shown
-- Correct: transition to `set-new`
+- Password field (type=password) — the master key is required to change the PIN ("Orchard philosophy: change the locks with the master key")
+- "Forgot your password?" link → routes to the existing magic-link / password-reset flow
+- Wrong password: shake animation, "Incorrect password" error below field
+- Correct: `password` stored in component state, transition to `set-new`
 
 **Set-new step:**
 - "New PIN" 4-dot row, then "Confirm PIN" 4-dot row
 - Confirm must match — if not: "PINs don't match", both fields clear
-- On success: call `setParentPin(password='', newPin)` ... wait — the PIN-set route requires a password. For the **change** flow (user already verified current PIN via `/auth/verify-pin`), we need an alternative: the server-side guard can be the current PIN check instead of password.
-
-**Revised `/auth/pin/set` body:** `{ current_pin?: string, password?: string, new_pin: string }` — at least one of `current_pin` or `password` must be provided and verified.
+- On success: call `setParentPin(password, newPin)` — the `password` collected in the preceding verify-current or forgot step is held in component state and passed here. The server always receives the master key.
 
 **Forgot step:**
 - Single password field (type=password)
@@ -230,12 +230,16 @@ function useGatekeeper(): {
 | Age | `issued_at` → `Intl.RelativeTimeFormat` | `"just now"`, `"2 days ago"` |
 | Current badge | `jti` matches decoded JWT `jti` | `[current]` pill, teal colour |
 
-**UA parsing** — simple inline function, no library:
-- Contains `"iPhone"` or `"iPad"` → `"Safari on iPhone"` / `"Safari on iPad"`
-- Contains `"Android"` → `"Chrome on Android"` (or `"Firefox on Android"`)
-- Contains `"Macintosh"` → `"Chrome on Mac"` / `"Safari on Mac"`
-- Contains `"Windows"` → `"Chrome on Windows"` etc.
-- Anything else or empty string → `"Unknown Device"`
+**UA parsing** — simple inline function, no library. Evaluated in order (first match wins):
+1. Contains `"Morechard"` → `"Morechard Mobile App"` — Capacitor/native wrapper sets this token in its UA string
+2. Contains `"iPhone"` → `"Safari on iPhone"`
+3. Contains `"iPad"` → `"Safari on iPad"`
+4. Contains `"Android"` and `"Firefox"` → `"Firefox on Android"`
+5. Contains `"Android"` → `"Chrome on Android"`
+6. Contains `"Macintosh"` and `"Firefox"` → `"Firefox on Mac"`
+7. Contains `"Macintosh"` → `"Safari on Mac"` (Chrome on Mac also contains Macintosh — detect Chrome first via `"Chrome"` substring check within this branch)
+8. Contains `"Windows"` → `"Chrome on Windows"` (same browser sub-check)
+9. Anything else or empty string → `"Unknown Device"`
 
 **Actions:**
 - Individual `[revoke]` button → calls `revokeSession(jti)`, removes row from local list optimistically
@@ -260,7 +264,8 @@ Becomes a thin router. Adds `view` state: `'menu' | 'pin' | 'sessions'`. Passes 
 | Grace window | `useGatekeeper` | 5-min `sessionStorage` window before re-challenge |
 | Lockout | `POST /auth/verify-pin` | 3 wrong → 30s lockout (server-side) |
 | Cross-user revocation guard | `DELETE /auth/sessions/:jti` | `user_id` must match caller |
-| Current-PIN or password required | `POST /auth/pin/set` | At least one high-authority credential checked |
+| Master key always required | `POST /auth/pin/set` | Password always required — no `current_pin` shortcut. "Change locks with the master key." |
+| Frontend pre-flight | `PinManagementSettings` | If `has_password = false`, entry row shows "Set a Password First" — PIN pad unreachable |
 | "Forgot PIN" escape | `PinManagementSettings` | Uses email/password re-auth, not PIN bypass |
 | "Unknown Device" fallback | `ActiveSessionsSettings` | Empty/unrecognised UA → honest label |
 
