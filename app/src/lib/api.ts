@@ -93,10 +93,16 @@ export async function logout(): Promise<void> {
 
 export interface MeResult {
   id: string; display_name: string; email: string | null;
+  email_verified: number; email_pending: string | null;
   family_id: string; role: 'parent' | 'child'; locale: string;
 }
 export async function getMe(): Promise<MeResult> {
   return request('/auth/me');
+}
+export async function updateProfile(
+  body: { display_name?: string; email?: string },
+): Promise<MeResult> {
+  return request('/auth/me', { method: 'PATCH', body: JSON.stringify(body) });
 }
 
 // ----------------------------------------------------------------
