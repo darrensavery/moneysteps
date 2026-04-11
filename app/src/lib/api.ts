@@ -95,6 +95,8 @@ export interface MeResult {
   id: string; display_name: string; email: string | null;
   email_verified: number; email_pending: string | null;
   family_id: string; role: 'parent' | 'child'; locale: string;
+  has_password: boolean;
+  has_pin: boolean;
 }
 export async function getMe(): Promise<MeResult> {
   return request('/auth/me');
@@ -118,6 +120,46 @@ export async function leaveFamily(): Promise<{ ok: boolean; action: string }> {
 
 export async function deleteFamily(): Promise<{ ok: boolean; action: string }> {
   return request('/auth/family', { method: 'DELETE' });
+}
+
+// ----------------------------------------------------------------
+// Security — PIN & Sessions
+// ----------------------------------------------------------------
+
+export interface SessionRow {
+  jti: string;
+  issued_at: number;
+  user_agent: string | null;
+}
+
+/** Set or change the parent PIN. Always requires the email password (master key). */
+export async function setParentPin(password: string, newPin: string): Promise<{ ok: boolean }> {
+  return request('/auth/pin/set', { method: 'POST', body: JSON.stringify({ password, new_pin: newPin }) });
+}
+
+/** Same server route as setParentPin — separate name for distinct UI copy ("Forgot PIN?"). */
+export async function resetPinWithPassword(password: string, newPin: string): Promise<{ ok: boolean }> {
+  return request('/auth/pin/reset-with-password', { method: 'POST', body: JSON.stringify({ password, new_pin: newPin }) });
+}
+
+/** Verify the parent's 4-digit PIN. Throws on 401 (wrong) or 429 (locked). */
+export async function verifyPin(pin: string): Promise<{ ok: boolean }> {
+  return request('/auth/verify-pin', { method: 'POST', body: JSON.stringify({ pin }) });
+}
+
+/** List all active sessions for the current parent. */
+export async function getSessions(): Promise<{ sessions: SessionRow[] }> {
+  return request('/auth/sessions');
+}
+
+/** Revoke a single session by JTI. */
+export async function revokeSession(jti: string): Promise<{ ok: boolean }> {
+  return request(`/auth/sessions/${jti}`, { method: 'DELETE' });
+}
+
+/** Revoke all sessions except the current one. */
+export async function revokeOtherSessions(): Promise<{ ok: boolean; revoked: number }> {
+  return request('/auth/sessions?others=true', { method: 'DELETE' });
 }
 
 // ----------------------------------------------------------------
