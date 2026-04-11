@@ -354,12 +354,24 @@ export async function handleMe(request: Request, env: Env): Promise<Response> {
   if (!caller) return error('Unauthorised', 401);
 
   const user = await env.DB
-    .prepare('SELECT id, display_name, email, locale, email_verified, email_pending FROM users WHERE id = ?')
+    .prepare('SELECT id, display_name, email, locale, email_verified, email_pending, password_hash, parent_pin_hash FROM users WHERE id = ?')
     .bind(caller.sub)
-    .first();
+    .first<{
+      id: string; display_name: string; email: string | null; locale: string;
+      email_verified: number; email_pending: string | null;
+      password_hash: string | null; parent_pin_hash: string | null;
+    }>();
 
   if (!user) return error('User not found', 404);
-  return json({ ...user, family_id: caller.family_id, role: caller.role });
+
+  const { password_hash, parent_pin_hash, ...safeUser } = user;
+  return json({
+    ...safeUser,
+    family_id: caller.family_id,
+    role: caller.role,
+    has_password: password_hash !== null,
+    has_pin: parent_pin_hash !== null,
+  });
 }
 
 // ----------------------------------------------------------------
