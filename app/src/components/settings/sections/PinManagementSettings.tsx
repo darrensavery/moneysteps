@@ -181,7 +181,7 @@ export function PinManagementSettings({ profile, onBack }: Props) {
         await setParentPin(password, newPin)
       }
       // Success
-      if (isBiometricsAvailable() && !hasBiometricCredential()) {
+      if (await isBiometricsAvailable() && !hasBiometricCredential()) {
         setShowBioNudge(true)
       } else {
         onBack()
@@ -200,7 +200,10 @@ export function PinManagementSettings({ profile, onBack }: Props) {
   // ── Biometric nudge ────────────────────────────────────────────────────────
 
   async function handleEnableBiometrics() {
-    await registerBiometrics().catch(() => {})
+    await registerBiometrics(
+      profile?.id ?? '',
+      profile?.display_name ?? 'Parent',
+    ).catch(() => {})
     onBack()
   }
 

@@ -319,6 +319,7 @@ export function ChildDashboard() {
             noteText={noteText}
             submitErr={submitErr}
             cardClass={cardClass}
+            currency={currency}
             weeklyAllowancePence={weeklyAllowancePence}
             isPlanted={isPlanted}
             togglePlant={togglePlant}
@@ -561,6 +562,7 @@ interface OrchardViewProps {
   noteText: string
   submitErr: string | null
   cardClass: string
+  currency: string
   weeklyAllowancePence: number
   isPlanted: (c: Chore) => boolean
   togglePlant: (c: Chore, day: number) => void
@@ -575,7 +577,7 @@ function OrchardView({
   balance, chores, pending, goals, tone,
   activeDay, setActiveDay, grovePlans, dayChores, unplannedChores,
   activeTopGoal, goalBarPct, submitted, submitting, purchasing,
-  noteChore, noteText, submitErr, cardClass, weeklyAllowancePence,
+  noteChore, noteText, submitErr, cardClass, currency, weeklyAllowancePence,
   isPlanted, togglePlant, handleDone, handlePurchase,
   setNoteChore, setNoteText, onPlantGoal,
 }: OrchardViewProps) {

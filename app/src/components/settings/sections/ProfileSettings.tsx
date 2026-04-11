@@ -37,7 +37,7 @@ interface Props {
 export function ProfileSettings({
   profile, settings, identity, family, isLead, leadCount,
   onSaveName, onSaveEmail, onSetAvatar,
-  onBack, onComingSoon, toast,
+  onBack, onComingSoon: _onComingSoon, toast,
 }: Props) {
   const myAvatar = settings?.avatar_id ?? 'bot'
 
