@@ -490,33 +490,21 @@ async function route(request: Request, env: Env, method: string, path: string): 
   }
 
   // ── Security / PIN ────────────────────────────────────────────────
-  if (method === 'POST' && path === '/auth/pin/set') {
-    await requireAuth(request, env);
-    return handlePinSet(request, env);
-  }
+  if (method === 'POST' && path === '/auth/pin/set')
+    return withAuth(request, auth, env, handlePinSet);
   // Same handler — distinct route name lets the frontend show different copy ("Forgot PIN?")
-  if (method === 'POST' && path === '/auth/pin/reset-with-password') {
-    await requireAuth(request, env);
-    return handlePinSet(request, env);
-  }
-  if (method === 'POST' && path === '/auth/verify-pin') {
-    await requireAuth(request, env);
-    return handleVerifyPin(request, env);
-  }
+  if (method === 'POST' && path === '/auth/pin/reset-with-password')
+    return withAuth(request, auth, env, handlePinSet);
+  if (method === 'POST' && path === '/auth/verify-pin')
+    return withAuth(request, auth, env, handleVerifyPin);
 
   // ── Sessions ──────────────────────────────────────────────────────
-  if (method === 'GET' && path === '/auth/sessions') {
-    await requireAuth(request, env);
-    return handleGetSessions(request, env);
-  }
-  if (method === 'DELETE' && path === '/auth/sessions' && url.searchParams.get('others') === 'true') {
-    await requireAuth(request, env);
-    return handleRevokeOtherSessions(request, env);
-  }
-  if (method === 'DELETE' && path.startsWith('/auth/sessions/')) {
-    await requireAuth(request, env);
-    return handleRevokeSession(request, env);
-  }
+  if (method === 'GET' && path === '/auth/sessions')
+    return withAuth(request, auth, env, handleGetSessions);
+  if (method === 'DELETE' && path === '/auth/sessions' && url.searchParams.get('others') === 'true')
+    return withAuth(request, auth, env, handleRevokeOtherSessions);
+  if (method === 'DELETE' && path.startsWith('/auth/sessions/'))
+    return withAuth(request, auth, env, handleRevokeSession);
 
   return error('Not found', 404);
 }
