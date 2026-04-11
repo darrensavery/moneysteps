@@ -702,6 +702,66 @@ export async function handlePinSet(request: Request, env: Env): Promise<Response
 }
 
 // ----------------------------------------------------------------
+// POST /auth/verify-pin
+// Verifies the parent's 4-digit PIN. Server-side lockout after 3 failures.
+// Body: { pin: string }
+// ----------------------------------------------------------------
+export async function handleVerifyPin(request: Request, env: Env): Promise<Response> {
+  const caller = (request as AuthedRequest).auth;
+  if (!caller) return error('Unauthorised', 401);
+  if (caller.role !== 'parent') return error('Parents only', 403);
+
+  const body = await parseBody(request);
+  if (!body) return error('Invalid JSON body');
+
+  const { pin } = body;
+  if (!pin || typeof pin !== 'string') return error('pin required');
+
+  const now = Math.floor(Date.now() / 1000);
+
+  const user = await env.DB
+    .prepare('SELECT parent_pin_hash, pin_attempt_count, pin_locked_until FROM users WHERE id = ?')
+    .bind(caller.sub)
+    .first<{ parent_pin_hash: string | null; pin_attempt_count: number; pin_locked_until: number | null }>();
+
+  if (!user) return error('User not found', 404);
+  if (!user.parent_pin_hash) return error('No PIN set', 400);
+
+  // Lockout check
+  if (user.pin_locked_until && user.pin_locked_until > now) {
+    const seconds = user.pin_locked_until - now;
+    return error(`Too many attempts. Try again in ${seconds} seconds.`, 429);
+  }
+
+  const valid = await verifyPassword(pin as string, user.parent_pin_hash);
+
+  if (!valid) {
+    const newCount = (user.pin_attempt_count ?? 0) + 1;
+    if (newCount >= 3) {
+      // Lock for 30 seconds, reset counter
+      await env.DB
+        .prepare('UPDATE users SET pin_attempt_count = 0, pin_locked_until = ? WHERE id = ?')
+        .bind(now + 30, caller.sub)
+        .run();
+    } else {
+      await env.DB
+        .prepare('UPDATE users SET pin_attempt_count = ? WHERE id = ?')
+        .bind(newCount, caller.sub)
+        .run();
+    }
+    return error('Incorrect PIN', 401);
+  }
+
+  // Correct — reset counters
+  await env.DB
+    .prepare('UPDATE users SET pin_attempt_count = 0, pin_locked_until = NULL WHERE id = ?')
+    .bind(caller.sub)
+    .run();
+
+  return json({ ok: true });
+}
+
+// ----------------------------------------------------------------
 // Internal helpers
 // ----------------------------------------------------------------
 
