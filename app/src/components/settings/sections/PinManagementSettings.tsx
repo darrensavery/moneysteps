@@ -87,8 +87,6 @@ export function PinManagementSettings({ profile, onBack }: Props) {
   const [pinState,    setPinState]    = useState<PinState>('verify-current')
   const [password,    setPassword]    = useState('')
   const [pwError,     setPwError]     = useState('')
-  const [pwShake,     setPwShake]     = useState(false)
-  const [pwBusy,      setPwBusy]      = useState(false)
 
   // PIN entry
   const [newDigits,   setNewDigits]   = useState<string[]>(Array(PIN_LENGTH).fill(''))
@@ -107,7 +105,7 @@ export function PinManagementSettings({ profile, onBack }: Props) {
 
   function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!password.trim() || pwBusy) return
+    if (!password.trim()) return
     setApiFn(pinState === 'forgot' ? 'reset' : 'set')
     setPinState('set-new')
   }
@@ -137,6 +135,7 @@ export function PinManagementSettings({ profile, onBack }: Props) {
           // Both full — auto-submit
           const newPin  = prevNew.join('')
           const confPin = next.join('')
+          // apiFn and password are stable during digit entry — set before set-new state is entered
           setTimeout(() => handleConfirmFull(newPin, confPin), 0)
         }
         return next
@@ -259,15 +258,15 @@ export function PinManagementSettings({ profile, onBack }: Props) {
               placeholder="Account password"
               autoComplete="current-password"
               autoFocus
-              className={`w-full px-3 py-2.5 text-[14px] rounded-xl border bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] ${pwShake ? 'animate-[shake_0.5s_ease-in-out]' : ''} ${pwError ? 'border-red-400' : 'border-[var(--color-border)]'}`}
+              className={`w-full px-3 py-2.5 text-[14px] rounded-xl border bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] ${pwError ? 'border-red-400' : 'border-[var(--color-border)]'}`}
             />
             {pwError && <p className="text-[12px] text-red-500">{pwError}</p>}
             <button
               type="submit"
-              disabled={!password.trim() || pwBusy}
+              disabled={!password.trim()}
               className="w-full py-3 rounded-xl text-[14px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
             >
-              {pwBusy ? 'Checking…' : 'Continue'}
+              Continue
             </button>
           </div>
 
