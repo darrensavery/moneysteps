@@ -158,3 +158,4 @@ wrangler deploy
 
 ### **Infrastructure**
 - [ ] Set up Cloudflare staging environment (staging worker + staging D1 + staging Pages branch) with GitHub Actions auto-deploy to production on merge to main
+- [ ] Custom domain for the API worker (`api.morechard.com`) — removes `darren-savery.workers.dev` from the Google OAuth consent screen; requires adding custom domain in Cloudflare Workers dashboard, updating redirect URI in Google Cloud Console, and updating the hard-coded `redirectUri` in `worker/src/routes/auth.ts`
