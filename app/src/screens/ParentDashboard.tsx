@@ -97,6 +97,17 @@ export function ParentDashboard() {
             {(() => {
               const avatarId = localStorage.getItem('mc_parent_avatar')
               const identity = getDeviceIdentity()
+              if (identity?.google_picture) {
+                return (
+                  <img
+                    src={identity.google_picture}
+                    alt={identity.display_name}
+                    title={identity.display_name}
+                    className="w-9 h-9 rounded-full object-cover border-2 border-[var(--brand-primary)] shrink-0"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                )
+              }
               return avatarId ? (
                 <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)]"
                      title={identity?.display_name ?? 'Parent'}>

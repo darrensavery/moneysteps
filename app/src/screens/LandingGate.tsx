@@ -97,6 +97,16 @@ export function LandingGate() {
               Join your Family
             </button>
 
+            <p className="text-center text-[13px] text-[var(--color-text-muted)]">
+              Already have an account?{' '}
+              <button
+                onClick={() => navigate('/auth/login')}
+                className="text-[var(--brand-primary)] font-semibold underline underline-offset-2 cursor-pointer"
+              >
+                Sign In
+              </button>
+            </p>
+
             <p className="text-center text-[11px] text-[var(--color-text-muted)]">
               🔒 Private by design — your data stays on your device and is never sold.
             </p>
