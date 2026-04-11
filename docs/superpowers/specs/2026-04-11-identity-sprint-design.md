@@ -346,7 +346,7 @@ export interface DeviceIdentity {
 7. **On success:**
    - `setToken(result.token)`
    - `setDeviceIdentity({ user_id: result.user.id, family_id: result.user.family_id, display_name: result.user.display_name, role: 'parent', parenting_role: result.user.parenting_role, initials: toInitials(result.user.display_name), registered_at: new Date().toISOString(), auth_method: 'none', google_picture: result.user.google_picture ?? undefined })`
-   - `window.location.replace('/parent')` — stack-clearing navigation
+   - `window.location.replace('/parent')` — full browser navigation, not React Router. Tears down the entire React tree so `RootGate` reads `mc_device_identity` fresh from localStorage on remount. Prevents any onboarding state from persisting in memory.
 8. **On failure:** Show error state with "Try signing in again" button → `/auth/login`
 
 **Bridge UI:**
