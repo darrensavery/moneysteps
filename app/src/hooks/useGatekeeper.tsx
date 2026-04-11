@@ -27,6 +27,123 @@ function markVerified(): void {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// Module-level modal UI — stable identity, no remount on re-render
+// ─────────────────────────────────────────────────────────────────
+
+interface GatekeeperModalProps {
+  open: boolean
+  digits: string[]
+  errorMsg: string
+  shake: boolean
+  locked: boolean
+  lockSeconds: number
+  padDisabled: boolean
+  onDigit: (digit: string) => void
+  onBackspace: () => void
+  onClose: () => void
+  onForgotPin: () => void
+}
+
+function GatekeeperModalUI({
+  open, digits, errorMsg, shake, locked, lockSeconds,
+  padDisabled, onDigit, onBackspace, onClose, onForgotPin,
+}: GatekeeperModalProps) {
+  if (!open) return null
+
+  return (
+    <div role="dialog" aria-modal="true" aria-labelledby="gk-title" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-t-3xl sm:rounded-3xl shadow-2xl px-6 pt-6 pb-8">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 id="gk-title" className="text-[16px] font-bold text-[var(--color-text)]">Confirm it's you</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-[22px] leading-none cursor-pointer"
+            aria-label="Cancel"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Dot indicators */}
+        <div
+          className={`flex justify-center gap-4 mb-3 transition-transform ${shake ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}
+        >
+          {digits.map((d, i) => (
+            <div
+              key={i}
+              className={`w-3.5 h-3.5 rounded-full border-2 transition-colors ${
+                d
+                  ? 'bg-[var(--brand-primary)] border-[var(--brand-primary)]'
+                  : 'bg-transparent border-[var(--color-border)]'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Error / lockout message */}
+        <div role="status" aria-live="polite" className="h-5 flex items-center justify-center mb-4">
+          {locked ? (
+            <p className="text-[12px] font-semibold text-amber-600">
+              Locked for {lockSeconds}s…
+            </p>
+          ) : errorMsg ? (
+            <p className="text-[12px] font-semibold text-red-500">{errorMsg}</p>
+          ) : null}
+        </div>
+
+        {/* Digit pad */}
+        <div
+          className={`grid grid-cols-3 gap-2 transition-opacity ${padDisabled ? 'opacity-40 pointer-events-none' : ''}`}
+        >
+          {['1','2','3','4','5','6','7','8','9'].map(d => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => onDigit(d)}
+              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+            >
+              {d}
+            </button>
+          ))}
+          {/* Bottom row: empty, 0, backspace */}
+          <div />
+          <button
+            type="button"
+            onClick={() => onDigit('0')}
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+          >
+            0
+          </button>
+          <button
+            type="button"
+            onClick={onBackspace}
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[18px] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+            aria-label="Backspace"
+          >
+            ⌫
+          </button>
+        </div>
+
+        {/* Forgot PIN link */}
+        <div className="mt-5 text-center">
+          <button
+            type="button"
+            onClick={onForgotPin}
+            className="text-[12px] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)]"
+          >
+            Forgot PIN? Manage in Settings
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Hook
 // ─────────────────────────────────────────────────────────────────
 
@@ -164,107 +281,27 @@ export function useGatekeeper() {
     setLockSeconds(0)
   }, [])
 
-  // ── GatekeeperModal component ────────────────────────────────────
-  function GatekeeperModal() {
-    if (!open) return null
-
-    const padDisabled = locked || submitting
-
-    return (
-      <div role="dialog" aria-modal="true" aria-labelledby="gk-title" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-t-3xl sm:rounded-3xl shadow-2xl px-6 pt-6 pb-8">
-
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 id="gk-title" className="text-[16px] font-bold text-[var(--color-text)]">Confirm it's you</h2>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-[22px] leading-none cursor-pointer"
-              aria-label="Cancel"
-            >
-              ×
-            </button>
-          </div>
-
-          {/* Dot indicators */}
-          <div
-            className={`flex justify-center gap-4 mb-3 transition-transform ${shake ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}
-          >
-            {digits.map((d, i) => (
-              <div
-                key={i}
-                className={`w-3.5 h-3.5 rounded-full border-2 transition-colors ${
-                  d
-                    ? 'bg-[var(--brand-primary)] border-[var(--brand-primary)]'
-                    : 'bg-transparent border-[var(--color-border)]'
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Error / lockout message */}
-          <div role="status" aria-live="polite" className="h-5 flex items-center justify-center mb-4">
-            {locked ? (
-              <p className="text-[12px] font-semibold text-amber-600">
-                Locked for {lockSeconds}s…
-              </p>
-            ) : errorMsg ? (
-              <p className="text-[12px] font-semibold text-red-500">{errorMsg}</p>
-            ) : null}
-          </div>
-
-          {/* Digit pad */}
-          <div
-            className={`grid grid-cols-3 gap-2 transition-opacity ${padDisabled ? 'opacity-40 pointer-events-none' : ''}`}
-          >
-            {['1','2','3','4','5','6','7','8','9'].map(d => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => handleDigit(d)}
-                className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
-              >
-                {d}
-              </button>
-            ))}
-            {/* Bottom row: empty, 0, backspace */}
-            <div />
-            <button
-              type="button"
-              onClick={() => handleDigit('0')}
-              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
-            >
-              0
-            </button>
-            <button
-              type="button"
-              onClick={handleBackspace}
-              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[18px] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
-              aria-label="Backspace"
-            >
-              ⌫
-            </button>
-          </div>
-
-          {/* Forgot PIN link */}
-          <div className="mt-5 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                handleClose()
-                navigate('/parent?settings=security&view=pin')
-              }}
-              className="text-[12px] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)]"
-            >
-              Forgot PIN? Manage in Settings
-            </button>
-          </div>
-
-        </div>
-      </div>
-    )
-  }
+  // ── GatekeeperModal — stable reference via useCallback ──────────
+  const GatekeeperModal = useCallback(
+    function GatekeeperModal() {
+      return (
+        <GatekeeperModalUI
+          open={open}
+          digits={digits}
+          errorMsg={errorMsg}
+          shake={shake}
+          locked={locked}
+          lockSeconds={lockSeconds}
+          padDisabled={locked || submitting}
+          onDigit={handleDigit}
+          onBackspace={handleBackspace}
+          onClose={handleClose}
+          onForgotPin={() => { handleClose(); navigate('/parent?settings=security&view=pin') }}
+        />
+      )
+    },
+    [open, digits, errorMsg, shake, locked, lockSeconds, submitting, handleDigit, handleBackspace, handleClose, navigate]
+  )
 
   return { challenge, GatekeeperModal }
 }
