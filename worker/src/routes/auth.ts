@@ -849,7 +849,7 @@ export async function handleGoogleAuth(_request: Request, env: Env): Promise<Res
     status: 302,
     headers: {
       'Location':   `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
-      'Set-Cookie': `mc_oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`,
+      'Set-Cookie': `mc_oauth_state=${state}; HttpOnly; Secure; SameSite=None; Max-Age=300; Path=/`,
     },
   });
 }
@@ -865,7 +865,7 @@ export async function handleGoogleCallback(request: Request, env: Env): Promise<
   const stateParam  = url.searchParams.get('state');
   const appUrl      = 'https://app.morechard.com';
   const redirectUri = 'https://morechard-api.darren-savery.workers.dev/auth/google/callback';
-  const clearCookie = 'mc_oauth_state=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/';
+  const clearCookie = 'mc_oauth_state=; HttpOnly; Secure; SameSite=None; Max-Age=0; Path=/';
 
   // ── Step 1: CSRF validation ──────────────────────────────────
   const cookieHeader = request.headers.get('Cookie') ?? '';
