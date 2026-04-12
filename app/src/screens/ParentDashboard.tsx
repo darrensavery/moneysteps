@@ -82,10 +82,6 @@ export function ParentDashboard() {
     { id: 'goals',     label: 'Goals' },
   ]
 
-  function handleLock() {
-    navigate('/lock')
-  }
-
   return (
     <div className="min-h-svh bg-[var(--color-bg)] flex flex-col" style={{ overscrollBehaviorY: 'none' }}>
       {/* Header */}
@@ -267,7 +263,7 @@ export function ParentDashboard() {
             {tab === 'goals'     && <GoalBoostingTab   familyId={familyId} child={activeChild} />}
           </>
         ) : (
-          {(() => {
+          (() => {
             const identity = getDeviceIdentity()
             const locale   = localStorage.getItem('mc_locale') ?? (navigator.language.startsWith('pl') ? 'pl' : 'en')
             const name     = identity?.display_name ?? ''
@@ -322,7 +318,7 @@ export function ParentDashboard() {
                 </button>
               </div>
             )
-          })()}
+          })()
         )}
       </main>
 
