@@ -216,6 +216,7 @@ export function ProfileSettings({
             setNameError(null)
             setEditingName(v => !v)
             setEditingEmail(false)
+            setShowAvatarPicker(false)
           }}
         />
         {editingName && (
@@ -260,6 +261,7 @@ export function ProfileSettings({
             setEmailError(null)
             setEditingEmail(v => !v)
             setEditingName(false)
+            setShowAvatarPicker(false)
           }}
         />
         {editingEmail && (
