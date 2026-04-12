@@ -72,6 +72,11 @@ export async function handleSettingsUpdate(request: Request, env: Env): Promise<
     'fun-emoji:bliss','fun-emoji:zest','fun-emoji:glee','fun-emoji:whim','fun-emoji:fizz','fun-emoji:hype',
     'shapes:prism','shapes:arc','shapes:delta','shapes:grid','shapes:wave','shapes:facet',
     'thumbs:scout','thumbs:ivy','thumbs:echo','thumbs:vale','thumbs:rook','thumbs:flint',
+    'lorelei-neutral:mara','lorelei-neutral:reed','lorelei-neutral:quinn','lorelei-neutral:sable','lorelei-neutral:lark','lorelei-neutral:wren',
+    'personas:juno','personas:atlas','personas:sol','personas:cleo','personas:rex','personas:vera',
+    'pixel-art-neutral:ash','pixel-art-neutral:birch','pixel-art-neutral:cedar','pixel-art-neutral:elm','pixel-art-neutral:hazel','pixel-art-neutral:oak',
+    'icons:bolt','icons:gem','icons:star','icons:leaf','icons:drop','icons:moon',
+    'big-ears-neutral:beau','big-ears-neutral:cade','big-ears-neutral:drew','big-ears-neutral:finn','big-ears-neutral:gray','big-ears-neutral:hope',
   ];
 
   const updates: string[] = [];
