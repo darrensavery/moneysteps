@@ -82,18 +82,16 @@ function DigitPad({ onDigit, onBackspace }: { onDigit: (d: string) => void; onBa
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function PinManagementSettings({ profile, onBack }: Props) {
-  const hasPinAlready  = profile?.has_pin      ?? false
-  const hasPassword    = profile?.has_password ?? true  // assume password exists if unknown
+  const hasPinAlready = profile?.has_pin      ?? false
+  const hasPassword   = profile?.has_password  // undefined = still loading
 
-  // Google-only users have no password — skip straight to PIN entry.
-  // useEffect handles the case where profile loads after initial render.
-  const [pinState,    setPinState]    = useState<PinState>('verify-current')
+  const [pinState, setPinState] = useState<PinState>('verify-current')
 
   useEffect(() => {
-    if (profile && !profile.has_password) {
-      setPinState(prev => prev === 'verify-current' ? 'set-new' : prev)
+    if (hasPassword === false) {
+      setPinState(s => s === 'verify-current' ? 'set-new' : s)
     }
-  }, [profile])
+  }, [hasPassword])
   const [password,    setPassword]    = useState('')
   const [pwError,     setPwError]     = useState('')
 
@@ -247,6 +245,16 @@ export function PinManagementSettings({ profile, onBack }: Props) {
   }
 
   // ── verify-current / forgot — password collection step ────────────────────
+
+  // Don't show password form until we know whether user has a password
+  if (profile === null) {
+    return (
+      <div className="space-y-4">
+        <SectionHeader title="Set Up PIN" onBack={onBack} />
+        <div className="h-32 flex items-center justify-center text-[var(--color-text-muted)] text-[13px]">Loading…</div>
+      </div>
+    )
+  }
 
   if (pinState === 'verify-current' || pinState === 'forgot') {
     const isForgot = pinState === 'forgot'
