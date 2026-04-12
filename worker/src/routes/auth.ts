@@ -861,12 +861,23 @@ export async function handleGoogleAuth(_request: Request, env: Env): Promise<Res
 // verifies the ID token, merges the user, issues SLT, redirects.
 // ----------------------------------------------------------------
 export async function handleGoogleCallback(request: Request, env: Env): Promise<Response> {
+  const appUrl = 'https://app.morechard.com';
+  try {
+    return await _handleGoogleCallback(request, env, appUrl);
+  } catch (err) {
+    console.error('handleGoogleCallback unhandled error:', err);
+    return new Response(null, {
+      status: 302,
+      headers: { 'Location': `${appUrl}/auth/login?error=google_exchange&detail=${encodeURIComponent(String(err).slice(0, 200))}` },
+    });
+  }
+}
+
+async function _handleGoogleCallback(request: Request, env: Env, appUrl: string): Promise<Response> {
   const url         = new URL(request.url);
   const code        = url.searchParams.get('code');
   const stateParam  = url.searchParams.get('state');
-  const appUrl      = 'https://app.morechard.com';
   const redirectUri = 'https://api.morechard.com/auth/google/callback';
-  void redirectUri; // used in token exchange body below
 
   // ── Step 1: CSRF validation (HMAC-signed state, no cookie needed) ──
   if (!stateParam || !code) {
@@ -957,7 +968,7 @@ export async function handleGoogleCallback(request: Request, env: Env): Promise<
   // ── Step 6: Redirect to frontend ─────────────────────────────
   return new Response(null, {
     status: 302,
-    headers: { 'Location': `${appUrl}/auth/callback?slt=${slt}`, 'Set-Cookie': clearCookie },
+    headers: { 'Location': `${appUrl}/auth/callback?slt=${slt}` },
   });
 }
 
