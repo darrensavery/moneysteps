@@ -66,7 +66,7 @@ export async function handleSettingsUpdate(request: Request, env: Env): Promise<
   const VALID_THEMES  = ['light','dark','system'];
   const VALID_LOCALES = ['en','pl'];
   const VALID_AVATARS = [
-    'monogram-a','prism','wave','delta','ink','grid','arc','facet',
+    'monogram-a','pen','compass','key','lens','leaf','mountain','hourglass',
     'wolf','fox','owl','bear','shark','lion','eagle','cat',
     'bot','mech','alien','cyborg','android','ufo','circuit',
     'flame','galaxy','crystal','bolt','vortex','skull','crown','shield','target',
