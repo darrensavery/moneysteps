@@ -832,7 +832,9 @@ export async function handleRevokeOtherSessions(request: Request, env: Env): Pro
 // redirects to Google's authorisation endpoint.
 // ----------------------------------------------------------------
 export async function handleGoogleAuth(_request: Request, env: Env): Promise<Response> {
-  const state      = nanoid(16);
+  const nonce       = nanoid(16);
+  const sig         = await hmacSign(nonce, env.JWT_SECRET);
+  const state       = `${nonce}.${sig}`;
   const redirectUri = 'https://morechard-api.darren-savery.workers.dev/auth/google/callback';
 
   const params = new URLSearchParams({
@@ -848,8 +850,7 @@ export async function handleGoogleAuth(_request: Request, env: Env): Promise<Res
   return new Response(null, {
     status: 302,
     headers: {
-      'Location':   `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
-      'Set-Cookie': `mc_oauth_state=${state}; HttpOnly; Secure; SameSite=None; Max-Age=300; Path=/`,
+      'Location': `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
     },
   });
 }
@@ -865,21 +866,20 @@ export async function handleGoogleCallback(request: Request, env: Env): Promise<
   const stateParam  = url.searchParams.get('state');
   const appUrl      = 'https://app.morechard.com';
   const redirectUri = 'https://morechard-api.darren-savery.workers.dev/auth/google/callback';
-  const clearCookie = 'mc_oauth_state=; HttpOnly; Secure; SameSite=None; Max-Age=0; Path=/';
 
-  // ── Step 1: CSRF validation ──────────────────────────────────
-  const cookieHeader = request.headers.get('Cookie') ?? '';
-  const stateCookie  = cookieHeader
-    .split(';')
-    .map(c => c.trim())
-    .find(c => c.startsWith('mc_oauth_state='))
-    ?.slice('mc_oauth_state='.length);
-
-  if (!stateParam || !stateCookie || stateParam !== stateCookie) {
-    return new Response(null, {
-      status: 302,
-      headers: { 'Location': `${appUrl}/auth/login?error=csrf`, 'Set-Cookie': clearCookie },
-    });
+  // ── Step 1: CSRF validation (HMAC-signed state, no cookie needed) ──
+  if (!stateParam || !code) {
+    return new Response(null, { status: 302, headers: { 'Location': `${appUrl}/auth/login?error=csrf` } });
+  }
+  const dotIdx = stateParam.lastIndexOf('.');
+  if (dotIdx === -1) {
+    return new Response(null, { status: 302, headers: { 'Location': `${appUrl}/auth/login?error=csrf` } });
+  }
+  const nonce        = stateParam.slice(0, dotIdx);
+  const receivedSig  = stateParam.slice(dotIdx + 1);
+  const expectedSig  = await hmacSign(nonce, env.JWT_SECRET);
+  if (receivedSig !== expectedSig) {
+    return new Response(null, { status: 302, headers: { 'Location': `${appUrl}/auth/login?error=csrf` } });
   }
 
   // ── Step 2: Token exchange ────────────────────────────────────
@@ -1068,6 +1068,19 @@ export async function handleSltExchange(request: Request, env: Env): Promise<Res
 // ----------------------------------------------------------------
 // Internal helpers
 // ----------------------------------------------------------------
+
+async function hmacSign(data: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+  return btoa(String.fromCharCode(...new Uint8Array(sig)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
 interface GoogleIdTokenPayload {
   sub:            string;
