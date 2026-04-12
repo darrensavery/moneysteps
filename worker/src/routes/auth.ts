@@ -1030,7 +1030,7 @@ export async function handleSltExchange(request: Request, env: Env): Promise<Res
     .prepare(`
       SELECT u.id, u.display_name, u.google_picture,
              u.parent_pin_hash, u.password_hash,
-             fr.family_id, fr.granted_by
+             fr.family_id, fr.parent_role
       FROM users u
       JOIN family_roles fr ON fr.user_id = u.id AND fr.role = 'parent'
       WHERE u.id = ?
@@ -1044,7 +1044,7 @@ export async function handleSltExchange(request: Request, env: Env): Promise<Res
       parent_pin_hash: string | null;
       password_hash:   string | null;
       family_id:       string;
-      granted_by:      string | null;
+      parent_role:     string | null;
     }>();
 
   if (!user) return error('User not found', 404);
@@ -1067,7 +1067,7 @@ export async function handleSltExchange(request: Request, env: Env): Promise<Res
       family_id:      user.family_id,
       display_name:   user.display_name,
       role:           'parent',
-      parenting_role: user.granted_by ? 'CO_PARENT' : 'LEAD_PARENT',
+      parenting_role: user.parent_role === 'lead' ? 'LEAD_PARENT' : 'CO_PARENT',
       has_pin:        user.parent_pin_hash !== null,
       has_password:   user.password_hash   !== null,
       google_picture: user.google_picture  ?? null,
