@@ -20,7 +20,7 @@ interface Props {
   onComingSoon: () => void
 }
 
-export function SecuritySettings({ profile, toast, onBack, onComingSoon }: Props) {
+export function SecuritySettings({ profile, toast, onBack, onComingSoon: _onComingSoon }: Props) {
   const [, setSearchParams] = useSearchParams()
   const [view, setView] = useState<SecurityView>(() => {
     const v = new URLSearchParams(window.location.search).get('view')
@@ -54,7 +54,6 @@ export function SecuritySettings({ profile, toast, onBack, onComingSoon }: Props
 
   // Menu
   const hasPinSetup = profile?.has_pin ?? false
-  const hasPassword = profile?.has_password ?? false
 
   return (
     <div className="space-y-4">
@@ -63,15 +62,9 @@ export function SecuritySettings({ profile, toast, onBack, onComingSoon }: Props
       <SectionCard>
         <SettingsRow
           icon={<Lock size={15} />}
-          label={hasPassword ? 'PIN Management' : 'Set a Password First'}
-          description={
-            hasPassword
-              ? hasPinSetup
-                ? 'Change or reset your parent PIN'
-                : 'Set up a 4-digit parent PIN'
-              : 'A password is required before setting a PIN'
-          }
-          onClick={hasPassword ? () => setView('pin') : onComingSoon}
+          label="PIN Management"
+          description={hasPinSetup ? 'Change or reset your parent PIN' : 'Set up a 4-digit parent PIN'}
+          onClick={() => setView('pin')}
         />
         <SettingsRow
           icon={<Eye size={15} />}
