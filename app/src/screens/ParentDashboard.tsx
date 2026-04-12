@@ -248,6 +248,9 @@ export function ParentDashboard() {
           </header>
           <div className="flex-1 overflow-y-auto max-w-[560px] mx-auto w-full px-3.5 py-4">
             <ParentSettingsTab familyId={familyId} onChildrenChange={setChildren} />
+            <p className="text-center text-[10px] text-[var(--color-text-muted)] opacity-50 tracking-wide mt-4 pb-2">
+              v{__APP_VERSION__}
+            </p>
           </div>
         </div>
       )}
