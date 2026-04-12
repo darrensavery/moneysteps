@@ -866,6 +866,7 @@ export async function handleGoogleCallback(request: Request, env: Env): Promise<
   const stateParam  = url.searchParams.get('state');
   const appUrl      = 'https://app.morechard.com';
   const redirectUri = 'https://morechard-api.darren-savery.workers.dev/auth/google/callback';
+  void redirectUri; // used in token exchange body below
 
   // ── Step 1: CSRF validation (HMAC-signed state, no cookie needed) ──
   if (!stateParam || !code) {
@@ -896,9 +897,10 @@ export async function handleGoogleCallback(request: Request, env: Env): Promise<
   });
 
   if (!tokenRes.ok) {
+    const errBody = await tokenRes.text();
     return new Response(null, {
       status: 302,
-      headers: { 'Location': `${appUrl}/auth/login?error=google_exchange`, 'Set-Cookie': clearCookie },
+      headers: { 'Location': `${appUrl}/auth/login?error=google_exchange&detail=${encodeURIComponent(errBody.slice(0, 100))}` },
     });
   }
 
@@ -908,17 +910,17 @@ export async function handleGoogleCallback(request: Request, env: Env): Promise<
   let googlePayload: GoogleIdTokenPayload;
   try {
     googlePayload = await verifyGoogleIdToken(tokenData.id_token, env.GOOGLE_CLIENT_ID);
-  } catch {
+  } catch (err) {
     return new Response(null, {
       status: 302,
-      headers: { 'Location': `${appUrl}/auth/login?error=google_exchange`, 'Set-Cookie': clearCookie },
+      headers: { 'Location': `${appUrl}/auth/login?error=google_exchange&detail=${encodeURIComponent(String(err).slice(0, 100))}` },
     });
   }
 
   if (!googlePayload.email_verified) {
     return new Response(null, {
       status: 302,
-      headers: { 'Location': `${appUrl}/auth/login?error=unverified`, 'Set-Cookie': clearCookie },
+      headers: { 'Location': `${appUrl}/auth/login?error=unverified` },
     });
   }
 
@@ -934,10 +936,7 @@ export async function handleGoogleCallback(request: Request, env: Env): Promise<
   if (!user) {
     return new Response(null, {
       status: 302,
-      headers: {
-        'Location':   `${appUrl}/auth/login?error=no_account&hint=${encodeURIComponent(normEmail)}`,
-        'Set-Cookie': clearCookie,
-      },
+      headers: { 'Location': `${appUrl}/auth/login?error=no_account&hint=${encodeURIComponent(normEmail)}` },
     });
   }
 
