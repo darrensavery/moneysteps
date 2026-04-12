@@ -39,6 +39,7 @@ export function SecuritySettings({ profile, toast, onBack, onComingSoon: _onComi
     return (
       <PinManagementSettings
         profile={profile}
+        hasPassword={profile?.has_password ?? false}
         onBack={() => setView('menu')}
       />
     )

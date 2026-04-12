@@ -7,7 +7,7 @@
  *   forgot          — collect account password to reset PIN (no current PIN check)
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import type { MeResult } from '../../../lib/api'
 import { setParentPin, resetPinWithPassword } from '../../../lib/api'
 import { isBiometricsAvailable, hasBiometricCredential, registerBiometrics } from '../../../lib/biometrics'
@@ -18,8 +18,9 @@ const PIN_LENGTH = 4
 type PinState = 'verify-current' | 'set-new' | 'forgot'
 
 interface Props {
-  profile: MeResult | null
-  onBack:  () => void
+  profile:     MeResult | null
+  hasPassword: boolean
+  onBack:      () => void
 }
 
 // ── Dot row ───────────────────────────────────────────────────────────────────
@@ -81,17 +82,10 @@ function DigitPad({ onDigit, onBackspace }: { onDigit: (d: string) => void; onBa
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function PinManagementSettings({ profile, onBack }: Props) {
-  const hasPinAlready = profile?.has_pin      ?? false
-  const hasPassword   = profile?.has_password  // undefined = still loading
+export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
+  const hasPinAlready = profile?.has_pin ?? false
 
-  const [pinState, setPinState] = useState<PinState>('verify-current')
-
-  useEffect(() => {
-    if (hasPassword === false) {
-      setPinState(s => s === 'verify-current' ? 'set-new' : s)
-    }
-  }, [hasPassword])
+  const [pinState, setPinState] = useState<PinState>(hasPassword ? 'verify-current' : 'set-new')
   const [password,    setPassword]    = useState('')
   const [pwError,     setPwError]     = useState('')
 
@@ -245,16 +239,6 @@ export function PinManagementSettings({ profile, onBack }: Props) {
   }
 
   // ── verify-current / forgot — password collection step ────────────────────
-
-  // Don't show password form until we know whether user has a password
-  if (profile === null) {
-    return (
-      <div className="space-y-4">
-        <SectionHeader title="Set Up PIN" onBack={onBack} />
-        <div className="h-32 flex items-center justify-center text-[var(--color-text-muted)] text-[13px]">Loading…</div>
-      </div>
-    )
-  }
 
   if (pinState === 'verify-current' || pinState === 'forgot') {
     const isForgot = pinState === 'forgot'
