@@ -15,7 +15,7 @@ export default function LoginScreen() {
   const [magicSent,  setMagicSent]  = useState(false)
   const [magicError, setMagicError] = useState('')
 
-  const workerUrl = (import.meta.env.VITE_WORKER_URL as string) ?? ''
+  const workerUrl = (import.meta.env.VITE_WORKER_URL as string | undefined) ?? 'https://api.morechard.com'
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault()
