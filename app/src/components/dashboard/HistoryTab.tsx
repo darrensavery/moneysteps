@@ -64,7 +64,7 @@ export function ActivityTab({ familyId, child }: Props) {
       await createPayout({
         family_id: familyId, child_id: child.id,
         amount: Math.round(parseFloat(payoutAmount) * 100),
-        currency: 'GBP',
+        currency: 'GBP', // TODO: thread actual family currency once currency is wired to history API
         note: payoutNote || undefined,
       })
       setShowPayout(false)
@@ -87,7 +87,7 @@ export function ActivityTab({ familyId, child }: Props) {
       await createBonus({
         family_id: familyId, child_id: child.id,
         amount: Math.round(parseFloat(bonusAmount) * 100),
-        currency: 'GBP',
+        currency: 'GBP', // TODO: thread actual family currency once currency is wired to history API
         reason: bonusReason.trim(),
       })
       setShowBonus(false)

@@ -13,6 +13,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { ChildRecord } from '../../lib/api'
 import { createChore } from '../../lib/api'
+import { currencySymbol } from '../../lib/locale'
 
 interface Props {
   familyId: string
@@ -65,7 +66,6 @@ const QUICK_AMOUNTS: Record<string, { label: string; value: number }[]> = {
   ],
 }
 
-function currencySymbol(c: string) { return c === 'PLN' ? 'zł' : '£' }
 
 export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose }: Props) {
   const [form, setForm]             = useState<Form>(BLANK)

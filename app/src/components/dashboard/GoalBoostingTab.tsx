@@ -11,6 +11,7 @@
 
 import { useState, useEffect } from 'react'
 import type { ChildRecord, Goal } from '../../lib/api'
+import { currencySymbol } from '../../lib/locale'
 import {
   getGoals, updateGoal, contributeToGoal,
   formatCurrency, effectiveTarget,
@@ -202,7 +203,7 @@ export function GoalBoostingTab({ familyId, child }: Props) {
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-[var(--color-text-muted)]">
-                    {currency === 'GBP' ? '£' : 'zł'}
+                    {currencySymbol(currency)}
                   </span>
                   <input
                     type="number"

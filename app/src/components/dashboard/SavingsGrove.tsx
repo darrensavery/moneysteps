@@ -12,6 +12,7 @@
 import { useState, useMemo } from 'react'
 import type { Chore, Goal } from '../../lib/api'
 import { createGoal, formatCurrency } from '../../lib/api'
+import { currencySymbol } from '../../lib/locale'
 
 const CATEGORIES = [
   { id: 'Toys',     label: '🧸 Toys' },
@@ -160,7 +161,7 @@ export function SavingsGrove({
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[var(--color-text-muted)]">
-                {currency === 'GBP' ? '£' : currency === 'PLN' ? 'zł' : '$'}
+                {currencySymbol(currency)}
               </span>
               <input
                 type="number"
