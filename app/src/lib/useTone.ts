@@ -80,7 +80,7 @@ const TEEN_TONE_BASE = {
 function buildTerminology(locale: AppLocale): Terminology {
   if (locale === 'pl') return { money: 'kieszonkowe', allowanceLabel: 'Kieszonkowe' }
   if (locale === 'en-US') return { money: 'allowance', allowanceLabel: 'Allowance' }
-  return { money: 'pocket money', allowanceLabel: 'Allowance' }  // en-GB default
+  return { money: 'pocket money', allowanceLabel: 'Pocket money' }  // en-GB / en-AU fallback
 }
 
 export function useTone(teenMode: number | boolean | undefined): Tone {
