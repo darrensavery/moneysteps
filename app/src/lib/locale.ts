@@ -84,7 +84,7 @@ export function useLocale(): { locale: AppLocale; setLocale: (l: AppLocale) => P
   const setLocale = useCallback(async (l: AppLocale) => {
     setLocaleState(l)
     setLocaleStorage(l)
-    await updateSettings({ locale: l })
+    await updateSettings({ locale: l }).catch(() => {/* offline — localStorage written, syncs on next load */})
   }, [])
 
   return { locale, setLocale }
