@@ -97,6 +97,7 @@ type TopSection =
   | 'appearance'
   | 'billing'
   | 'data'
+  | 'referrals'
   | 'about'
 
 type View =
