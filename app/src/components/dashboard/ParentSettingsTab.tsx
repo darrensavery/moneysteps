@@ -200,6 +200,7 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
     setLeadCount(leads)
     setTrial(t)
     if (s?.avatar_id) localStorage.setItem('mc_parent_avatar', s.avatar_id)
+    if (s?.locale)    localStorage.setItem('mc_locale', s.locale)
     const [modes, growths] = await Promise.all([
       Promise.all(
         c.map(child => getChildSettings(child.id).then(cs => [child.id, cs.teen_mode] as const).catch(() => [child.id, 0] as const))
