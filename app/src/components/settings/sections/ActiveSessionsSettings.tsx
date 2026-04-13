@@ -28,6 +28,7 @@ function parseUA(ua: string | null): string {
 // ── Relative time ─────────────────────────────────────────────────────────────
 
 function relativeTime(unixSeconds: number): string {
+  if (!unixSeconds) return 'Unknown'
   const diffMs  = Date.now() - unixSeconds * 1000
   const diffSec = Math.floor(diffMs / 1000)
   if (diffSec < 60)    return 'just now'

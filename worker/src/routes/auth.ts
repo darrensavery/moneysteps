@@ -315,9 +315,9 @@ export async function handleChildLogin(request: Request, env: Env): Promise<Resp
   const jti = nanoid();
 
   await env.DB
-    .prepare(`INSERT INTO sessions (jti, user_id, family_id, role, expires_at, ip_address)
-              VALUES (?,?,?,'child',?,?)`)
-    .bind(jti, user.id, family_id, now + CHILD_JWT_EXPIRY, ip)
+    .prepare(`INSERT INTO sessions (jti, user_id, family_id, role, issued_at, expires_at, ip_address)
+              VALUES (?,?,?,'child',?,?,?)`)
+    .bind(jti, user.id, family_id, now, now + CHILD_JWT_EXPIRY, ip)
     .run();
 
   const token = await signJwt(
@@ -1155,9 +1155,9 @@ async function issueParentJwt(userId: string, familyId: string, request: Request
   const ua = request.headers.get('User-Agent') ?? '';
 
   await env.DB
-    .prepare(`INSERT INTO sessions (jti, user_id, family_id, role, expires_at, ip_address, user_agent)
-              VALUES (?,?,?,'parent',?,?,?)`)
-    .bind(jti, userId, familyId, now + PARENT_JWT_EXPIRY, ip, ua)
+    .prepare(`INSERT INTO sessions (jti, user_id, family_id, role, issued_at, expires_at, ip_address, user_agent)
+              VALUES (?,?,?,'parent',?,?,?,?)`)
+    .bind(jti, userId, familyId, now, now + PARENT_JWT_EXPIRY, ip, ua)
     .run();
 
   const token = await signJwt(
