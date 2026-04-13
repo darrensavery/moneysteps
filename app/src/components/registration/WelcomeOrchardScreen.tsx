@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { addChild } from '@/lib/api'
 import { track } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
+import { useTone } from '@/lib/useTone'
 
 interface Props {
   displayName?: string
@@ -31,6 +32,7 @@ interface NewChild {
 }
 
 export function WelcomeOrchardScreen({ displayName, onDone }: Props) {
+  const { terminology } = useTone(0)  // parent view — no teen mode in registration
   const [phase,      setPhase]     = useState<Phase>('welcome')
   const [child,      setChild]     = useState<NewChild>({ name: '', openingBalance: '', earningsMode: 'HYBRID' })
   const [saving,     setSaving]    = useState(false)
@@ -172,7 +174,7 @@ export function WelcomeOrchardScreen({ displayName, onDone }: Props) {
           {/* Earnings mode */}
           <div className="space-y-2">
             <label className="text-[13px] font-semibold text-[var(--color-text)]">
-              How will {childFirstName} receive pocket money?
+              How will {childFirstName} receive {terminology.money}?
             </label>
             <div className="grid grid-cols-3 gap-2">
               {([

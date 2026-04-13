@@ -14,6 +14,7 @@ import {
 import type { ChildRecord, ChildGrowthSettings } from '../../../lib/api'
 import { cn } from '../../../lib/utils'
 import { SettingsRow, SectionCard, SectionHeader } from '../shared'
+import { useTone } from '../../../lib/useTone'
 
 // ── Growth Path config ────────────────────────────────────────────────────────
 
@@ -50,6 +51,7 @@ export function ChildProfileSettings({
   child, isTeen, isBusy, growth, growthBusy, isLead,
   onTeenModeToggle, onGrowthUpdate, onComingSoon, onBack,
 }: Props) {
+  const { terminology } = useTone(0)  // parent settings — never teen view
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -117,7 +119,7 @@ export function ChildProfileSettings({
         <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Individual Rules</p>
         <SectionCard>
           <SettingsRow icon={<Check size={15} />} label="Approval Mode" description="Parental sign-off or self-reported (trust-based)" onClick={onComingSoon} />
-          <SettingsRow icon={<Calendar size={15} />} label="Allowance Status" description="Pause or resume the flow of funds to this account" onClick={onComingSoon} />
+          <SettingsRow icon={<Calendar size={15} />} label={`${terminology.allowanceLabel} Status`} description="Pause or resume the flow of funds to this account" onClick={onComingSoon} />
           <SettingsRow icon={<Shield size={15} />} label="Safety Net" description="Overdraft limit for this child — currently £0" onClick={onComingSoon} />
 
           {/* Growth Path */}

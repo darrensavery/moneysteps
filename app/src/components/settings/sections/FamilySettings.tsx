@@ -12,6 +12,7 @@ import type { ChildRecord, ChildGrowthSettings } from '../../../lib/api'
 import { AvatarSVG } from '../../../lib/avatars'
 import { Toast, SettingsRow, SectionCard, SectionHeader, ReadOnlyBadge } from '../shared'
 import { ChildProfileSettings } from './ChildProfileSettings'
+import { useTone } from '../../../lib/useTone'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ export function FamilySettings({
   isLead, toast, onBack, onComingSoon,
   onAddChild, onTeenModeToggle, onGrowthUpdate, onGenerateInvite,
 }: Props) {
+  const { terminology } = useTone(0)  // parent settings — never teen view
   const [activeChildId,  setActiveChildId]  = useState<string | null>(null)
   const [showAddChild,   setShowAddChild]   = useState(false)
   const [newChildName,   setNewChildName]   = useState('')
@@ -192,7 +194,7 @@ export function FamilySettings({
           {!isLead && <ReadOnlyBadge />}
         </div>
         <SectionCard>
-          <SettingsRow icon={<Calendar size={15} />} label="Allowance Day" description="Weekly day for automated allowance drops — your family's harvest day" onClick={onComingSoon} disabled={!isLead} />
+          <SettingsRow icon={<Calendar size={15} />} label={`${terminology.allowanceLabel} Day`} description={`Weekly day for automated ${terminology.money} drops — your family's harvest day`} onClick={onComingSoon} disabled={!isLead} />
           <SettingsRow icon={<Shield size={15} />} label="Global Overdraft Policy" description="Toggle bailouts — default: off / £0" onClick={onComingSoon} disabled={!isLead} />
         </SectionCard>
       </div>
