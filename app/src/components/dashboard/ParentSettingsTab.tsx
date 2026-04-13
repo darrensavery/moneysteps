@@ -77,7 +77,7 @@ import {
   type MeResult, type TrialStatus,
 } from '../../lib/api'
 import { track } from '../../lib/analytics'
-import { getLocale, isPolish } from '../../lib/locale'
+import { useLocale, isPolish } from '../../lib/locale'
 import { cn } from '../../lib/utils'
 import { ProfileSettings }    from '../settings/sections/ProfileSettings'
 import { FamilySettings }     from '../settings/sections/FamilySettings'
@@ -145,6 +145,7 @@ function SectionCard({ children }: { children: React.ReactNode }) {
 export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
   const identity        = getDeviceIdentity()
   const isLead          = identity?.parenting_role !== 'CO_PARENT'  // default to lead if unset (existing accounts)
+  const { locale }      = useLocale()
 
   const [view,          setView]          = useState<View>({ type: 'menu' })
   const [children,      setChildren]      = useState<ChildRecord[]>([])
@@ -201,7 +202,11 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
     setLeadCount(leads)
     setTrial(t)
     if (s?.avatar_id) localStorage.setItem('mc_parent_avatar', s.avatar_id)
-    if (s?.locale)    localStorage.setItem('mc_locale', s.locale)
+    // Only seed from D1 if localStorage has no valid locale yet (avoids clobbering a recent user change)
+    const validLocales = ['en-GB', 'en-US', 'pl']
+    if (s?.locale && !validLocales.includes(localStorage.getItem('mc_locale') ?? '')) {
+      localStorage.setItem('mc_locale', s.locale)
+    }
     const [modes, growths] = await Promise.all([
       Promise.all(
         c.map(child => getChildSettings(child.id).then(cs => [child.id, cs.teen_mode] as const).catch(() => [child.id, 0] as const))
@@ -352,7 +357,6 @@ export function ParentSettingsTab({ familyId, onChildrenChange }: Props) {
         const licensed = trial?.has_lifetime_license
         if (licensed) return null
 
-        const locale = getLocale()
         const pl = isPolish(locale)
         const daysLeft = trial?.days_remaining ?? null
         const isActivated = trial?.is_activated ?? false

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { ChildRecord } from '../lib/api'
 import { getChildren, getCompletions } from '../lib/api'
 import { getDeviceIdentity } from '../lib/deviceIdentity'
-import { getLocale, isPolish } from '../lib/locale'
+import { useLocale, isPolish } from '../lib/locale'
 import { AvatarSVG } from '../lib/avatars'
 import { ChoresTab }   from '../components/dashboard/JobsTab'
 import { PendingTab }  from '../components/dashboard/PendingTab'
@@ -17,6 +17,7 @@ type Tab = 'chores' | 'approvals' | 'activity' | 'insights' | 'goals'
 
 export function ParentDashboard() {
   const navigate   = useNavigate()
+  const { locale } = useLocale()
   const familyId   = getDeviceIdentity()?.family_id ?? ''
 
   const [tab,        setTab]        = useState<Tab>(() => {
@@ -312,7 +313,6 @@ export function ParentDashboard() {
         ) : (
           (() => {
             const identity = getDeviceIdentity()
-            const locale   = getLocale()
             const name     = identity?.display_name ?? ''
             const welcome  = isPolish(locale)
               ? `Witaj, ${name}. Zacznijmy uprawę Twojego sadu.`
