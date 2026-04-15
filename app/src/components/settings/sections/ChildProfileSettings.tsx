@@ -2,7 +2,7 @@
  * ChildProfileSettings — Child profile sub-menu.
  *
  * Rendered by FamilySettings when a child row is tapped.
- * Owns: growth path expand/collapse state.
+ * Owns: activeView routing, sheet open/close state, growth path expand/collapse.
  * Parent (FamilySettings) owns: teen modes, growth settings, busy flags.
  */
 
@@ -12,9 +12,11 @@ import {
   TreePine, Eye, Lock,
 } from 'lucide-react'
 import type { ChildRecord, ChildGrowthSettings } from '../../../lib/api'
+import { renameChild, setChildPin as apiSetChildPin } from '../../../lib/api'
 import { cn } from '../../../lib/utils'
 import { SettingsRow, SectionCard, SectionHeader } from '../shared'
 import { useTone } from '../../../lib/useTone'
+import { ChildLoginHistory } from './ChildLoginHistory'
 
 // ── Growth Path config ────────────────────────────────────────────────────────
 
@@ -33,197 +35,420 @@ const FREQ_LABELS: Record<string, string> = {
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  child:            ChildRecord
-  isTeen:           boolean
-  isBusy:           boolean
-  growth:           ChildGrowthSettings | undefined
-  growthBusy:       string | null
-  isLead:           boolean
-  onTeenModeToggle: (childId: string) => void
-  onGrowthUpdate:   (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
-  onComingSoon:     () => void
-  onBack:           () => void
+  child:             ChildRecord
+  isTeen:            boolean
+  isBusy:            boolean
+  growth:            ChildGrowthSettings | undefined
+  growthBusy:        string | null
+  isLead:            boolean
+  onTeenModeToggle:  (childId: string) => void
+  onGrowthUpdate:    (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
+  onRenameChild:     (childId: string, newName: string) => void
+  onPinResetSuccess: () => void
+  onComingSoon:      () => void
+  onBack:            () => void
+}
+
+// ── DisplayName Sheet ─────────────────────────────────────────────────────────
+
+function DisplayNameSheet({
+  current, childId, onSaved, onClose,
+}: { current: string; childId: string; onSaved: (name: string) => void; onClose: () => void }) {
+  const [value,   setValue]   = useState(current)
+  const [saving,  setSaving]  = useState(false)
+  const [errMsg,  setErrMsg]  = useState<string | null>(null)
+
+  const trimmed   = value.trim()
+  const unchanged = trimmed === current.trim()
+  const disabled  = !trimmed || unchanged || saving
+
+  async function handleSave() {
+    if (disabled) return
+    setSaving(true)
+    setErrMsg(null)
+    try {
+      const result = await renameChild(childId, trimmed)
+      onSaved(result.display_name)
+      onClose()
+    } catch {
+      setErrMsg('Could not update name — please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
+      <div
+        className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl p-6 space-y-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <p className="text-[17px] font-bold text-[var(--color-text)]">Edit Display Name</p>
+        <input
+          autoFocus
+          type="text"
+          maxLength={40}
+          value={value}
+          onChange={e => { setValue(e.target.value); setErrMsg(null) }}
+          onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+          placeholder="Child's name"
+          className="w-full border border-[var(--color-border)] rounded-xl px-4 py-3 text-[15px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+        />
+        {errMsg && <p className="text-[13px] text-red-500">{errMsg}</p>}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[14px] font-semibold text-[var(--color-text-muted)] cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={disabled}
+            className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[14px] font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer"
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Reset PIN Sheet ───────────────────────────────────────────────────────────
+
+const PIN_LENGTH = 4
+
+function ResetPinSheet({
+  child, onSuccess, onClose,
+}: { child: ChildRecord; onSuccess: () => void; onClose: () => void }) {
+  const [digits,  setDigits]  = useState<string[]>([])
+  const [saving,  setSaving]  = useState(false)
+  const [errMsg,  setErrMsg]  = useState<string | null>(null)
+
+  function handleDigit(d: string) {
+    if (digits.length >= PIN_LENGTH || saving) return
+    if ('vibrate' in navigator) navigator.vibrate(10)
+    const next = [...digits, d]
+    setDigits(next)
+    if (next.length === PIN_LENGTH) submitPin(next.join(''))
+  }
+
+  function handleBackspace() {
+    setDigits(prev => prev.slice(0, -1))
+    setErrMsg(null)
+  }
+
+  async function submitPin(pin: string) {
+    setSaving(true)
+    setErrMsg(null)
+    try {
+      await apiSetChildPin(child.id, pin)
+      onSuccess()
+      onClose()
+    } catch {
+      setErrMsg('Something went wrong — try again.')
+      setDigits([])
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
+      <div
+        className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl p-6 space-y-5"
+        onClick={e => e.stopPropagation()}
+      >
+        <p className="text-[17px] font-bold text-[var(--color-text)] text-center">
+          Set a new PIN for {child.display_name}
+        </p>
+
+        {/* Dot display */}
+        <div className="flex justify-center gap-4">
+          {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                'w-3.5 h-3.5 rounded-full border-2 transition-colors',
+                i < digits.length
+                  ? 'bg-[var(--brand-primary)] border-[var(--brand-primary)]'
+                  : 'bg-transparent border-[var(--color-border)]',
+              )}
+            />
+          ))}
+        </div>
+
+        {errMsg && <p className="text-[13px] text-red-500 text-center">{errMsg}</p>}
+
+        {/* Keypad */}
+        <div className="grid grid-cols-3 gap-2">
+          {['1','2','3','4','5','6','7','8','9'].map(d => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => handleDigit(d)}
+              disabled={saving}
+              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+            >
+              {d}
+            </button>
+          ))}
+          <div />
+          <button
+            type="button"
+            onClick={() => handleDigit('0')}
+            disabled={saving}
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+          >
+            0
+          </button>
+          <button
+            type="button"
+            onClick={handleBackspace}
+            disabled={saving}
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[18px] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+            aria-label="Backspace"
+          >
+            ⌫
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full text-[13px] text-[var(--color-text-muted)] hover:underline cursor-pointer pt-1"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+type ActiveView = 'root' | 'login-history'
+
 export function ChildProfileSettings({
   child, isTeen, isBusy, growth, growthBusy, isLead,
-  onTeenModeToggle, onGrowthUpdate, onComingSoon, onBack,
+  onTeenModeToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onComingSoon, onBack,
 }: Props) {
-  const { terminology } = useTone(0)  // parent settings — never teen view
-  const [expanded, setExpanded] = useState(false)
+  const { terminology } = useTone(0)
+  const [expanded,        setExpanded]        = useState(false)
+  const [activeView,      setActiveView]      = useState<ActiveView>('root')
+  const [showRenameSheet, setShowRenameSheet] = useState(false)
+  const [showPinSheet,    setShowPinSheet]    = useState(false)
+
+  if (activeView === 'login-history') {
+    return (
+      <ChildLoginHistory
+        childId={child.id}
+        childName={child.display_name}
+        onBack={() => setActiveView('root')}
+      />
+    )
+  }
 
   return (
-    <div className="space-y-4">
-      <SectionHeader title={child.display_name} onBack={onBack} />
+    <>
+      {showRenameSheet && (
+        <DisplayNameSheet
+          current={child.display_name}
+          childId={child.id}
+          onSaved={newName => onRenameChild(child.id, newName)}
+          onClose={() => setShowRenameSheet(false)}
+        />
+      )}
+      {showPinSheet && (
+        <ResetPinSheet
+          child={child}
+          onSuccess={onPinResetSuccess}
+          onClose={() => setShowPinSheet(false)}
+        />
+      )}
 
-      {/* Identity & Security */}
-      <div>
-        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Identity & Security</p>
-        <SectionCard>
-          <SettingsRow
-            icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-            label="Display Name" description="Edit this child's name" onClick={onComingSoon}
-          />
-          <SettingsRow icon={<Lock size={15} />} label="Reset PIN" description="Generate a new 6-digit secret key" onClick={onComingSoon} />
-          <SettingsRow
-            icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>}
-            label="Login History" description="Recent sessions and device activity" onClick={onComingSoon}
-          />
-        </SectionCard>
-      </div>
+      <div className="space-y-4">
+        <SectionHeader title={child.display_name} onBack={onBack} />
 
-      {/* Interface & Experience */}
-      <div>
-        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Interface & Experience</p>
-        <SectionCard>
-          <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
-                  <Eye size={15} />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[14px] font-semibold text-[var(--color-text)]">Interface Style</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
-                    {isTeen ? "Detailed 'Professional' view" : "Simplified 'Seedling' view"}
-                  </p>
+        {/* Identity & Security */}
+        <div>
+          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Identity & Security</p>
+          <SectionCard>
+            <SettingsRow
+              icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+              label="Display Name"
+              description="Edit this child's name"
+              onClick={() => setShowRenameSheet(true)}
+            />
+            <SettingsRow
+              icon={<Lock size={15} />}
+              label="Reset PIN"
+              description="Update this child's 4-digit login PIN"
+              onClick={() => setShowPinSheet(true)}
+            />
+            <SettingsRow
+              icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>}
+              label="Login History"
+              description="Recent sessions and device activity"
+              onClick={() => setActiveView('login-history')}
+            />
+          </SectionCard>
+        </div>
+
+        {/* Interface & Experience */}
+        <div>
+          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Interface & Experience</p>
+          <SectionCard>
+            <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+                    <Eye size={15} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-semibold text-[var(--color-text)]">Interface Style</p>
+                    <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+                      {isTeen ? "Detailed 'Professional' view" : "Simplified 'Seedling' view"}
+                    </p>
+                  </div>
                 </div>
+                <button
+                  role="switch"
+                  aria-checked={isTeen}
+                  onClick={() => onTeenModeToggle(child.id)}
+                  disabled={isBusy}
+                  className={cn(
+                    'shrink-0 relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]',
+                    'disabled:opacity-50',
+                    isTeen ? 'bg-[var(--brand-primary)]' : 'bg-[var(--color-border)]',
+                  )}
+                >
+                  <span className={cn(
+                    'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200',
+                    isTeen ? 'translate-x-5' : 'translate-x-0',
+                  )} />
+                </button>
               </div>
+            </div>
+            <SettingsRow icon={<TreePine size={15} />} label="Experience Level" description="Seedling View (under 12) or Professional View (12+)" onClick={onComingSoon} />
+          </SectionCard>
+        </div>
+
+        {/* Individual Rules */}
+        <div>
+          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Individual Rules</p>
+          <SectionCard>
+            <SettingsRow icon={<Check size={15} />} label="Approval Mode" description="Parental sign-off or self-reported (trust-based)" onClick={onComingSoon} />
+            <SettingsRow icon={<Calendar size={15} />} label={`${terminology.allowanceLabel} Status`} description="Pause or resume the flow of funds to this account" onClick={onComingSoon} />
+            <SettingsRow icon={<Shield size={15} />} label="Safety Net" description="Overdraft limit for this child — currently £0" onClick={onComingSoon} />
+
+            {/* Growth Path */}
+            <div className="px-4 py-3.5">
               <button
-                role="switch"
-                aria-checked={isTeen}
-                onClick={() => onTeenModeToggle(child.id)}
-                disabled={isBusy}
-                className={cn(
-                  'shrink-0 relative w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]',
-                  'disabled:opacity-50',
-                  isTeen ? 'bg-[var(--brand-primary)]' : 'bg-[var(--color-border)]',
-                )}
+                onClick={() => setExpanded(v => !v)}
+                className="w-full flex items-center justify-between cursor-pointer group"
               >
-                <span className={cn(
-                  'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200',
-                  isTeen ? 'translate-x-5' : 'translate-x-0',
-                )} />
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+                    <span className="text-[15px]">🌳</span>
+                  </span>
+                  <div className="text-left min-w-0">
+                    <p className="text-[14px] font-semibold text-[var(--color-text)]">Growth Path</p>
+                    <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+                      {(() => {
+                        const path = GROWTH_PATHS.find(p => p.mode === (growth?.earnings_mode ?? 'HYBRID'))
+                        return path ? `${path.icon} ${path.subtitle}` : '🌳 Allowance + Chores'
+                      })()}
+                    </p>
+                  </div>
+                </div>
+                <span className={cn('text-[var(--color-text-muted)] text-[12px] transition-transform duration-150', expanded ? 'rotate-180' : '')}>▾</span>
               </button>
+
+              {expanded && (
+                <div className="mt-3 space-y-1.5">
+                  {GROWTH_PATHS.map(path => {
+                    const active = (growth?.earnings_mode ?? 'HYBRID') === path.mode
+                    const busy   = growthBusy === child.id
+                    return (
+                      <button
+                        key={path.mode}
+                        disabled={busy}
+                        onClick={() => onGrowthUpdate(child.id, { earnings_mode: path.mode })}
+                        className={cn(
+                          'w-full text-left rounded-xl border px-3 py-2.5 transition-colors cursor-pointer disabled:opacity-50',
+                          active
+                            ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)]'
+                            : 'border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]',
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-[16px]">{path.icon}</span>
+                          <div className="min-w-0">
+                            <p className={cn('text-[13px] font-semibold', active ? 'text-[var(--brand-primary)]' : 'text-[var(--color-text)]')}>{path.title}</p>
+                            <p className="text-[11px] text-[var(--color-text-muted)] leading-snug mt-0.5">{path.description}</p>
+                          </div>
+                          {active && <Check size={14} className="ml-auto text-[var(--brand-primary)] shrink-0" />}
+                        </div>
+                      </button>
+                    )
+                  })}
+
+                  {(growth?.earnings_mode ?? 'HYBRID') !== 'CHORES' && (
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Amount (pence)</label>
+                        <input
+                          type="number" min={0} step={50}
+                          defaultValue={growth?.allowance_amount ?? 0}
+                          onBlur={e => {
+                            const val = parseInt(e.target.value, 10)
+                            if (!isNaN(val) && val >= 0) onGrowthUpdate(child.id, { allowance_amount: val })
+                          }}
+                          className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                        />
+                        <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">500 = £5.00</p>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Frequency</label>
+                        <select
+                          value={growth?.allowance_frequency ?? 'WEEKLY'}
+                          onChange={e => onGrowthUpdate(child.id, { allowance_frequency: e.target.value as 'WEEKLY' | 'BI_WEEKLY' | 'MONTHLY' })}
+                          className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer"
+                        >
+                          {Object.entries(FREQ_LABELS).map(([val, label]) => (
+                            <option key={val} value={val}>{label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* Danger Zone */}
+        {isLead && (
+          <div>
+            <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Danger Zone</p>
+            <div className="rounded-xl border-2 border-red-500 overflow-hidden">
+              <SettingsRow
+                icon={<AlertTriangle size={15} />}
+                label="Delete Profile"
+                description="Permanently uproot this child from the orchard — deletes their ledger and all data"
+                onClick={onComingSoon}
+                destructive
+              />
             </div>
           </div>
-          <SettingsRow icon={<TreePine size={15} />} label="Experience Level" description="Seedling View (under 12) or Professional View (12+)" onClick={onComingSoon} />
-        </SectionCard>
+        )}
       </div>
-
-      {/* Individual Rules */}
-      <div>
-        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Individual Rules</p>
-        <SectionCard>
-          <SettingsRow icon={<Check size={15} />} label="Approval Mode" description="Parental sign-off or self-reported (trust-based)" onClick={onComingSoon} />
-          <SettingsRow icon={<Calendar size={15} />} label={`${terminology.allowanceLabel} Status`} description="Pause or resume the flow of funds to this account" onClick={onComingSoon} />
-          <SettingsRow icon={<Shield size={15} />} label="Safety Net" description="Overdraft limit for this child — currently £0" onClick={onComingSoon} />
-
-          {/* Growth Path */}
-          <div className="px-4 py-3.5">
-            <button
-              onClick={() => setExpanded(v => !v)}
-              className="w-full flex items-center justify-between cursor-pointer group"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
-                  <span className="text-[15px]">🌳</span>
-                </span>
-                <div className="text-left min-w-0">
-                  <p className="text-[14px] font-semibold text-[var(--color-text)]">Growth Path</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
-                    {(() => {
-                      const path = GROWTH_PATHS.find(p => p.mode === (growth?.earnings_mode ?? 'HYBRID'))
-                      return path ? `${path.icon} ${path.subtitle}` : '🌳 Allowance + Chores'
-                    })()}
-                  </p>
-                </div>
-              </div>
-              <span className={cn('text-[var(--color-text-muted)] text-[12px] transition-transform duration-150', expanded ? 'rotate-180' : '')}>▾</span>
-            </button>
-
-            {expanded && (
-              <div className="mt-3 space-y-1.5">
-                {GROWTH_PATHS.map(path => {
-                  const active = (growth?.earnings_mode ?? 'HYBRID') === path.mode
-                  const busy   = growthBusy === child.id
-                  return (
-                    <button
-                      key={path.mode}
-                      disabled={busy}
-                      onClick={() => onGrowthUpdate(child.id, { earnings_mode: path.mode })}
-                      className={cn(
-                        'w-full text-left rounded-xl border px-3 py-2.5 transition-colors cursor-pointer disabled:opacity-50',
-                        active
-                          ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)]'
-                          : 'border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]',
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[16px]">{path.icon}</span>
-                        <div className="min-w-0">
-                          <p className={cn('text-[13px] font-semibold', active ? 'text-[var(--brand-primary)]' : 'text-[var(--color-text)]')}>{path.title}</p>
-                          <p className="text-[11px] text-[var(--color-text-muted)] leading-snug mt-0.5">{path.description}</p>
-                        </div>
-                        {active && <Check size={14} className="ml-auto text-[var(--brand-primary)] shrink-0" />}
-                      </div>
-                    </button>
-                  )
-                })}
-
-                {(growth?.earnings_mode ?? 'HYBRID') !== 'CHORES' && (
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Amount (pence)</label>
-                      <input
-                        type="number" min={0} step={50}
-                        defaultValue={growth?.allowance_amount ?? 0}
-                        onBlur={e => {
-                          const val = parseInt(e.target.value, 10)
-                          if (!isNaN(val) && val >= 0) onGrowthUpdate(child.id, { allowance_amount: val })
-                        }}
-                        className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-                      />
-                      <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">500 = £5.00</p>
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Frequency</label>
-                      <select
-                        value={growth?.allowance_frequency ?? 'WEEKLY'}
-                        onChange={e => onGrowthUpdate(child.id, { allowance_frequency: e.target.value as 'WEEKLY' | 'BI_WEEKLY' | 'MONTHLY' })}
-                        className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer"
-                      >
-                        {Object.entries(FREQ_LABELS).map(([val, label]) => (
-                          <option key={val} value={val}>{label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </SectionCard>
-      </div>
-
-      {/* Danger Zone */}
-      {isLead && (
-        <div>
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Danger Zone</p>
-          <div className="rounded-xl border-2 border-red-500 overflow-hidden">
-            <SettingsRow
-              icon={<AlertTriangle size={15} />}
-              label="Delete Profile"
-              description="Permanently uproot this child from the orchard — deletes their ledger and all data"
-              onClick={onComingSoon}
-              destructive
-            />
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   )
 }

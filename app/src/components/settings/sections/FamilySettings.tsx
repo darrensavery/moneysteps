@@ -27,9 +27,11 @@ interface Props {
   onBack:           () => void
   onComingSoon:     () => void
   onAddChild:       (name: string) => Promise<{ child_id: string; invite_code: string }>
-  onTeenModeToggle: (childId: string) => void
-  onGrowthUpdate:   (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
-  onGenerateInvite: () => Promise<{ code: string; expires_at: number }>
+  onTeenModeToggle:  (childId: string) => void
+  onGrowthUpdate:    (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
+  onRenameChild:     (childId: string, newName: string) => void
+  onPinResetSuccess: () => void
+  onGenerateInvite:  () => Promise<{ code: string; expires_at: number }>
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -37,7 +39,7 @@ interface Props {
 export function FamilySettings({
   children, teenModes, teenModeBusy, growthSettings, growthBusy,
   isLead, toast, onBack, onComingSoon,
-  onAddChild, onTeenModeToggle, onGrowthUpdate, onGenerateInvite,
+  onAddChild, onTeenModeToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onGenerateInvite,
 }: Props) {
   const { terminology } = useTone(0)  // parent settings — never teen view
   const [activeChildId,  setActiveChildId]  = useState<string | null>(null)
@@ -88,6 +90,8 @@ export function FamilySettings({
           isLead={isLead}
           onTeenModeToggle={onTeenModeToggle}
           onGrowthUpdate={onGrowthUpdate}
+          onRenameChild={onRenameChild}
+          onPinResetSuccess={onPinResetSuccess}
           onComingSoon={onComingSoon}
           onBack={() => setActiveChildId(null)}
         />

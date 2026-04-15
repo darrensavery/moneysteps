@@ -254,6 +254,15 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
     }
   }
 
+  function handleRenameChild(childId: string, newName: string) {
+    setChildren(prev => prev.map(c => c.id === childId ? { ...c, display_name: newName } : c))
+    showToast('Name updated')
+  }
+
+  function handlePinResetSuccess() {
+    showToast('PIN updated')
+  }
+
   async function handleGrowthUpdate(
     childId: string,
     patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>,
@@ -279,7 +288,7 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
 
   if (view.type === 'section') {
     if (view.section === 'account')    return <ProfileSection><ProfileSettings    profile={profile} settings={settings} identity={identity} family={family} isLead={isLead} leadCount={leadCount} onSaveName={handleSaveName} onSaveEmail={handleSaveEmail} onSetAvatar={handleSetAvatar} onBack={back} onComingSoon={comingSoon} toast={toast} /></ProfileSection>
-    if (view.section === 'family')     return <ProfileSection><FamilySettings     children={children} teenModes={teenModes} teenModeBusy={teenModeBusy} growthSettings={growthSettings} growthBusy={growthBusy} isLead={isLead} toast={toast} onBack={back} onComingSoon={comingSoon} onAddChild={handleAddChild} onTeenModeToggle={handleTeenModeToggle} onGrowthUpdate={handleGrowthUpdate} onGenerateInvite={handleGenerateInvite} /></ProfileSection>
+    if (view.section === 'family')     return <ProfileSection><FamilySettings     children={children} teenModes={teenModes} teenModeBusy={teenModeBusy} growthSettings={growthSettings} growthBusy={growthBusy} isLead={isLead} toast={toast} onBack={back} onComingSoon={comingSoon} onAddChild={handleAddChild} onTeenModeToggle={handleTeenModeToggle} onGrowthUpdate={handleGrowthUpdate} onRenameChild={handleRenameChild} onPinResetSuccess={handlePinResetSuccess} onGenerateInvite={handleGenerateInvite} /></ProfileSection>
     if (view.section === 'security')   return <ProfileSection><SecuritySettings   profile={profile} toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
     if (view.section === 'appearance') return <ProfileSection><AppearanceSettings toast={toast} onBack={back} /></ProfileSection>
     if (view.section === 'billing')    return <ProfileSection><BillingSettings    toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
