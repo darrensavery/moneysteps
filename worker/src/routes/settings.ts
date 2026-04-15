@@ -498,7 +498,8 @@ export async function handleChildLoginHistory(
         CASE WHEN s.jti IS NOT NULL THEN 1 ELSE 0 END AS is_current
       FROM child_logins cl
       LEFT JOIN sessions s
-        ON s.jti = cl.session_jti
+        ON cl.session_jti IS NOT NULL
+       AND s.jti = cl.session_jti
        AND s.user_id = ?
        AND s.revoked_at IS NULL
        AND s.expires_at > strftime('%s','now')
