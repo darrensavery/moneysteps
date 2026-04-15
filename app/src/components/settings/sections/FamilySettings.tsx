@@ -18,6 +18,8 @@ import { useTone } from '../../../lib/useTone'
 
 interface Props {
   children:         ChildRecord[]
+  teenModes:        Record<string, number>
+  teenModeBusy:     string | null
   growthSettings:   Record<string, ChildGrowthSettings>
   growthBusy:       string | null
   isLead:           boolean
@@ -25,6 +27,7 @@ interface Props {
   onBack:           () => void
   onComingSoon:     () => void
   onAddChild:       (name: string) => Promise<{ child_id: string; invite_code: string }>
+  onTeenModeToggle:  (childId: string) => void
   onGrowthUpdate:    (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
   onRenameChild:     (childId: string, newName: string) => void
   onPinResetSuccess: () => void
@@ -34,9 +37,9 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function FamilySettings({
-  children, growthSettings, growthBusy,
+  children, teenModes, teenModeBusy, growthSettings, growthBusy,
   isLead, toast, onBack, onComingSoon,
-  onAddChild, onGrowthUpdate, onRenameChild, onPinResetSuccess, onGenerateInvite,
+  onAddChild, onTeenModeToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onGenerateInvite,
 }: Props) {
   const { terminology } = useTone(0)  // parent settings — never teen view
   const [activeChildId,  setActiveChildId]  = useState<string | null>(null)
@@ -80,9 +83,12 @@ export function FamilySettings({
         {toast && <Toast message={toast} />}
         <ChildProfileSettings
           child={activeChild}
+          isTeen={teenModes[activeChild.id] === 1}
+          isBusy={teenModeBusy === activeChild.id}
           growth={growthSettings[activeChild.id]}
           growthBusy={growthBusy}
           isLead={isLead}
+          onTeenModeToggle={onTeenModeToggle}
           onGrowthUpdate={onGrowthUpdate}
           onRenameChild={onRenameChild}
           onPinResetSuccess={onPinResetSuccess}

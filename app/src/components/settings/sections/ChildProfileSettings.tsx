@@ -37,9 +37,12 @@ const FREQ_LABELS: Record<string, string> = {
 
 interface Props {
   child:             ChildRecord
+  isTeen:            boolean
+  isBusy:            boolean
   growth:            ChildGrowthSettings | undefined
   growthBusy:        string | null
   isLead:            boolean
+  onTeenModeToggle:  (childId: string) => void
   onGrowthUpdate:    (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
   onRenameChild:     (childId: string, newName: string) => void
   onPinResetSuccess: () => void
@@ -164,8 +167,8 @@ function ResetPinSheet({
 type ActiveView = 'root' | 'login-history'
 
 export function ChildProfileSettings({
-  child, growth, growthBusy, isLead,
-  onGrowthUpdate, onRenameChild, onPinResetSuccess, onComingSoon, onBack,
+  child, isTeen: _isTeen, isBusy: _isBusy, growth, growthBusy, isLead,
+  onTeenModeToggle: _onTeenModeToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onComingSoon, onBack,
 }: Props) {
   const { terminology } = useTone(0)
   const [expanded,     setExpanded]     = useState(false)

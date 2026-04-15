@@ -71,6 +71,7 @@ import type { ChildRecord, ChildGrowthSettings } from '../../lib/api'
 import {
   getChildren, addChild, generateInvite,
   getFamily, getSettings, updateSettings,
+  getChildSettings, updateChildSettings,
   getChildGrowth, updateChildGrowth,
   getMe, updateProfile, getLeadCount, getTrialStatus,
   type MeResult, type TrialStatus,
@@ -155,6 +156,8 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
   const [loading,       setLoading]       = useState(true)
 
   // Per-child settings (source of truth — passed to FamilySettings)
+  const [teenModes,      setTeenModes]      = useState<Record<string, number>>({})
+  const [teenModeBusy,   setTeenModeBusy]   = useState<string | null>(null)
   const [growthSettings, setGrowthSettings] = useState<Record<string, ChildGrowthSettings>>({})
   const [growthBusy,     setGrowthBusy]     = useState<string | null>(null)
 
@@ -206,9 +209,15 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
     if (s?.locale && !validLocales.includes(localStorage.getItem('mc_locale') ?? '')) {
       localStorage.setItem('mc_locale', s.locale)
     }
-    const growths = await Promise.all(
-      c.map(child => getChildGrowth(child.id).catch(() => null))
-    )
+    const [modes, growths] = await Promise.all([
+      Promise.all(
+        c.map(child => getChildSettings(child.id).then(cs => [child.id, cs.teen_mode] as const).catch(() => [child.id, 0] as const))
+      ),
+      Promise.all(
+        c.map(child => getChildGrowth(child.id).catch(() => null))
+      ),
+    ])
+    setTeenModes(Object.fromEntries(modes))
     const growthMap: Record<string, ChildGrowthSettings> = {}
     growths.forEach(g => { if (g) growthMap[g.id] = g })
     setGrowthSettings(growthMap)
@@ -231,6 +240,18 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
 
   async function handleGenerateInvite() {
     return generateInvite('co-parent')
+  }
+
+  async function handleTeenModeToggle(childId: string) {
+    const next = teenModes[childId] === 1 ? 0 : 1
+    setTeenModeBusy(childId)
+    try {
+      await updateChildSettings(childId, { teen_mode: next })
+      setTeenModes(prev => ({ ...prev, [childId]: next }))
+      track.uiStyleChanged({ style: next === 1 ? 'professional' : 'orchard', child_id: childId })
+    } finally {
+      setTeenModeBusy(null)
+    }
   }
 
   function handleRenameChild(childId: string, newName: string) {
@@ -267,7 +288,7 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
 
   if (view.type === 'section') {
     if (view.section === 'account')    return <ProfileSection><ProfileSettings    profile={profile} settings={settings} identity={identity} family={family} isLead={isLead} leadCount={leadCount} onSaveName={handleSaveName} onSaveEmail={handleSaveEmail} onSetAvatar={handleSetAvatar} onBack={back} onComingSoon={comingSoon} toast={toast} /></ProfileSection>
-    if (view.section === 'family')     return <ProfileSection><FamilySettings     children={children} growthSettings={growthSettings} growthBusy={growthBusy} isLead={isLead} toast={toast} onBack={back} onComingSoon={comingSoon} onAddChild={handleAddChild} onGrowthUpdate={handleGrowthUpdate} onRenameChild={handleRenameChild} onPinResetSuccess={handlePinResetSuccess} onGenerateInvite={handleGenerateInvite} /></ProfileSection>
+    if (view.section === 'family')     return <ProfileSection><FamilySettings     children={children} teenModes={teenModes} teenModeBusy={teenModeBusy} growthSettings={growthSettings} growthBusy={growthBusy} isLead={isLead} toast={toast} onBack={back} onComingSoon={comingSoon} onAddChild={handleAddChild} onTeenModeToggle={handleTeenModeToggle} onGrowthUpdate={handleGrowthUpdate} onRenameChild={handleRenameChild} onPinResetSuccess={handlePinResetSuccess} onGenerateInvite={handleGenerateInvite} /></ProfileSection>
     if (view.section === 'security')   return <ProfileSection><SecuritySettings   profile={profile} toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
     if (view.section === 'appearance') return <ProfileSection><AppearanceSettings toast={toast} onBack={back} /></ProfileSection>
     if (view.section === 'billing')    return <ProfileSection><BillingSettings    toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
