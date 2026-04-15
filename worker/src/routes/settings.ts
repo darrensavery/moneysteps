@@ -379,3 +379,153 @@ async function parseBody(request: Request): Promise<Record<string, unknown> | nu
   try { return await request.json() as Record<string, unknown>; }
   catch { return null; }
 }
+
+// ----------------------------------------------------------------
+// PATCH /api/child/:child_id/display-name
+// Parent renames a child. Caller must share the same family_id.
+// Body: { display_name: string }
+// ----------------------------------------------------------------
+export async function handleChildRename(
+  request: Request,
+  env: Env,
+  childId: string,
+): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
+  if (auth.role !== 'parent') return error('Only parents can rename children', 403);
+
+  let body: { display_name?: unknown };
+  try { body = await request.json() as { display_name?: unknown }; }
+  catch { return error('Invalid JSON body'); }
+
+  const raw = body.display_name;
+  if (!raw || typeof raw !== 'string') return error('display_name required');
+  const display_name = raw.trim();
+  if (!display_name)            return error('display_name cannot be empty');
+  if (display_name.length > 40) return error('display_name too long (max 40 chars)');
+
+  // Verify child belongs to the same family as caller
+  const child = await env.DB
+    .prepare(`SELECT u.id FROM users u
+              JOIN family_roles fr ON fr.user_id = u.id
+              WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
+    .bind(childId, auth.family_id)
+    .first<{ id: string }>();
+  if (!child) return error('Child not found', 404);
+
+  await env.DB
+    .prepare('UPDATE users SET display_name = ? WHERE id = ?')
+    .bind(display_name, childId)
+    .run();
+
+  return json({ ok: true, display_name });
+}
+
+// ----------------------------------------------------------------
+// UA parsing — pure string matching, no library dependency
+// Returns { device_label, device_type }
+// device_type: 'mobile' | 'tablet' | 'desktop'
+// ----------------------------------------------------------------
+function parseUserAgent(ua: string | null): { device_label: string; device_type: 'mobile' | 'tablet' | 'desktop' } {
+  if (!ua) return { device_label: 'Unknown Device', device_type: 'desktop' };
+
+  const s = ua.toLowerCase();
+
+  // Detect device base
+  let base: string;
+  let type: 'mobile' | 'tablet' | 'desktop';
+
+  if (s.includes('ipad')) {
+    base = 'iPad'; type = 'tablet';
+  } else if (s.includes('android') && (s.includes('tablet') || s.includes('tab'))) {
+    base = 'Android Tablet'; type = 'tablet';
+  } else if (s.includes('iphone')) {
+    base = 'iPhone'; type = 'mobile';
+  } else if (s.includes('android')) {
+    base = 'Android Phone'; type = 'mobile';
+  } else if (s.includes('cros')) {
+    base = 'Chromebook'; type = 'desktop';
+  } else if (s.includes('windows')) {
+    base = 'Windows PC'; type = 'desktop';
+  } else if (s.includes('macintosh') || s.includes('mac os x')) {
+    base = 'Mac'; type = 'desktop';
+  } else if (s.includes('linux')) {
+    base = 'Linux PC'; type = 'desktop';
+  } else {
+    return { device_label: 'Unknown Device', device_type: 'desktop' };
+  }
+
+  // Detect browser — order matters (Edge contains "chrome", so check Edge first)
+  let browser: string | null = null;
+  if (s.includes('edg/') || s.includes('edge/'))  browser = 'Edge';
+  else if (s.includes('firefox/'))                 browser = 'Firefox';
+  else if (s.includes('chrome/'))                  browser = 'Chrome';
+  else if (s.includes('safari/'))                  browser = 'Safari';
+
+  const device_label = browser ? `${base} · ${browser}` : base;
+  return { device_label, device_type: type };
+}
+
+// ----------------------------------------------------------------
+// GET /api/child/:child_id/login-history
+// Parent views a child's recent logins. Returns last 50, newest first.
+// Response: { logins: LoginEntry[] }
+// ----------------------------------------------------------------
+export async function handleChildLoginHistory(
+  request: Request,
+  env: Env,
+  childId: string,
+): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
+  if (auth.role !== 'parent') return error('Only parents can view login history', 403);
+
+  // Verify child belongs to same family
+  const child = await env.DB
+    .prepare(`SELECT u.id FROM users u
+              JOIN family_roles fr ON fr.user_id = u.id
+              WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
+    .bind(childId, auth.family_id)
+    .first<{ id: string }>();
+  if (!child) return error('Child not found', 404);
+
+  // Fetch last 50 logins; LEFT JOIN sessions to determine is_current
+  const { results } = await env.DB
+    .prepare(`
+      SELECT
+        cl.rowid          AS id,
+        cl.logged_at,
+        cl.ip_address,
+        cl.user_agent,
+        CASE WHEN s.jti IS NOT NULL THEN 1 ELSE 0 END AS is_current
+      FROM child_logins cl
+      LEFT JOIN sessions s
+        ON s.jti = cl.session_jti
+       AND s.user_id = ?
+       AND s.revoked_at IS NULL
+       AND s.expires_at > strftime('%s','now')
+      WHERE cl.child_id = ?
+      ORDER BY cl.logged_at DESC
+      LIMIT 50
+    `)
+    .bind(childId, childId)
+    .all<{
+      id: number;
+      logged_at: number;
+      ip_address: string | null;
+      user_agent: string | null;
+      is_current: number;
+    }>();
+
+  const logins = results.map(row => {
+    const { device_label, device_type } = parseUserAgent(row.user_agent);
+    return {
+      id:           row.id,
+      logged_at:    row.logged_at,
+      ip_address:   row.ip_address ?? 'Unknown',
+      device_label,
+      device_type,
+      is_current:   row.is_current === 1,
+    };
+  });
+
+  return json({ logins });
+}
