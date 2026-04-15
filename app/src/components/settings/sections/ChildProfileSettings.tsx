@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react'
+import type { FormEvent } from 'react'
 import {
   Shield, Calendar, AlertTriangle, Check,
   TreePine, Eye, Lock,
@@ -49,73 +50,6 @@ interface Props {
   onBack:            () => void
 }
 
-// ── DisplayName Sheet ─────────────────────────────────────────────────────────
-
-function DisplayNameSheet({
-  current, childId, onSaved, onClose,
-}: { current: string; childId: string; onSaved: (name: string) => void; onClose: () => void }) {
-  const [value,   setValue]   = useState(current)
-  const [saving,  setSaving]  = useState(false)
-  const [errMsg,  setErrMsg]  = useState<string | null>(null)
-
-  const trimmed   = value.trim()
-  const unchanged = trimmed === current.trim()
-  const disabled  = !trimmed || unchanged || saving
-
-  async function handleSave() {
-    if (disabled) return
-    setSaving(true)
-    setErrMsg(null)
-    try {
-      const result = await renameChild(childId, trimmed)
-      onSaved(result.display_name)
-      onClose()
-    } catch {
-      setErrMsg('Could not update name — please try again.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
-      <div
-        className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl p-6 space-y-4"
-        onClick={e => e.stopPropagation()}
-      >
-        <p className="text-[17px] font-bold text-[var(--color-text)]">Edit Display Name</p>
-        <input
-          autoFocus
-          type="text"
-          maxLength={40}
-          value={value}
-          onChange={e => { setValue(e.target.value); setErrMsg(null) }}
-          onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-          placeholder="Child's name"
-          className="w-full border border-[var(--color-border)] rounded-xl px-4 py-3 text-[15px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-        />
-        {errMsg && <p className="text-[13px] text-red-500">{errMsg}</p>}
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[14px] font-semibold text-[var(--color-text-muted)] cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={disabled}
-            className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[14px] font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer"
-          >
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ── Reset PIN Sheet ───────────────────────────────────────────────────────────
 
@@ -237,10 +171,13 @@ export function ChildProfileSettings({
   onTeenModeToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onComingSoon, onBack,
 }: Props) {
   const { terminology } = useTone(0)
-  const [expanded,        setExpanded]        = useState(false)
-  const [activeView,      setActiveView]      = useState<ActiveView>('root')
-  const [showRenameSheet, setShowRenameSheet] = useState(false)
-  const [showPinSheet,    setShowPinSheet]    = useState(false)
+  const [expanded,     setExpanded]     = useState(false)
+  const [activeView,   setActiveView]   = useState<ActiveView>('root')
+  const [editingName,  setEditingName]  = useState(false)
+  const [nameInput,    setNameInput]    = useState('')
+  const [nameSaving,   setNameSaving]   = useState(false)
+  const [nameError,    setNameError]    = useState<string | null>(null)
+  const [showPinSheet, setShowPinSheet] = useState(false)
 
   if (activeView === 'login-history') {
     return (
@@ -252,16 +189,25 @@ export function ChildProfileSettings({
     )
   }
 
+  async function handleSaveName(e: FormEvent) {
+    e.preventDefault()
+    const trimmed = nameInput.trim()
+    if (!trimmed || trimmed === child.display_name) return
+    setNameSaving(true)
+    setNameError(null)
+    try {
+      const result = await renameChild(child.id, trimmed)
+      onRenameChild(child.id, result.display_name)
+      setEditingName(false)
+    } catch (err: unknown) {
+      setNameError((err as Error).message ?? 'Could not update name — please try again.')
+    } finally {
+      setNameSaving(false)
+    }
+  }
+
   return (
     <>
-      {showRenameSheet && (
-        <DisplayNameSheet
-          current={child.display_name}
-          childId={child.id}
-          onSaved={newName => onRenameChild(child.id, newName)}
-          onClose={() => setShowRenameSheet(false)}
-        />
-      )}
       {showPinSheet && (
         <ResetPinSheet
           child={child}
@@ -280,9 +226,43 @@ export function ChildProfileSettings({
             <SettingsRow
               icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
               label="Display Name"
-              description="Edit this child's name"
-              onClick={() => setShowRenameSheet(true)}
+              description={child.display_name}
+              onClick={() => {
+                setNameInput(child.display_name)
+                setNameError(null)
+                setEditingName(v => !v)
+              }}
             />
+            {editingName && (
+              <form onSubmit={handleSaveName} className="px-4 py-3 border-t border-[var(--color-border)] space-y-2">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={e => setNameInput(e.target.value)}
+                  maxLength={40}
+                  autoFocus
+                  placeholder="Child's name"
+                  className="w-full px-3 py-2 text-[14px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                />
+                {nameError && <p className="text-[12px] text-red-500">{nameError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={nameSaving || nameInput.trim().length < 1 || nameInput.trim() === child.display_name}
+                    className="flex-1 py-2 rounded-xl text-[13px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    {nameSaving ? 'Saving…' : 'Save'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setEditingName(false); setNameError(null) }}
+                    className="px-4 py-2 rounded-xl text-[13px] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
             <SettingsRow
               icon={<Lock size={15} />}
               label="Reset PIN"
