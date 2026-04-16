@@ -17,17 +17,17 @@ import { useTone } from '../../../lib/useTone'
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  children:         ChildRecord[]
-  teenModes:        Record<string, number>
-  teenModeBusy:     string | null
-  growthSettings:   Record<string, ChildGrowthSettings>
-  growthBusy:       string | null
-  isLead:           boolean
-  toast:            string | null
-  onBack:           () => void
-  onComingSoon:     () => void
-  onAddChild:       (name: string) => Promise<{ child_id: string; invite_code: string }>
-  onTeenModeToggle:  (childId: string) => void
+  children:          ChildRecord[]
+  appViews:          Record<string, 'ORCHARD' | 'CLEAN'>
+  appViewBusy:       string | null
+  growthSettings:    Record<string, ChildGrowthSettings>
+  growthBusy:        string | null
+  isLead:            boolean
+  toast:             string | null
+  onBack:            () => void
+  onComingSoon:      () => void
+  onAddChild:        (name: string) => Promise<{ child_id: string; invite_code: string }>
+  onAppViewToggle:   (childId: string, next: 'ORCHARD' | 'CLEAN') => void
   onGrowthUpdate:    (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
   onRenameChild:     (childId: string, newName: string) => void
   onPinResetSuccess: () => void
@@ -37,9 +37,9 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function FamilySettings({
-  children, teenModes, teenModeBusy, growthSettings, growthBusy,
+  children, appViews, appViewBusy, growthSettings, growthBusy,
   isLead, toast, onBack, onComingSoon,
-  onAddChild, onTeenModeToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onGenerateInvite,
+  onAddChild, onAppViewToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onGenerateInvite,
 }: Props) {
   const { terminology } = useTone(0)  // parent settings — never teen view
   const [activeChildId,  setActiveChildId]  = useState<string | null>(null)
@@ -83,12 +83,12 @@ export function FamilySettings({
         {toast && <Toast message={toast} />}
         <ChildProfileSettings
           child={activeChild}
-          isTeen={teenModes[activeChild.id] === 1}
-          isBusy={teenModeBusy === activeChild.id}
+          appView={appViews[activeChild.id] ?? 'ORCHARD'}
+          appViewBusy={appViewBusy === activeChild.id}
           growth={growthSettings[activeChild.id]}
           growthBusy={growthBusy}
           isLead={isLead}
-          onTeenModeToggle={onTeenModeToggle}
+          onAppViewToggle={onAppViewToggle}
           onGrowthUpdate={onGrowthUpdate}
           onRenameChild={onRenameChild}
           onPinResetSuccess={onPinResetSuccess}

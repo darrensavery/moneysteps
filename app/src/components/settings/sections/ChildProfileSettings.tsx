@@ -36,18 +36,18 @@ const FREQ_LABELS: Record<string, string> = {
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  child:             ChildRecord
-  isTeen:            boolean
-  isBusy:            boolean
-  growth:            ChildGrowthSettings | undefined
-  growthBusy:        string | null
-  isLead:            boolean
-  onTeenModeToggle:  (childId: string) => void
-  onGrowthUpdate:    (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
-  onRenameChild:     (childId: string, newName: string) => void
+  child:            ChildRecord
+  appView:          'ORCHARD' | 'CLEAN'
+  appViewBusy:      boolean
+  growth:           ChildGrowthSettings | undefined
+  growthBusy:       string | null
+  isLead:           boolean
+  onAppViewToggle:  (childId: string, next: 'ORCHARD' | 'CLEAN') => void
+  onGrowthUpdate:   (childId: string, patch: Partial<Pick<ChildGrowthSettings, 'earnings_mode' | 'allowance_amount' | 'allowance_frequency'>>) => void
+  onRenameChild:    (childId: string, newName: string) => void
   onPinResetSuccess: () => void
-  onComingSoon:      () => void
-  onBack:            () => void
+  onComingSoon:     () => void
+  onBack:           () => void
 }
 
 
@@ -167,8 +167,8 @@ function ResetPinSheet({
 type ActiveView = 'root' | 'login-history'
 
 export function ChildProfileSettings({
-  child, isTeen: _isTeen, isBusy: _isBusy, growth, growthBusy, isLead,
-  onTeenModeToggle: _onTeenModeToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onComingSoon, onBack,
+  child, appView, appViewBusy, growth, growthBusy, isLead,
+  onAppViewToggle, onGrowthUpdate, onRenameChild, onPinResetSuccess, onComingSoon, onBack,
 }: Props) {
   const { terminology } = useTone(0)
   const [expanded,     setExpanded]     = useState(false)
@@ -282,7 +282,38 @@ export function ChildProfileSettings({
         <div>
           <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Rules & Experience</p>
           <SectionCard>
-            <SettingsRow icon={<TreePine size={15} />} label="Experience Level" description="Seedling View (under 12) or Professional View (12+)" onClick={onComingSoon} />
+            {/* App View — two-option selector */}
+            <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+                  <TreePine size={15} />
+                </span>
+                <div>
+                  <p className="text-[14px] font-semibold text-[var(--color-text)]">App View</p>
+                  <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+                    {appView === 'ORCHARD' ? 'Orchard View — nature metaphors' : 'Clean View — professional terms'}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(['ORCHARD', 'CLEAN'] as const).map(v => (
+                  <button
+                    key={v}
+                    type="button"
+                    disabled={appViewBusy}
+                    onClick={() => { if (appView !== v) onAppViewToggle(child.id, v) }}
+                    className={cn(
+                      'py-2.5 rounded-xl border text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50',
+                      appView === v
+                        ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] text-[var(--brand-primary)]'
+                        : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)]',
+                    )}
+                  >
+                    {v === 'ORCHARD' ? '🌳 Orchard' : '📊 Clean'}
+                  </button>
+                ))}
+              </div>
+            </div>
             <SettingsRow icon={<Check size={15} />} label="Approval Mode" description="Parental sign-off or self-reported (trust-based)" onClick={onComingSoon} />
             <SettingsRow icon={<Calendar size={15} />} label={`${terminology.allowanceLabel} Status`} description="Pause or resume the flow of funds to this account" onClick={onComingSoon} />
             <SettingsRow icon={<Shield size={15} />} label="Safety Net" description="Overdraft limit for this child — currently £0" onClick={onComingSoon} />
