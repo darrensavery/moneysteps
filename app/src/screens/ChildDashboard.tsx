@@ -11,6 +11,8 @@ import { ThemePicker } from '../lib/theme'
 import { SavingsGrove } from '../components/dashboard/SavingsGrove'
 import { FullLogo } from '../components/ui/Logo'
 import { EarnTab } from '../components/dashboard/EarnTab'
+import { MilestoneOverlay, consumeMilestonePending } from '../components/celebration'
+import type { MilestoneEvent } from '../components/celebration'
 
 // ─── localStorage grove planner ──────────────────────────────────────────────
 // Key: `grove_plans_${userId}`
@@ -81,6 +83,11 @@ export function ChildDashboard() {
   )
   const [loading,      setLoading]      = useState(true)
   const [appView,      setAppView]      = useState<'ORCHARD' | 'CLEAN'>('ORCHARD')
+  const [milestone, setMilestone] = useState<MilestoneEvent | null>(() =>
+    consumeMilestonePending('GRADUATION')
+      ? { type: 'GRADUATION', appView: (localStorage.getItem('mc_app_view') ?? 'ORCHARD') as 'ORCHARD' | 'CLEAN' }
+      : null
+  )
   const [showSettings, setShowSettings] = useState(false)
   const [showGrove,    setShowGrove]    = useState(false)
   const [weeklyAllowancePence, setWeeklyAllowancePence] = useState(0)
@@ -220,6 +227,9 @@ export function ChildDashboard() {
 
   return (
     <div className="min-h-svh bg-[var(--color-bg)] flex flex-col">
+      {milestone && (
+        <MilestoneOverlay event={milestone} onComplete={() => setMilestone(null)} />
+      )}
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[var(--color-surface)] border-b border-[var(--color-border)] shadow-[0_1px_4px_rgba(0,0,0,.05)]">
         <div className="max-w-[560px] mx-auto px-3.5 py-3 flex items-center justify-between">

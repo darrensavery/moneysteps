@@ -70,6 +70,7 @@ export async function createFamily(body: {
 }
 
 export interface LoginResult { token: string; expires_in: number }
+export interface ChildLoginResult extends LoginResult { graduation_pending?: boolean }
 export async function login(email: string, password: string): Promise<LoginResult> {
   return request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
 }
@@ -82,7 +83,7 @@ export async function verifyMagicLink(token: string): Promise<LoginResult & { fa
   return request(`/api/auth/verify?token=${encodeURIComponent(token)}`);
 }
 
-export async function childLogin(family_id: string, child_id: string, pin: string): Promise<LoginResult> {
+export async function childLogin(family_id: string, child_id: string, pin: string): Promise<ChildLoginResult> {
   return request('/auth/child/login', { method: 'POST', body: JSON.stringify({ family_id, child_id, pin }) });
 }
 

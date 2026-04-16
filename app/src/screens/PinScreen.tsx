@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { FullLogo } from '../components/ui/Logo'
+import { setPendingMilestone } from '../components/celebration'
+import { childLogin } from '../lib/api'
 
 const PIN_LENGTH = 4
 
@@ -63,6 +65,20 @@ export function PinScreen() {
       // No pin stored yet — first time, accept any 4-digit pin
       if (!storedPin) {
         localStorage.setItem(`mc_pin_${role}`, pin)
+      }
+      if (role === 'child') {
+        const familyId = localStorage.getItem('mc_family_id') ?? ''
+        const userId   = localStorage.getItem('mc_user_id') ?? ''
+        if (familyId && userId) {
+          try {
+            const result = await childLogin(familyId, userId, pin)
+            if (result.graduation_pending) {
+              setPendingMilestone('GRADUATION')
+            }
+          } catch {
+            // childLogin failure is non-blocking — proceed to dashboard
+          }
+        }
       }
       navigate(role === 'child' ? '/child' : '/parent')
     } catch {

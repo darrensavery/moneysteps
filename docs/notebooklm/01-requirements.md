@@ -50,4 +50,6 @@ PDF exports include a full Governance Log showing parent agreement timestamps.
 AI Tone Meter successfully blocks or suggests rewrites for aggressive language before transmission.
 App functionality (except "Buy" or "Export Data") is fully restricted upon trial expiration.
 Database enforces integer-only currency storage and rejects deletion attempts.
+
+Add chore Leaderboard to letkids compete with siblings
 END OUTPUT.
