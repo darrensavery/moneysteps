@@ -56,22 +56,22 @@ export async function handleChildChat(
   const appView = settings?.app_view ?? 'ORCHARD'
   const systemPrompt = appView === 'CLEAN' ? CLEAN_SYSTEM : ORCHARD_SYSTEM
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 5000)
+  const aiPromise = env.AI.run('@cf/meta/llama-3-8b-instruct', {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user',   content: body.message.slice(0, 500) },
+    ],
+  })
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('AI timeout')), 5000)
+  )
 
   try {
-    const aiResponse = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user',   content: body.message.slice(0, 500) },
-      ],
-    })
-    clearTimeout(timeout)
+    const aiResponse = await Promise.race([aiPromise, timeoutPromise])
     const reply = (aiResponse as { response?: string }).response?.trim()
       ?? 'I need a moment — try again shortly.'
     return json({ reply, app_view: appView })
   } catch {
-    clearTimeout(timeout)
     const fallback = appView === 'CLEAN'
       ? 'I am currently unavailable. Please check back shortly.'
       : 'The orchard is quiet right now — come back in a moment!'
