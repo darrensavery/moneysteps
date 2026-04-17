@@ -621,3 +621,58 @@ export async function exchangeSlt(slt: string): Promise<SltExchangeResult> {
     body:   JSON.stringify({ slt }),
   })
 }
+
+// ----------------------------------------------------------------
+// Learning Lab — Chat + Curriculum types and helpers
+// ----------------------------------------------------------------
+
+export interface ChatHistoryItem {
+  id:          string
+  message:     string
+  reply:       string
+  pillar:      string
+  unlock_slug: string | null
+  app_view:    'ORCHARD' | 'CLEAN'
+  locale:      string
+  created_at:  number
+}
+
+export interface ChatHistoryResponse {
+  history: ChatHistoryItem[]
+  limit:   number
+  offset:  number
+}
+
+export interface ChatModuleItem {
+  module_slug: string
+  unlocked_at: number
+}
+
+export interface ChatModulesResponse {
+  modules: ChatModuleItem[]
+}
+
+// Frontend mirror of worker/src/types.ts MentorResponse
+export interface MentorResponse {
+  reply:        string
+  pillar:       string
+  data_points:  Record<string, string | number | boolean>
+  app_view:     'ORCHARD' | 'CLEAN'
+  locale:       string
+  unlock_slug?: string
+}
+
+export async function postChat(message: string): Promise<MentorResponse> {
+  return request<MentorResponse>('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message }),
+  })
+}
+
+export async function getChatHistory(limit = 20, offset = 0): Promise<ChatHistoryResponse> {
+  return request<ChatHistoryResponse>(`/api/chat/history?limit=${limit}&offset=${offset}`)
+}
+
+export async function getChatModules(): Promise<ChatModulesResponse> {
+  return request<ChatModulesResponse>('/api/chat/modules')
+}
