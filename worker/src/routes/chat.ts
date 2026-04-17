@@ -276,6 +276,8 @@ function buildDataPoints(
 // Regex uses /i flag (case-insensitive). No .toLowerCase() needed.
 // ─────────────────────────────────────────────────────────────────
 
+// IMPORTANT: Do NOT use the /g flag on keywords — these RegExp objects are
+// shared across requests (module-level). /g causes lastIndex mutation.
 const UNLOCK_MATRIX: Array<{
   slug:     string
   pillar:   FinancialPillar
@@ -410,7 +412,12 @@ export async function handleChildChat(
     )
   }
 
-  await Promise.all(dbWrites)
+  try {
+    await Promise.all(dbWrites)
+  } catch (err) {
+    // Non-fatal: the AI reply is ready; a persistence failure must not block the child.
+    console.error('[chat] D1 write failed', err)
+  }
 
   const response: MentorResponse = {
     reply:       mentorReply,
