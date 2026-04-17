@@ -272,6 +272,36 @@ function buildDataPoints(
 }
 
 // ─────────────────────────────────────────────────────────────────
+// Unlock matrix — keyword × pillar → curriculum module slug
+// Regex uses /i flag (case-insensitive). No .toLowerCase() needed.
+// ─────────────────────────────────────────────────────────────────
+
+const UNLOCK_MATRIX: Array<{
+  slug:     string
+  pillar:   FinancialPillar
+  keywords: RegExp
+}> = [
+  {
+    slug:     'compound-interest',
+    pillar:   'CAPITAL_MANAGEMENT',
+    keywords: /interest|compound|snowball|grow|invest/i,
+  },
+  // Phase 3 will extend this array with the remaining 17 entries
+]
+
+function detectUnlockSlug(
+  message: string,
+  pillar:  FinancialPillar,
+): string | null {
+  for (const entry of UNLOCK_MATRIX) {
+    if (entry.pillar === pillar && entry.keywords.test(message)) {
+      return entry.slug
+    }
+  }
+  return null
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Fallback reply per locale
 // ─────────────────────────────────────────────────────────────────
 
@@ -350,12 +380,45 @@ export async function handleChildChat(
     mentorReply = fallbackReply(intel.locale, intel.app_view)
   }
 
+  // ── Detect unlock + persist history ───────────────────────────
+  const unlockSlug = detectUnlockSlug(userMessage, pillar)
+  const now        = Math.floor(Date.now() / 1000)
+
+  const dbWrites: Promise<unknown>[] = [
+    env.DB.prepare(
+      `INSERT INTO chat_history (id, child_id, message, reply, pillar, unlock_slug, app_view, locale, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(
+      crypto.randomUUID(),
+      auth.sub,
+      userMessage,
+      mentorReply,
+      pillar,
+      unlockSlug ?? null,
+      intel.app_view,
+      intel.locale,
+      now,
+    ).run(),
+  ]
+
+  if (unlockSlug) {
+    dbWrites.push(
+      env.DB.prepare(
+        `INSERT OR IGNORE INTO unlocked_modules (id, child_id, module_slug, unlocked_at)
+         VALUES (?, ?, ?, ?)`,
+      ).bind(crypto.randomUUID(), auth.sub, unlockSlug, now).run(),
+    )
+  }
+
+  await Promise.all(dbWrites)
+
   const response: MentorResponse = {
     reply:       mentorReply,
     pillar,
     data_points: dataPoints,
     app_view:    intel.app_view,
     locale:      intel.locale,
+    ...(unlockSlug ? { unlock_slug: unlockSlug } : {}),
   }
   return json(response)
 }
