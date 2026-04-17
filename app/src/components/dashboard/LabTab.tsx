@@ -77,11 +77,11 @@ export function LabTab({ appView }: LabTabProps) {
     setModulesError(null)
 
     Promise.all([
-      getChatHistory(20, 0).catch((e: unknown) => {
+      getChatHistory(20, 0).catch(() => {
         if (!cancelled) setHistoryError('History could not be loaded.')
         return null
       }),
-      getChatModules().catch((e: unknown) => {
+      getChatModules().catch(() => {
         if (!cancelled) setModulesError('Modules could not be loaded.')
         return null
       }),
@@ -105,9 +105,9 @@ export function LabTab({ appView }: LabTabProps) {
     const el = dialogRef.current
     if (!el) return
     if (activeModule) {
-      el.showModal()
+      if (!el.open) el.showModal()
     } else {
-      el.close()
+      if (el.open) el.close()
     }
   }, [activeModule])
 
