@@ -160,7 +160,7 @@ export default Sentry.withSentry(
     return new Response(response.body, { status: response.status, headers });
   },
 
-  async scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
+  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     const now = Math.floor(Date.now() / 1000);
 
     // ── 1. Expire stale governance requests ────────────────────
@@ -529,7 +529,7 @@ async function route(request: Request, env: Env, method: string, path: string): 
   // ── Sessions ──────────────────────────────────────────────────────
   if (method === 'GET' && path === '/auth/sessions')
     return withAuth(request, auth, env, handleGetSessions);
-  if (method === 'DELETE' && path === '/auth/sessions' && url.searchParams.get('others') === 'true')
+  if (method === 'DELETE' && path === '/auth/sessions' && new URL(request.url).searchParams.get('others') === 'true')
     return withAuth(request, auth, env, handleRevokeOtherSessions);
   if (method === 'DELETE' && path.startsWith('/auth/sessions/'))
     return withAuth(request, auth, env, handleRevokeSession);

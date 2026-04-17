@@ -12,7 +12,7 @@
  */
 
 import { Env, FamilyLicenseRow, TrialStatus } from '../types.js';
-import { error, json } from './response.js';
+import { json } from './response.js';
 
 const TRIAL_DAYS = 14;
 

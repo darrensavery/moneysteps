@@ -13,7 +13,7 @@
  */
 
 import { Env } from '../types.js';
-import { error, clientIp } from '../lib/response.js';
+import { error } from '../lib/response.js';
 import { sha256 } from '../lib/hash.js';
 
 // ----------------------------------------------------------------
@@ -42,7 +42,7 @@ export async function handleExportJson(request: Request, env: Env): Promise<Resp
 
   if (!family) return error('Family not found', 404);
 
-  const labelMap = buildLabelMap(labels.results as LabelRow[], lang);
+  const labelMap = buildLabelMap(labels.results as unknown as LabelRow[], lang);
 
   // Enrich ledger entries with bilingual labels
   const enrichedLedger = (ledger.results as Record<string, unknown>[]).map(row => ({
@@ -102,9 +102,9 @@ export async function handleExportPdf(request: Request, env: Env): Promise<Respo
 
   if (!family) return error('Family not found', 404);
 
-  const labelMap   = buildLabelMap(labels.results as LabelRow[], lang);
-  const ledgerRows = ledger.results as LedgerRow[];
-  const govRows    = governance.results as GovRow[];
+  const labelMap   = buildLabelMap(labels.results as unknown as LabelRow[], lang);
+  const ledgerRows = ledger.results as unknown as LedgerRow[];
+  const govRows    = governance.results as unknown as GovRow[];
 
   // Document fingerprint — SHA-256 of (family_id + row count + export timestamp)
   const exportTs     = Math.floor(Date.now() / 1000);

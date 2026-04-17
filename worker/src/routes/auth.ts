@@ -14,14 +14,14 @@
 import { Env } from '../types.js';
 import { json, error, clientIp } from '../lib/response.js';
 import { hashPassword, verifyPassword } from '../lib/crypto.js';
-import { signJwt, verifyJwt } from '../lib/jwt.js';
+import { signJwt } from '../lib/jwt.js';
+import type { JwtPayload } from '../lib/jwt.js';
 import { nanoid } from '../lib/nanoid.js';
 import { sha256, computeRecordHash, GENESIS_HASH } from '../lib/hash.js';
 
 const MAGIC_LINK_EXPIRY  = 15 * 60;       // 15 minutes
 const PARENT_JWT_EXPIRY  = 7 * 24 * 3600; // 7 days
 const CHILD_JWT_EXPIRY   = 24 * 3600;     // 24 hours
-const PIN_LENGTH         = 4;
 
 // ----------------------------------------------------------------
 // POST /auth/register
@@ -601,7 +601,7 @@ export async function handleLeaveFamily(request: Request & { auth?: JwtPayload }
     .first<{ max_id: number }>();
   const previousHash = prevRow?.record_hash ?? GENESIS_HASH;
   const newId        = (maxRow?.max_id ?? 0) + 1;
-  const recordHash   = await computeRecordHash(newId, familyId, null, 0, 'GBP', 'system_note', previousHash);
+  const recordHash   = await computeRecordHash(newId, familyId, '', 0, 'GBP', 'system_note', previousHash);
 
   const capturedName = caller.display_name;
 

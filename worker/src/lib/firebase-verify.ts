@@ -49,7 +49,8 @@ async function getPublicKeys(): Promise<Record<string, CryptoKey>> {
 
   await Promise.all(
     json.keys.map(async (jwk) => {
-      if (!jwk.kid) return;
+      const kid = (jwk as unknown as Record<string, unknown>).kid as string | undefined;
+      if (!kid) return;
       const key = await crypto.subtle.importKey(
         'jwk',
         jwk,
@@ -57,7 +58,7 @@ async function getPublicKeys(): Promise<Record<string, CryptoKey>> {
         false,
         ['verify'],
       );
-      keys[jwk.kid as string] = key;
+      keys[kid] = key;
     }),
   );
 

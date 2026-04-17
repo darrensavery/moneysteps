@@ -138,7 +138,9 @@ export async function handleProofGet(
   }
 
   // Generate presigned URL — 3600 seconds (1 hour)
-  const signedUrl = await env.EVIDENCE.createSignedUrl(comp.proof_url, {
+  // createSignedUrl is a Cloudflare R2 runtime method not yet reflected in workers-types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const signedUrl = await (env.EVIDENCE as unknown as any).createSignedUrl(comp.proof_url, {
     expiresIn: 3600,
   });
 

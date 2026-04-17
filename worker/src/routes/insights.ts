@@ -575,6 +575,7 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
   const {
     trends, consistencyScore, firstTimePassRate, planningHorizon,
     velocityContext, availableBalancePence, goalsLockedPence, locale,
+    childName, honorific,
   } = input;
 
   const isSeedling      = velocityContext.mode === 'seedling';
