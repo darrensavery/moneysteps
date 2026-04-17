@@ -206,4 +206,5 @@ export interface MentorResponse {
   data_points: Record<string, string | number | boolean>;
   app_view: 'ORCHARD' | 'CLEAN';
   locale: Locale;
+  unlock_slug?: string; // present only when this response triggered a module unlock
 }
