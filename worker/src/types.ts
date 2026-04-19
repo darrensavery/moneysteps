@@ -185,14 +185,16 @@ export interface ChildIntelligence {
   scrambler_day: string | null;   // e.g. "Sunday"
 
   // Audit-Evidence Signals (derived from proof_exif / verification_confidence)
-  // consecutive_low_confidence: how many of the child's most recent proof uploads
-  //   scored 'Low' confidence in a row (stale/gallery photos). Triggers the
-  //   "Hard Work vs. Shortcuts" integrity lesson at 3+.
-  // batching_detected: true when ≥3 distinct chores were completed within a
-  //   60-minute window (per EXIF DateTimeOriginal) in the last 7 days.
-  //   Triggers the "Power of Small Steps" routine lesson.
-  consecutive_low_confidence: number;
-  batching_detected: boolean;
+  consecutive_low_confidence: number; // leading run of 'Low' proof uploads; triggers integrity lesson at 3+
+  batching_detected: boolean;         // ≥3 chores within 60-min EXIF window; triggers routine lesson
+
+  // Behavioural Trigger Signals — each maps to a specific curriculum module unlock
+  is_burner: boolean;           // balance hit 0 within 24h of a ledger credit → 04-needs-vs-wants
+  is_stagnant: boolean;         // 0 completions in 14d after prior high activity → 18-money-and-mental-health
+  inflation_nudge: boolean;     // reward increased on a chore the child has completed before → 14-inflation
+  is_hoarder: boolean;          // balance > £100 + 0 spend in 60 days → 13-compound-growth
+  overdue_chore_count: number;  // chores with due_date < today; triggers at ≥2 → 12-good-vs-bad-debt
+  distinct_ips_7d: number;      // distinct IP addresses from child_logins in 7 days; triggers at 3+ → 05-scams-digital-safety
 
   // Spending (last 7 days)
   spent_minor_7d: number;

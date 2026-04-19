@@ -48,6 +48,14 @@ function selectPillar(intel: ChildIntelligence, message: string): FinancialPilla
   if (intel.consecutive_low_confidence >= 3) return 'LABOR_VALUE'   // → integrity lesson
   if (intel.batching_detected)               return 'LABOR_VALUE'   // → routine/habit lesson
 
+  // Behavioural data-signal triggers — checked before keyword matching
+  if (intel.is_burner)                       return 'DELAYED_GRATIFICATION' // → 04-needs-vs-wants
+  if (intel.is_stagnant)                     return 'LABOR_VALUE'            // → 18-money-and-mental-health
+  if (intel.inflation_nudge)                 return 'CAPITAL_MANAGEMENT'     // → 14-inflation
+  if (intel.is_hoarder)                      return 'CAPITAL_MANAGEMENT'     // → 13-compound-growth
+  if (intel.overdue_chore_count >= 2)        return 'DELAYED_GRATIFICATION' // → 12-good-vs-bad-debt
+  if (intel.distinct_ips_7d >= 3)            return 'SOCIAL_RESPONSIBILITY'  // → 05-scams-digital-safety
+
   // Explicit keyword overrides
   if (/interest|compound|inflation|grow|invest/.test(lower)) return 'CAPITAL_MANAGEMENT'
   if (/give|donat|charity|share|tithe/.test(lower))          return 'SOCIAL_RESPONSIBILITY'
@@ -107,6 +115,26 @@ function buildUKPrompt(intel: ChildIntelligence, pillar: FinancialPillar): strin
     ? `BATCHING TRIGGER ACTIVE: EXIF data shows ${intel.display_name} completed multiple chores in a very short window recently — a "cramming" pattern rather than a daily habit. DO NOT criticise. Instead, deliver the "Power of Small Steps" lesson: teach the value of building a daily routine, using the orchard metaphor (you can't grow a tree overnight — regular watering beats a single flood). Keep it encouraging and practical.`
     : ''
 
+  // Behavioural trigger context lines (UK tone)
+  const burnerNote = intel.is_burner
+    ? `BURNER TRIGGER ACTIVE: ${intel.display_name}'s balance dropped to zero within 24 hours of a recent reward. Deliver the "Needs vs. Wants" lesson. Tone: warm and curious, not scolding. Frame it as: "That reward didn't stay in the basket long!" — invite them to reflect on what the money went on and whether they'd choose differently next time.`
+    : ''
+  const stagnantNote = intel.is_stagnant
+    ? `STAGNANT TRIGGER ACTIVE: ${intel.display_name} hasn't completed any chores in 14 days after a period of high activity. Deliver the "Money & Mental Health" lesson. DO NOT guilt. Ask gently: "We've noticed the grove has been a bit quiet — everything okay?" Frame low motivation as normal and solvable, not a character flaw.`
+    : ''
+  const inflationNote = intel.inflation_nudge
+    ? `INFLATION TRIGGER ACTIVE: A chore ${intel.display_name} has done before now pays more. Use this moment to deliver the "Inflation" lesson — explain that prices (and rewards) rise over time, and that money saved today buys less tomorrow. Keep it concrete: "If a bag of crisps cost 50p last year and 60p now, your money shrank."`
+    : ''
+  const hoarderNote = intel.is_hoarder
+    ? `HOARDER TRIGGER ACTIVE: ${intel.display_name} has over ${formatMinor(intel.balance_minor, intel.currency)} sitting idle with no spending for 60+ days. Deliver the "Compound Growth" lesson — money working vs. money waiting. Frame it positively: "We've spotted a really interesting opportunity in your grove..."`
+    : ''
+  const defaultNote = intel.overdue_chore_count >= 2
+    ? `DEFAULT TRIGGER ACTIVE: ${intel.display_name} has ${intel.overdue_chore_count} overdue chores. Deliver the "Good vs. Bad Debt" lesson through the lens of commitments — explain that overdue jobs are like a small debt: the longer they wait, the heavier they feel. Tone: practical and motivating, not nagging.`
+    : ''
+  const deviceNote = intel.distinct_ips_7d >= 3
+    ? `DEVICE SWAPPER TRIGGER ACTIVE: ${intel.distinct_ips_7d} different devices/locations detected this week. Deliver the "Digital Safety" lesson — teach about account security, sharing passwords, and recognising phishing. Frame it as a superpower: "Knowing your digital footprint keeps your grove safe."`
+    : ''
+
   return `You are the Orchard Mentor — a warm, collaborative financial coach for UK children.
 
 PERSONA: Supportive Peer / Collaborative Coach. Egalitarian, first-name basis. You are a helpful colleague, NOT an authority figure.
@@ -129,6 +157,12 @@ ${scramblerNote}
 ${intel.has_parent_message ? `Parent message for ${intel.display_name}: "${intel.parent_message}"` : ''}
 ${integrityNote}
 ${batchingNote}
+${burnerNote}
+${stagnantNote}
+${inflationNote}
+${hoarderNote}
+${defaultNote}
+${deviceNote}
 ACTIVE PILLAR: ${pillar} — ${UK_PILLAR_NOTES[pillar]}
 
 UK NATIONAL CURRICULUM RULES:
@@ -159,6 +193,25 @@ function buildUSPrompt(intel: ChildIntelligence, pillar: FinancialPillar): strin
     ? `BATCHING TRIGGER ACTIVE: Photo EXIF data shows chores were completed in a tight cluster. Deliver the "Power of Small Steps" lesson — daily habits compound like interest (tie it to the CAPITAL_MANAGEMENT pillar's math). A consistent daily earner beats a Sunday sprinter over any 30-day period. Show the numbers.`
     : ''
 
+  const usBurnerNote = intel.is_burner
+    ? `BURNER TRIGGER ACTIVE: ${intel.display_name}'s balance hit zero within 24 hours of a credit. Deliver the "Needs vs. Wants" lesson. Frame it around the "Pay Yourself First" rule — before any spend, park 20% as savings. Keep it energetic: "We've run the numbers — here's what a 20% rule would have saved."`
+    : ''
+  const usStagnantNote = intel.is_stagnant
+    ? `STAGNANT TRIGGER ACTIVE: Zero completions in 14 days after high activity. Deliver the "Money & Mental Health" lesson. Frame it around momentum: "Every day without a chore is lost compound time." Be upbeat, not guilt-tripping. Suggest a single small action to restart momentum.`
+    : ''
+  const usInflationNote = intel.inflation_nudge
+    ? `INFLATION TRIGGER ACTIVE: A chore reward has increased since ${intel.display_name} last did it. Deliver the "Inflation" lesson — link it to CPI data: "Prices go up ~3% a year. Your money needs to grow faster than that." Show the math concretely.`
+    : ''
+  const usHoarderNote = intel.is_hoarder
+    ? `HOARDER TRIGGER ACTIVE: Balance over $100 with no spending in 60+ days. Deliver the "Compound Growth" lesson — idle cash loses to inflation. "At 3% inflation, that ${formatMinor(intel.balance_minor, intel.currency)} will buy less next year. Here's what investing it could look like." Show the formula.`
+    : ''
+  const usDefaultNote = intel.overdue_chore_count >= 2
+    ? `DEFAULT TRIGGER ACTIVE: ${intel.overdue_chore_count} overdue chores. Deliver the "Good vs. Bad Debt" lesson via commitment framing — overdue chores are a debt on your Reliability Rating. Every day late is a point lost. Give them the exact number and a deadline to clear it.`
+    : ''
+  const usDeviceNote = intel.distinct_ips_7d >= 3
+    ? `DEVICE SWAPPER TRIGGER ACTIVE: ${intel.distinct_ips_7d} distinct IPs this week. Deliver the "Digital Safety" lesson — teach about credential security and phishing. Frame it as a financial risk: "Your account is your digital wallet. Protecting it is step one of financial literacy."`
+    : ''
+
   return `You are the Performance Coach — a direct, outcome-focused financial mentor for US children.
 
 PERSONA: Performance Coach. Energetic, achievement-oriented, goal-driven.
@@ -179,6 +232,12 @@ CHILD DATA — ground every lesson in these real numbers:
 ${intel.is_sunday_scrambler ? `- Scrambler alert: ${intel.display_name} batches chores on ${intel.scrambler_day}s — habit distribution opportunity.` : ''}
 ${usIntegrityNote}
 ${usBatchingNote}
+${usBurnerNote}
+${usStagnantNote}
+${usInflationNote}
+${usHoarderNote}
+${usDefaultNote}
+${usDeviceNote}
 ACTIVE PILLAR: ${pillar} — ${US_PILLAR_NOTES[pillar]}
 
 US NATIONAL STANDARDS RULES:
@@ -208,6 +267,25 @@ function buildPLPrompt(intel: ChildIntelligence, pillar: FinancialPillar): strin
     ? `Cel oszczędnościowy: "${topGoal.title}" — ${topGoal.progress_pct}% sfinansowany (${formatMinor(topGoal.saved_minor, intel.currency)} z ${formatMinor(topGoal.target_minor, intel.currency)}).`
     : 'Brak aktywnych celów oszczędnościowych.'
 
+  const plBurnerNote = intel.is_burner
+    ? `WYZWALACZ SPALARKI: Saldo ${formalAddress} osiągnęło zero w ciągu 24h od ostatniej nagrody. Dostarcz lekcję "Potrzeby vs. Zachcianki." Podejście autorytatywne: "Na podstawie danych, wymagana jest analiza wydatków." Ramka: mądry gospodarz oddziela potrzeby od pragnień. Ton: konstruktywny, nie karcący.`
+    : ''
+  const plStagnantNote = intel.is_stagnant
+    ? `WYZWALACZ STAGNACJI: Zero ukończonych zadań przez 14 dni po wcześniej wysokiej aktywności. Dostarcz lekcję "Pieniądze i Zdrowie Psychiczne." Podejście: autorytatywne, ale empatyczne. "Dane wskazują przerwę w aktywności. Rekomendujemy jedno małe działanie dzisiaj — nawet małe ziarno sadzi drzewo."`
+    : ''
+  const plInflationNote = intel.inflation_nudge
+    ? `WYZWALACZ INFLACJI: Nagroda za zadanie wzrosła od ostatniego wykonania przez ${formalAddress}. Dostarcz lekcję "Inflacja." Ramka: ceny rosną, wartość pieniądza maleje. "Na podstawie danych: nagroda wzrosła o X%. Inflacja w Polsce wynosi ok. Y% rocznie. Wymagana strategia ochrony wartości."`
+    : ''
+  const plHoarderNote = intel.is_hoarder
+    ? `WYZWALACZ SKĄPCA: Saldo powyżej 100 zł i brak wydatków przez 60+ dni. Dostarcz lekcję "Procent Składany." Ramka: pieniądze powinny pracować. "Na podstawie danych, ${formatMinor(intel.balance_minor, intel.currency)} leży bezczynnie. Rekomendujemy plan lokowania: $$A = P(1 + r)^t$$"`
+    : ''
+  const plDefaultNote = intel.overdue_chore_count >= 2
+    ? `WYZWALACZ ZALEGŁOŚCI: ${intel.overdue_chore_count} zaległe zadania. Dostarcz lekcję "Dobry vs. Zły Dług." Ramka: zaległości to dług honoru. "Na podstawie danych, ${intel.overdue_chore_count} zobowiązania czekają. Wymagane natychmiastowe działanie — honor i obowiązek nie mogą czekać."`
+    : ''
+  const plDeviceNote = intel.distinct_ips_7d >= 3
+    ? `WYZWALACZ BEZPIECZEŃSTWA: ${intel.distinct_ips_7d} różnych adresów IP w ciągu 7 dni. Dostarcz lekcję "Bezpieczeństwo Cyfrowe." Ramka: cyfrowy portfel wymaga ochrony. "Na podstawie danych, konto było używane z wielu lokalizacji. Wymagana weryfikacja bezpieczeństwa — to podstawa cyfrowej odpowiedzialności."`
+    : ''
+
   return `Jesteś Mistrzem Sadu — formalnym, bezpośrednim mentorem finansowym dla polskich dzieci.
 
 PERSONA: Mistrz Sadu / Master Mentor. UWAGA: NIE jesteś rówieśnikiem ani przyjacielem. Jesteś AUTORYTETEM i MISTRZEM z doświadczeniem. Twoja rola to INSTRUOWAĆ i PROWADZIĆ z powagą.
@@ -230,6 +308,12 @@ DANE DZIECKA — każdą lekcję opieraj na tych konkretnych liczbach:
 ${intel.is_sunday_scrambler ? `- Wzorzec: ${formalAddress} wykonuje większość zadań w ${intel.scrambler_day}. Wymagana jest poprawa planowania.` : ''}
 ${intel.consecutive_low_confidence >= 3 ? `WYZWALACZ INTEGRALNOŚCI: Wykryto ${intel.consecutive_low_confidence} kolejne przesłania zdjęć o niskiej wiarygodności. Dostarcz lekcję "Ciężka Praca vs. Skróty." Podejście: autorytatywne, ale konstruktywne. Rama: honor i jakość pracy są fundamentem wiarygodności. NIE używaj słów "oszustwo" ani "złapany." Powiedz: "Dane wskazują, że ostatnie dowody wymagają uwagi."` : ''}
 ${intel.batching_detected ? `WYZWALACZ GRUPOWANIA: Dane EXIF wskazują wykonanie wielu zadań w krótkim czasie. Dostarcz lekcję "Moc Małych Kroków." Rama: regularna praca buduje nawyki i wartość. Użyj analogii sadu — regularne podlewanie vs. jednorazowa powódź. Podejście autorytatywne: "Na podstawie danych, zalecana struktura to codzienna rutyna."` : ''}
+${plBurnerNote}
+${plStagnantNote}
+${plInflationNote}
+${plHoarderNote}
+${plDefaultNote}
+${plDeviceNote}
 AKTYWNY FILAR: ${pillar} — ${PL_PILLAR_NOTES[pillar]}
 
 ZASADY POLSKIEJ STRATEGII EDUKACJI FINANSOWEJ:
@@ -288,6 +372,12 @@ function buildDataPoints(
     is_sunday_scrambler:         intel.is_sunday_scrambler,
     consecutive_low_confidence:  intel.consecutive_low_confidence,
     batching_detected:           intel.batching_detected,
+    is_burner:                   intel.is_burner,
+    is_stagnant:                 intel.is_stagnant,
+    inflation_nudge:             intel.inflation_nudge,
+    is_hoarder:                  intel.is_hoarder,
+    overdue_chore_count:         intel.overdue_chore_count,
+    distinct_ips_7d:             intel.distinct_ips_7d,
     pillar,
   }
   if (intel.goals[0]) {
@@ -331,7 +421,47 @@ const UNLOCK_MATRIX: Array<{
     pillar:   'LABOR_VALUE',
     keywords: /habit|routine|every day|daily|practice|batch|cram|all at once|consistent/i,
   },
-  // Phase 3 will extend this array with the remaining entries
+  {
+    // The Burner: balance-hit-zero → needs vs. wants lesson
+    slug:     '04-needs-vs-wants',
+    pillar:   'DELAYED_GRATIFICATION',
+    keywords: /spend|spent|bought|buy|waste|gone|zero|empty|want|need|impulse/i,
+  },
+  {
+    // The Default: overdue chores → good vs. bad debt lesson
+    slug:     '12-good-vs-bad-debt',
+    pillar:   'DELAYED_GRATIFICATION',
+    keywords: /late|overdue|behind|owe|debt|missed|forget|procrastinat/i,
+  },
+  {
+    // The Hoarder + Inflation Nudge: compound growth and inflation lessons share a pillar
+    slug:     '13-compound-growth',
+    pillar:   'CAPITAL_MANAGEMENT',
+    keywords: /compound|snowball|grow|interest|invest|save more|build up/i,
+  },
+  {
+    slug:     '14-inflation',
+    pillar:   'CAPITAL_MANAGEMENT',
+    keywords: /inflation|price|cost more|expensive|going up|shrink|worth less/i,
+  },
+  {
+    // Device Swapper: digital safety lesson — social responsibility pillar (community/trust)
+    slug:     '05-scams-digital-safety',
+    pillar:   'SOCIAL_RESPONSIBILITY',
+    keywords: /scam|hack|password|device|login|account|phish|steal|safe|secure/i,
+  },
+  {
+    // Crypto Curious: keyword-only — no data signal needed
+    slug:     '20-cryptocurrency',
+    pillar:   'CAPITAL_MANAGEMENT',
+    keywords: /robux|skins|nft|crypto|bitcoin|ethereum|token|coin|digital money/i,
+  },
+  {
+    // Social Pinger: keyword-only — social comparison trigger
+    slug:     '18b-social-comparison',
+    pillar:   'SOCIAL_RESPONSIBILITY',
+    keywords: /how much did|how much does|earn more|earn less|compare|jealous|unfair|they get|why do they/i,
+  },
 ]
 
 function detectUnlockSlug(

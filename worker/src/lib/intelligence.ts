@@ -23,6 +23,8 @@ export async function getChildIntelligence(
   const fortnight_ago = now - FORTNIGHT_SECONDS
 
   // Run all queries in parallel for speed
+  const SIXTY_DAYS_SECONDS = 60 * DAY_SECONDS
+
   const [
     identity,
     balance,
@@ -37,6 +39,12 @@ export async function getChildIntelligence(
     planningHorizonDays,
     consecutiveLowConfidence,
     batchingDetected,
+    isBurner,
+    isStagnant,
+    inflationNudge,
+    isHoarder,
+    overdueChoreCount,
+    distinctIps7d,
   ] = await Promise.all([
     queryIdentity(db, childId),
     queryBalance(db, childId),
@@ -51,6 +59,12 @@ export async function getChildIntelligence(
     queryPlanningHorizon(db, childId, now),
     queryConsecutiveLowConfidence(db, childId),
     queryBatchingDetected(db, childId, week_ago),
+    queryIsBurner(db, childId),
+    queryIsStagnant(db, childId, fortnight_ago, week_ago),
+    queryInflationNudge(db, childId),
+    queryIsHoarder(db, childId, now - SIXTY_DAYS_SECONDS),
+    queryOverdueChoreCount(db, childId, now),
+    queryDistinctIps7d(db, childId, week_ago),
   ])
 
   if (!identity) return null
@@ -121,6 +135,13 @@ export async function getChildIntelligence(
 
     consecutive_low_confidence: consecutiveLowConfidence,
     batching_detected: batchingDetected,
+
+    is_burner: isBurner,
+    is_stagnant: isStagnant,
+    inflation_nudge: inflationNudge,
+    is_hoarder: isHoarder,
+    overdue_chore_count: overdueChoreCount,
+    distinct_ips_7d: distinctIps7d,
   }
 }
 
@@ -465,6 +486,178 @@ async function queryBatchingDetected(
     if (epochs[i + 2] - epochs[i] <= SIXTY_MINUTES) return true
   }
   return false
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Behavioural Trigger Queries
+// ─────────────────────────────────────────────────────────────────
+
+// The Burner: balance dropped to 0 within 24h of a ledger credit in the last 30 days.
+// Detects impulsive "spend it all" behaviour → module 04-needs-vs-wants
+async function queryIsBurner(db: D1Database, childId: string): Promise<boolean> {
+  const THIRTY_DAYS = 30 * 86_400
+  const cutoff = Math.floor(Date.now() / 1000) - THIRTY_DAYS
+  // Find credits in last 30 days, then check if balance reached 0 within 24h after each
+  const { results: credits } = await db
+    .prepare(`
+      SELECT created_at FROM ledger
+      WHERE child_id = ?
+        AND entry_type = 'credit'
+        AND verification_status IN ('verified_auto','verified_manual')
+        AND created_at >= ?
+      ORDER BY created_at ASC
+    `)
+    .bind(childId, cutoff)
+    .all<{ created_at: number }>()
+
+  for (const credit of credits ?? []) {
+    const window_end = credit.created_at + 86_400
+    // Sum ledger to get running balance at window_end
+    const row = await db
+      .prepare(`
+        SELECT COALESCE(SUM(
+          CASE entry_type
+            WHEN 'credit'  THEN amount
+            WHEN 'payment' THEN -amount
+            ELSE 0
+          END
+        ), 0) AS balance
+        FROM ledger
+        WHERE child_id = ?
+          AND verification_status IN ('verified_auto','verified_manual')
+          AND created_at <= ?
+      `)
+      .bind(childId, window_end)
+      .first<{ balance: number }>()
+    if ((row?.balance ?? 1) <= 0) return true
+  }
+  return false
+}
+
+// Stagnant Earner: 0 completions in last 14 days, but had >2 completions in the
+// 14 days before that (i.e. prior high activity followed by silence).
+// → module 18-money-and-mental-health
+async function queryIsStagnant(
+  db: D1Database,
+  childId: string,
+  fortnight_ago: number,
+  week_ago: number,
+): Promise<boolean> {
+  // week_ago here is used as the boundary between the two fortnights
+  // recent window: fortnight_ago → now (current), prior window: 4 weeks ago → fortnight_ago
+  const four_weeks_ago = fortnight_ago - (14 * 86_400)
+  const [recent, prior] = await Promise.all([
+    db
+      .prepare(`SELECT COUNT(*) AS n FROM completions
+                WHERE child_id = ? AND status = 'completed' AND submitted_at >= ?`)
+      .bind(childId, fortnight_ago)
+      .first<{ n: number }>(),
+    db
+      .prepare(`SELECT COUNT(*) AS n FROM completions
+                WHERE child_id = ? AND status = 'completed'
+                  AND submitted_at >= ? AND submitted_at < ?`)
+      .bind(childId, four_weeks_ago, fortnight_ago)
+      .first<{ n: number }>(),
+  ])
+  return (recent?.n ?? 0) === 0 && (prior?.n ?? 0) > 2
+}
+
+// Inflation Nudge: a chore the child has completed before had its reward_amount increased.
+// Detects by comparing the current reward_amount to the earliest completion's reward_amount
+// for any chore assigned to this child. → module 14-inflation
+async function queryInflationNudge(db: D1Database, childId: string): Promise<boolean> {
+  // Join completions → chores to find chores where current reward > first completion reward
+  // We store reward_amount on completions indirectly via the chore; use a subquery to
+  // compare the chore's current reward to the earliest ledger credit amount for that chore.
+  const { results } = await db
+    .prepare(`
+      SELECT ch.id
+      FROM chores ch
+      JOIN completions comp ON comp.chore_id = ch.id AND comp.child_id = ?
+        AND comp.status = 'completed'
+      JOIN ledger l ON l.chore_id = ch.id AND l.child_id = ?
+        AND l.entry_type = 'credit'
+      GROUP BY ch.id
+      HAVING ch.reward_amount > MIN(l.amount)
+      LIMIT 1
+    `)
+    .bind(childId, childId)
+    .all<{ id: string }>()
+  return (results?.length ?? 0) > 0
+}
+
+// The Hoarder: current balance > 10000 (£100) AND no spending in last 60 days.
+// → module 13-compound-growth
+async function queryIsHoarder(
+  db: D1Database,
+  childId: string,
+  sixty_days_ago: number,
+): Promise<boolean> {
+  const [balRow, spendRow] = await Promise.all([
+    db
+      .prepare(`
+        SELECT COALESCE(SUM(
+          CASE entry_type WHEN 'credit' THEN amount WHEN 'payment' THEN -amount ELSE 0 END
+        ), 0) AS balance
+        FROM ledger
+        WHERE child_id = ?
+          AND verification_status IN ('verified_auto','verified_manual')
+      `)
+      .bind(childId)
+      .first<{ balance: number }>(),
+    db
+      .prepare(`SELECT COUNT(*) AS n FROM spending
+                WHERE child_id = ? AND spent_at >= ?`)
+      .bind(childId, sixty_days_ago)
+      .first<{ n: number }>(),
+  ])
+  return (balRow?.balance ?? 0) > 10_000 && (spendRow?.n ?? 0) === 0
+}
+
+// The Default: number of chores with due_date before today that are not yet completed.
+// Trigger fires at ≥2. → module 12-good-vs-bad-debt
+async function queryOverdueChoreCount(
+  db: D1Database,
+  childId: string,
+  nowEpoch: number,
+): Promise<number> {
+  // due_date is stored as a DATE string (YYYY-MM-DD) on plans, not chores.
+  // We check plans for this child where the plan's due date has passed and
+  // the corresponding completion is not yet in 'completed' state.
+  const row = await db
+    .prepare(`
+      SELECT COUNT(*) AS n
+      FROM chores
+      WHERE assigned_to = ?
+        AND archived = 0
+        AND due_date IS NOT NULL
+        AND due_date < date(datetime(?, 'unixepoch'))
+        AND id NOT IN (
+          SELECT chore_id FROM completions
+          WHERE child_id = ? AND status = 'completed'
+        )
+    `)
+    .bind(childId, nowEpoch, childId)
+    .first<{ n: number }>()
+  return row?.n ?? 0
+}
+
+// Device Swapper: count of distinct IP addresses from child logins in last 7 days.
+// Trigger fires at ≥3. → module 05-scams-digital-safety
+async function queryDistinctIps7d(
+  db: D1Database,
+  childId: string,
+  week_ago: number,
+): Promise<number> {
+  const row = await db
+    .prepare(`
+      SELECT COUNT(DISTINCT ip_address) AS n
+      FROM child_logins
+      WHERE child_id = ? AND logged_in_at >= ?
+    `)
+    .bind(childId, week_ago)
+    .first<{ n: number }>()
+  return row?.n ?? 0
 }
 
 // ─────────────────────────────────────────────────────────────────
