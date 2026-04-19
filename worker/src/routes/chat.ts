@@ -42,6 +42,12 @@ function choresToPhysical(minor: number, currency: string): string {
 function selectPillar(intel: ChildIntelligence, message: string): FinancialPillar {
   const lower = message.toLowerCase()
 
+  // Audit-evidence triggers take priority — they are data signals, not keyword matches.
+  // They override keyword detection because the child may not have typed anything
+  // related to integrity/habits; the data is what's driving the lesson.
+  if (intel.consecutive_low_confidence >= 3) return 'LABOR_VALUE'   // → integrity lesson
+  if (intel.batching_detected)               return 'LABOR_VALUE'   // → routine/habit lesson
+
   // Explicit keyword overrides
   if (/interest|compound|inflation|grow|invest/.test(lower)) return 'CAPITAL_MANAGEMENT'
   if (/give|donat|charity|share|tithe/.test(lower))          return 'SOCIAL_RESPONSIBILITY'
@@ -91,6 +97,16 @@ function buildUKPrompt(intel: ChildIntelligence, pillar: FinancialPillar): strin
     ? `Note: ${intel.display_name} completes most chores on ${intel.scrambler_day}s — a habit pattern worth addressing.`
     : ''
 
+  // Audit-evidence context injected when a trigger is active.
+  // The Mentor uses this to deliver a specific lesson — never a "violation notice."
+  const integrityNote = intel.consecutive_low_confidence >= 3
+    ? `INTEGRITY TRIGGER ACTIVE: The system has detected ${intel.consecutive_low_confidence} consecutive low-confidence photo submissions (possible gallery reuse). DO NOT accuse or scold. Instead, deliver the "Hard Work vs. Shortcuts" lesson: a short, warm story or message about why doing the job properly the first time builds real pride — and real earnings. Tone: encouraging, peer-to-peer. Avoid words like "cheating," "caught," or "violation."`
+    : ''
+
+  const batchingNote = intel.batching_detected
+    ? `BATCHING TRIGGER ACTIVE: EXIF data shows ${intel.display_name} completed multiple chores in a very short window recently — a "cramming" pattern rather than a daily habit. DO NOT criticise. Instead, deliver the "Power of Small Steps" lesson: teach the value of building a daily routine, using the orchard metaphor (you can't grow a tree overnight — regular watering beats a single flood). Keep it encouraging and practical.`
+    : ''
+
   return `You are the Orchard Mentor — a warm, collaborative financial coach for UK children.
 
 PERSONA: Supportive Peer / Collaborative Coach. Egalitarian, first-name basis. You are a helpful colleague, NOT an authority figure.
@@ -111,7 +127,8 @@ CHILD DATA — ground every response in these real numbers, never teach in the a
 - Planning horizon: ${intel.planning_horizon_days} days ahead
 ${scramblerNote}
 ${intel.has_parent_message ? `Parent message for ${intel.display_name}: "${intel.parent_message}"` : ''}
-
+${integrityNote}
+${batchingNote}
 ACTIVE PILLAR: ${pillar} — ${UK_PILLAR_NOTES[pillar]}
 
 UK NATIONAL CURRICULUM RULES:
@@ -134,6 +151,14 @@ function buildUSPrompt(intel: ChildIntelligence, pillar: FinancialPillar): strin
     ? `Savings target: "${topGoal.title}" — ${topGoal.progress_pct}% funded (${formatMinor(topGoal.saved_minor, intel.currency)} of ${formatMinor(topGoal.target_minor, intel.currency)}).`
     : 'No active savings goals.'
 
+  const usIntegrityNote = intel.consecutive_low_confidence >= 3
+    ? `INTEGRITY TRIGGER ACTIVE: ${intel.consecutive_low_confidence} consecutive low-confidence photo submissions detected. Deliver the "Hard Work vs. Shortcuts" lesson. Frame it around the Reliability Rating — shortcuts lower it, which affects their simulated credit score and eligibility for Parental Boost. Keep it factual, not accusatory. No words like "cheating" or "caught."`
+    : ''
+
+  const usBatchingNote = intel.batching_detected
+    ? `BATCHING TRIGGER ACTIVE: Photo EXIF data shows chores were completed in a tight cluster. Deliver the "Power of Small Steps" lesson — daily habits compound like interest (tie it to the CAPITAL_MANAGEMENT pillar's math). A consistent daily earner beats a Sunday sprinter over any 30-day period. Show the numbers.`
+    : ''
+
   return `You are the Performance Coach — a direct, outcome-focused financial mentor for US children.
 
 PERSONA: Performance Coach. Energetic, achievement-oriented, goal-driven.
@@ -152,7 +177,8 @@ CHILD DATA — ground every lesson in these real numbers:
 - Weekly velocity: ${formatMinor(intel.velocity_7d * 7, intel.currency)} earned
 - Spent this week: ${formatMinor(intel.spent_minor_7d, intel.currency)} (${intel.spend_to_balance_pct}% of balance)
 ${intel.is_sunday_scrambler ? `- Scrambler alert: ${intel.display_name} batches chores on ${intel.scrambler_day}s — habit distribution opportunity.` : ''}
-
+${usIntegrityNote}
+${usBatchingNote}
 ACTIVE PILLAR: ${pillar} — ${US_PILLAR_NOTES[pillar]}
 
 US NATIONAL STANDARDS RULES:
@@ -202,7 +228,8 @@ DANE DZIECKA — każdą lekcję opieraj na tych konkretnych liczbach:
 - Prędkość zarobków: ${formatMinor(intel.velocity_7d * 7, intel.currency)} w tym tygodniu
 - Wydane w tym tygodniu: ${formatMinor(intel.spent_minor_7d, intel.currency)} (${intel.spend_to_balance_pct}% salda)
 ${intel.is_sunday_scrambler ? `- Wzorzec: ${formalAddress} wykonuje większość zadań w ${intel.scrambler_day}. Wymagana jest poprawa planowania.` : ''}
-
+${intel.consecutive_low_confidence >= 3 ? `WYZWALACZ INTEGRALNOŚCI: Wykryto ${intel.consecutive_low_confidence} kolejne przesłania zdjęć o niskiej wiarygodności. Dostarcz lekcję "Ciężka Praca vs. Skróty." Podejście: autorytatywne, ale konstruktywne. Rama: honor i jakość pracy są fundamentem wiarygodności. NIE używaj słów "oszustwo" ani "złapany." Powiedz: "Dane wskazują, że ostatnie dowody wymagają uwagi."` : ''}
+${intel.batching_detected ? `WYZWALACZ GRUPOWANIA: Dane EXIF wskazują wykonanie wielu zadań w krótkim czasie. Dostarcz lekcję "Moc Małych Kroków." Rama: regularna praca buduje nawyki i wartość. Użyj analogii sadu — regularne podlewanie vs. jednorazowa powódź. Podejście autorytatywne: "Na podstawie danych, zalecana struktura to codzienna rutyna."` : ''}
 AKTYWNY FILAR: ${pillar} — ${PL_PILLAR_NOTES[pillar]}
 
 ZASADY POLSKIEJ STRATEGII EDUKACJI FINANSOWEJ:
@@ -253,12 +280,14 @@ function buildDataPoints(
   pillar: FinancialPillar,
 ): Record<string, string | number | boolean> {
   const base: Record<string, string | number | boolean> = {
-    reliability_rating:   intel.reliability_rating,
-    velocity_7d_minor:    intel.velocity_7d,
-    balance_minor:        intel.balance_minor,
-    completed_7d:         intel.completed_7d,
-    spend_to_balance_pct: intel.spend_to_balance_pct,
-    is_sunday_scrambler:  intel.is_sunday_scrambler,
+    reliability_rating:          intel.reliability_rating,
+    velocity_7d_minor:           intel.velocity_7d,
+    balance_minor:               intel.balance_minor,
+    completed_7d:                intel.completed_7d,
+    spend_to_balance_pct:        intel.spend_to_balance_pct,
+    is_sunday_scrambler:         intel.is_sunday_scrambler,
+    consecutive_low_confidence:  intel.consecutive_low_confidence,
+    batching_detected:           intel.batching_detected,
     pillar,
   }
   if (intel.goals[0]) {
@@ -288,7 +317,21 @@ const UNLOCK_MATRIX: Array<{
     pillar:   'CAPITAL_MANAGEMENT',
     keywords: /interest|compound|snowball|grow|invest/i,
   },
-  // Phase 3 will extend this array with the remaining 17 entries
+  {
+    // Triggered when the child messages about effort, shortcuts, or fairness
+    // while the integrity trigger is also active. Unlocks the effort-vs-reward module.
+    slug:     '01-effort-vs-reward',
+    pillar:   'LABOR_VALUE',
+    keywords: /effort|shortcut|fair|worth it|cheat|lazy|hard work|deserve/i,
+  },
+  {
+    // Triggered when the child messages about habits, routines, or cramming
+    // while the batching trigger is active. Unlocks the patience/routine module.
+    slug:     '07-the-patience-tree',
+    pillar:   'LABOR_VALUE',
+    keywords: /habit|routine|every day|daily|practice|batch|cram|all at once|consistent/i,
+  },
+  // Phase 3 will extend this array with the remaining entries
 ]
 
 function detectUnlockSlug(

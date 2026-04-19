@@ -184,6 +184,16 @@ export interface ChildIntelligence {
   is_sunday_scrambler: boolean;
   scrambler_day: string | null;   // e.g. "Sunday"
 
+  // Audit-Evidence Signals (derived from proof_exif / verification_confidence)
+  // consecutive_low_confidence: how many of the child's most recent proof uploads
+  //   scored 'Low' confidence in a row (stale/gallery photos). Triggers the
+  //   "Hard Work vs. Shortcuts" integrity lesson at 3+.
+  // batching_detected: true when ≥3 distinct chores were completed within a
+  //   60-minute window (per EXIF DateTimeOriginal) in the last 7 days.
+  //   Triggers the "Power of Small Steps" routine lesson.
+  consecutive_low_confidence: number;
+  batching_detected: boolean;
+
   // Spending (last 7 days)
   spent_minor_7d: number;
   spend_to_balance_pct: number;   // spent_7d / balance * 100

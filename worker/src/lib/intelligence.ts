@@ -35,6 +35,8 @@ export async function getChildIntelligence(
     bonus,
     parentMsg,
     planningHorizonDays,
+    consecutiveLowConfidence,
+    batchingDetected,
   ] = await Promise.all([
     queryIdentity(db, childId),
     queryBalance(db, childId),
@@ -47,6 +49,8 @@ export async function getChildIntelligence(
     queryBonus(db, childId, week_ago),
     queryParentMessage(db, childId, now),
     queryPlanningHorizon(db, childId, now),
+    queryConsecutiveLowConfidence(db, childId),
+    queryBatchingDetected(db, childId, week_ago),
   ])
 
   if (!identity) return null
@@ -114,6 +118,9 @@ export async function getChildIntelligence(
     bonus_pence_7d: bonus,
     has_parent_message: !!parentMsg,
     parent_message: parentMsg,
+
+    consecutive_low_confidence: consecutiveLowConfidence,
+    batching_detected: batchingDetected,
   }
 }
 
@@ -367,6 +374,97 @@ async function queryParentMessage(
     .bind(childId, nowEpoch)
     .first<{ message: string }>()
   return row?.message ?? null
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Audit-Evidence Signals
+// ─────────────────────────────────────────────────────────────────
+
+// Returns how many consecutive recent proof uploads scored 'Low' confidence.
+// We read the last 10 uploads ordered newest-first and count the leading run of 'Low'.
+// Stops counting as soon as we hit a non-Low row so the trigger resets when
+// the child takes a genuine live photo.
+async function queryConsecutiveLowConfidence(
+  db: D1Database,
+  childId: string,
+): Promise<number> {
+  const { results } = await db
+    .prepare(`
+      SELECT verification_confidence
+      FROM   completions
+      WHERE  child_id = ?
+        AND  verification_confidence IS NOT NULL
+      ORDER  BY submitted_at DESC
+      LIMIT  10
+    `)
+    .bind(childId)
+    .all<{ verification_confidence: string }>()
+
+  let count = 0
+  for (const row of results ?? []) {
+    if (row.verification_confidence === 'Low') count++
+    else break
+  }
+  return count
+}
+
+// Returns true when the child completed ≥3 distinct chores within a
+// 60-minute window (per EXIF DateTimeOriginal) at any point in the last 7 days.
+// This detects "gallery cramming" — submitting old photos back-to-back —
+// or genuine same-session batching of chores (legitimate but still worth a lesson).
+//
+// Strategy: parse each proof_exif JSON in SQLite, extract dateTimeOriginal,
+// convert to epoch via strftime, and use a self-join to find any 60-min window
+// containing ≥3 rows. We do this in application code (not SQL) to avoid
+// complex window-function SQL that D1's SQLite version may not support.
+async function queryBatchingDetected(
+  db: D1Database,
+  childId: string,
+  week_ago: number,
+): Promise<boolean> {
+  // Pull EXIF timestamps for completed uploads in last 7 days.
+  // proof_exif is a JSON string: { dateTimeOriginal: "YYYY:MM:DD HH:MM:SS", ... }
+  const { results } = await db
+    .prepare(`
+      SELECT proof_exif
+      FROM   completions
+      WHERE  child_id    = ?
+        AND  submitted_at >= ?
+        AND  proof_exif  IS NOT NULL
+        AND  status IN ('awaiting_review', 'completed', 'needs_revision')
+      ORDER  BY submitted_at ASC
+    `)
+    .bind(childId, week_ago)
+    .all<{ proof_exif: string }>()
+
+  // Parse EXIF timestamps into epoch seconds
+  const epochs: number[] = []
+  for (const row of results ?? []) {
+    try {
+      const exif = JSON.parse(row.proof_exif) as { dateTimeOriginal?: string | null }
+      if (!exif.dateTimeOriginal) continue
+      // EXIF format: 'YYYY:MM:DD HH:MM:SS' → ISO: 'YYYY-MM-DDTHH:MM:SSZ'
+      const iso = exif.dateTimeOriginal.replace(
+        /^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})$/,
+        '$1-$2-$3T$4:$5:$6Z',
+      )
+      const ms = Date.parse(iso)
+      if (!isNaN(ms)) epochs.push(ms / 1000)
+    } catch {
+      // Malformed JSON — skip
+    }
+  }
+
+  if (epochs.length < 3) return false
+
+  epochs.sort((a, b) => a - b)
+
+  // Sliding window: find any window of 60 minutes containing ≥3 entries
+  const SIXTY_MINUTES = 3600
+  for (let i = 0; i <= epochs.length - 3; i++) {
+    if (epochs[i + 2] - epochs[i] <= SIXTY_MINUTES) return true
+  }
+  return false
 }
 
 // ─────────────────────────────────────────────────────────────────
