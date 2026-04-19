@@ -1,7 +1,7 @@
 // app/src/components/dashboard/RateGuideSheet.tsx
 import { useState, useMemo } from 'react';
 import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates';
-import { useLocale, currencySymbol } from '../../lib/locale';
+import { useLocale, currencySymbol, AppLocale } from '../../lib/locale';
 import type { MarketRate } from '../../lib/api';
 
 const CATEGORIES = [
@@ -10,7 +10,7 @@ const CATEGORIES = [
 ];
 
 /** Map AppLocale to its currency code. */
-function localeToCurrency(locale: string): string {
+function localeToCurrency(locale: AppLocale): string {
   if (locale === 'pl')    return 'PLN';
   if (locale === 'en-US') return 'USD';
   return 'GBP';
@@ -108,7 +108,7 @@ export function RateGuideSheet({ open, onClose }: Props) {
             <div className="flex items-center gap-2">
               {!rate.median_is_local && (
                 <span
-                  title="Pioneer rate — based on UK average"
+                  title="Pioneer rate — based on global average"
                   className="text-xs rounded-full bg-amber-100 text-amber-700 px-2 py-0.5"
                 >
                   Pioneer
