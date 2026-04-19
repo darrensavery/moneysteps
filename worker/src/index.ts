@@ -125,6 +125,12 @@ import {
   handleSaveRegistrationStep,
 } from './routes/invite.js';
 import { handleInsights } from './routes/insights.js';
+import {
+  handleMarketRateList,
+  handleMarketRateSuggest,
+  handleMarketRateCron,
+} from './routes/market-rates.js';
+import { runMarketRateAggregation } from './jobs/marketRateAggregation.js';
 import { handleChildChat } from './routes/chat.js';
 import { handleChatHistory } from './routes/chat-history.js';
 import { handleChatModules } from './routes/chat-modules.js';
@@ -177,6 +183,9 @@ export default Sentry.withSentry(
     // ── 3. Clean up expired SLT tokens and unblocked IP attempts ──
     await env.DB.prepare('DELETE FROM slt_tokens WHERE expires_at < ?').bind(now).run();
     await env.DB.prepare('DELETE FROM slt_attempts WHERE blocked_until IS NOT NULL AND blocked_until < ?').bind(now).run();
+
+    // ── 4. Weekly market rate aggregation ──────────────────────
+    await runMarketRateAggregation(env);
   },
 } satisfies ExportedHandler<Env>,
 );
@@ -302,6 +311,9 @@ async function route(request: Request, env: Env, method: string, path: string): 
   // Stripe webhook — public but signature-verified internally
   if (path === '/api/stripe/webhook' && method === 'POST') return handleStripeWebhook(request, env);
 
+  // Market rates — CRON health check (no user auth)
+  if (path === '/api/market-rates/cron' && method === 'GET') return handleMarketRateCron(request, env);
+
   // ── All authenticated routes require a valid JWT ─────────────
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -375,6 +387,10 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (path === '/api/chat' && method === 'POST') return withAuth(request, auth, env, (req, e) => handleChildChat(req, e));
   if (path === '/api/chat/history' && method === 'GET') return withAuth(request, auth, env, handleChatHistory);
   if (path === '/api/chat/modules' && method === 'GET') return withAuth(request, auth, env, handleChatModules);
+
+  // Market rates — any authenticated role
+  if (path === '/api/market-rates' && method === 'GET')        return withAuth(request, auth, env, handleMarketRateList);
+  if (path === '/api/market-rates/suggest' && method === 'POST') return withAuth(request, auth, env, handleMarketRateSuggest);
 
   // Spending — child logs, both read
   if (path === '/api/spending' && method === 'GET')   return withAuth(request, auth, env, handleSpendingList);
