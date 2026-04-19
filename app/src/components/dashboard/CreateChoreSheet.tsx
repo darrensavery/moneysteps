@@ -20,6 +20,8 @@ interface Props {
   familyId: string
   child: ChildRecord
   currency: string          // 'GBP' | 'PLN'
+  initialTitle?: string
+  initialRewardAmount?: number  // in pence/groszy
   onCreated: () => void
   onClose: () => void
 }
@@ -78,8 +80,12 @@ const QUICK_AMOUNTS: Record<string, { label: string; value: number }[]> = {
   ],
 }
 
-export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose }: Props) {
-  const [form, setForm]             = useState<Form>(BLANK)
+export function CreateChoreSheet({ familyId, child, currency, initialTitle, initialRewardAmount, onCreated, onClose }: Props) {
+  const [form, setForm]             = useState<Form>(() => ({
+    ...BLANK,
+    ...(initialTitle !== undefined ? { title: initialTitle } : {}),
+    ...(initialRewardAmount !== undefined ? { reward_amount: (initialRewardAmount / 100).toFixed(2) } : {}),
+  }))
   const [saving, setSaving]         = useState(false)
   const [error, setError]           = useState<string | null>(null)
   const [showDesc, setShowDesc]     = useState(false)
