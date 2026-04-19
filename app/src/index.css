@@ -128,6 +128,16 @@
   90%       { transform: translateX(3px); }
 }
 
+@keyframes spark-glow {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-primary) 60%, transparent); }
+  40%  { box-shadow: 0 0 0 6px color-mix(in srgb, var(--brand-primary) 30%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
 .animate-shake {
   animation: shake 0.55s ease-in-out;
+}
+
+.spark-animating {
+  animation: spark-glow 800ms ease-out forwards;
 }
