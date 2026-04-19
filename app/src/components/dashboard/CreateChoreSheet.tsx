@@ -84,6 +84,7 @@ export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose
   const [error, setError]           = useState<string | null>(null)
   const [showDesc, setShowDesc]     = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
+  const suggestionsContainerRef = useRef<HTMLDivElement>(null)
 
   const { rates } = useMarketRates()
   const [searchQuery, setSearchQuery]         = useState('')
@@ -103,9 +104,13 @@ export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose
   // Dismiss More Suggestions on outside click
   useEffect(() => {
     if (!showSuggestions) return
-    const handler = () => setShowSuggestions(false)
-    document.addEventListener('click', handler, { capture: true, once: true })
-    return () => document.removeEventListener('click', handler, { capture: true })
+    const handler = (e: MouseEvent) => {
+      if (!suggestionsContainerRef.current?.contains(e.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
   }, [showSuggestions])
 
   const selectRate = useCallback((rate: MarketRate) => {
@@ -247,7 +252,7 @@ export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose
 
             {/* More Suggestions */}
             {showSuggestions && (
-              <div className="mb-3 max-h-48 overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
+              <div ref={suggestionsContainerRef} className="mb-3 max-h-48 overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
                 <p className="px-3 py-1.5 text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider sticky top-0 bg-[var(--color-surface)]">
                   More Suggestions
                 </p>
