@@ -1,5 +1,6 @@
 // app/src/components/dashboard/ChoreGuideSheet.tsx
 import { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useMarketRates } from '../../hooks/useMarketRates';
 import { suggestChore } from '../../lib/api';
 import type { MarketRate } from '../../lib/api';
@@ -80,8 +81,8 @@ export function ChoreGuideSheet({ open, onClose, context = null }: Props) {
 
   // Success state
   if (success) {
-    return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[--color-bg] px-8 text-center">
+    return createPortal(
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-bg)] px-8 text-center">
         <p className="text-5xl mb-4">🌳</p>
         <h2 className="text-xl font-semibold text-[--color-text] mb-2">Proposal sent!</h2>
         <p className="text-sm text-[--color-text-muted] mb-8">
@@ -93,12 +94,13 @@ export function ChoreGuideSheet({ open, onClose, context = null }: Props) {
         >
           Done
         </button>
-      </div>
+      </div>,
+      document.body,
     );
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[--color-bg]">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--color-bg)]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-6 pb-3 border-b border-[--color-border]">
         <h2 className="text-lg font-semibold text-[--color-text]">Chore Guide</h2>
@@ -149,6 +151,7 @@ export function ChoreGuideSheet({ open, onClose, context = null }: Props) {
           );
         })}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

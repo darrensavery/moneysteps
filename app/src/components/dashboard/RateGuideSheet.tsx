@@ -1,5 +1,6 @@
 // app/src/components/dashboard/RateGuideSheet.tsx
 import { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates';
 import { useLocale, currencySymbol } from '../../lib/locale';
 import type { AppLocale } from '../../lib/locale';
@@ -45,8 +46,8 @@ export function RateGuideSheet({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[--color-bg]">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--color-bg)]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-6 pb-3 border-b border-[--color-border]">
         <h2 className="text-lg font-semibold text-[--color-text]">Rate Guide</h2>
@@ -122,6 +123,7 @@ export function RateGuideSheet({ open, onClose }: Props) {
           </div>
         ))}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
