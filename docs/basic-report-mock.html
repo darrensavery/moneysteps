@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Morechard — Family Orchard Summary — Savery</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #1a1a1a; padding: 32px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  h2 { font-size: 13px; margin: 24px 0 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  .meta { color: #666; font-size: 10px; margin-bottom: 8px; }
+  .report-description { font-size:10px; color:#555; margin-bottom:16px; border-left:3px solid #ddd; padding-left:8px; line-height:1.5; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
+  .summary-card { border: 1px solid #ddd; border-radius: 6px; padding: 10px 14px; border-left: 4px solid #5b8c3e; }
+  .summary-card .num { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .summary-card .label { font-size: 10px; color: #666; margin-top: 2px; }
+  h1 span.tier-badge { background:#e8f5e9; color:#2e7d32; font-size:12px; padding:2px 10px; border-radius:12px; font-weight:600; vertical-align:middle; margin-left:8px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size:10px; }
+  th { background: #f5f5f5; text-align: left; padding: 5px 8px; font-size: 10px; border: 1px solid #ddd; }
+  td { padding: 4px 8px; border: 1px solid #eee; vertical-align: top; }
+  tr:nth-child(even) { background: #fafafa; }
+  .num-cell { text-align:right; font-variant-numeric:tabular-nums; }
+  .badge-auto     { background: #e8f5e9; color: #2e7d32; padding: 1px 6px; border-radius: 10px; font-size: 9px; white-space:nowrap; }
+  .badge-manual   { background: #e3f2fd; color: #1565c0; padding: 1px 6px; border-radius: 10px; font-size: 9px; white-space:nowrap; }
+  .badge-pending  { background: #fff8e1; color: #f57f17; padding: 1px 6px; border-radius: 10px; font-size: 9px; }
+  .badge-disputed { background: #fce4ec; color: #b71c1c; padding: 1px 6px; border-radius: 10px; font-size: 9px; }
+  .warn { color:#b71c1c; font-size:10px; margin-bottom:8px; }
+  .fingerprint-block { margin-top:24px; padding:14px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9; display:flex; gap:12px; align-items:flex-start; }
+  .qr-placeholder { flex-shrink:0; width:64px; height:64px; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; font-size:8px; color:#999; text-align:center; }
+  .fp { font-family:monospace; font-size:10px; word-break:break-all; margin:4px 0; }
+  .declaration { margin-top:24px; padding:14px; border:2px solid #1a1a1a; border-radius:4px; font-size:10px; line-height:1.7; }
+  .note { font-size:9px; color:#777; font-style:italic; margin-bottom:8px; }
+  .child-chip { display:inline-block; background:#f1f8e9; color:#33691e; border-radius:10px; padding:1px 7px; font-size:9px; font-weight:600; }
+  @media print {
+    body { padding: 16px; }
+    .no-print { display: none; }
+    h2 { break-before: avoid; }
+    tr { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="no-print" style="margin-bottom:24px; padding:12px 16px; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:6px; font-size:12px; display:flex; align-items:center; gap:12px;">
+  <span>Mock basic report — standard licence tier, sample data.</span>
+  <button onclick="window.print()" style="padding:6px 16px; background:#2e7d32; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">Print / Save as PDF</button>
+</div>
+
+<h1>Morechard — Family Report <span class="tier-badge">Basic Edition</span></h1>
+<div class="meta">
+  Family: <strong>Savery</strong> &nbsp;|&nbsp;
+  Exported at: <strong>2026-04-20T09:15:00.000Z</strong> &nbsp;|&nbsp;
+  Currency: <strong>GBP</strong>
+</div>
+<p class="report-description">
+  This report contains a complete summary of your family's activity, including earnings and completed tasks.
+  It can be shared with a school, a financial adviser, or kept as a personal record.
+</p>
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Summary</h2>
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="num">£47.50</div>
+    <div class="label">Total Earned</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">12</div>
+    <div class="label">Tasks Completed</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">11</div>
+    <div class="label">Verified</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">1</div>
+    <div class="label">Pending / Disputed</div>
+  </div>
+</div>
+<p class="warn">⚠ 1 disputed entry in this period</p>
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Transaction Ledger</h2>
+<p class="note">A complete record of every task completed and amount earned. No device data or location information is included in this report.</p>
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Date</th>
+      <th>Child</th>
+      <th>Description</th>
+      <th>Category</th>
+      <th>Amount</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>2026-03-01</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Wash up after dinner</td>
+      <td>Household</td>
+      <td class="num-cell">£2.50</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+    <tr>
+      <td>2</td><td>2026-03-04</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Vacuum living room</td>
+      <td>Household</td>
+      <td class="num-cell">£3.00</td>
+      <td><span class="badge-manual">Verified (Manual)</span></td>
+    </tr>
+    <tr>
+      <td>3</td><td>2026-03-08</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Take bins out</td>
+      <td>Household</td>
+      <td class="num-cell">£1.50</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+    <tr style="background:#fff5f5">
+      <td>4</td><td>2026-03-10</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Mow the lawn</td>
+      <td>Garden</td>
+      <td class="num-cell">£5.00</td>
+      <td><span class="badge-disputed">Disputed</span></td>
+    </tr>
+    <tr>
+      <td>5</td><td>2026-03-15</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Wash up after dinner</td>
+      <td>Household</td>
+      <td class="num-cell">£2.50</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+    <tr>
+      <td>6</td><td>2026-03-18</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Tidy bedroom</td>
+      <td>Household</td>
+      <td class="num-cell">£2.00</td>
+      <td><span class="badge-manual">Verified (Manual)</span></td>
+    </tr>
+    <tr>
+      <td>7</td><td>2026-03-22</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Walk the dog</td>
+      <td>Pet Care</td>
+      <td class="num-cell">£3.50</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+    <tr>
+      <td>8</td><td>2026-03-25</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Load and unload dishwasher</td>
+      <td>Household</td>
+      <td class="num-cell">£2.00</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+    <tr>
+      <td>9</td><td>2026-03-29</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Clean bathroom</td>
+      <td>Household</td>
+      <td class="num-cell">£4.00</td>
+      <td><span class="badge-manual">Verified (Manual)</span></td>
+    </tr>
+    <tr>
+      <td>10</td><td>2026-04-02</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Vacuum living room</td>
+      <td>Household</td>
+      <td class="num-cell">£3.00</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+    <tr>
+      <td>11</td><td>2026-04-07</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Take bins out</td>
+      <td>Household</td>
+      <td class="num-cell">£1.50</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+    <tr>
+      <td>12</td><td>2026-04-12</td>
+      <td><span class="child-chip">Ellie</span></td>
+      <td>Wash up after dinner</td>
+      <td>Household</td>
+      <td class="num-cell">£2.50</td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════ -->
+<h2>Status Log</h2>
+<p class="note">A record of every approval and status change. Shows which parent reviewed and approved each task.</p>
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Date</th>
+      <th>Task</th>
+      <th>From</th>
+      <th>To</th>
+      <th>Approver</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>2026-03-01</td><td>Ledger #1</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>2</td><td>2026-03-04</td><td>Ledger #2</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-manual">Verified (Manual)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>3</td><td>2026-03-08</td><td>Ledger #3</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr style="background:#fff5f5">
+      <td>4</td><td>2026-03-10</td><td>Ledger #4</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-disputed">Disputed</span></td>
+      <td>Mark Savery</td>
+    </tr>
+    <tr>
+      <td>5</td><td>2026-03-15</td><td>Ledger #5</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>6</td><td>2026-03-18</td><td>Ledger #6</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-manual">Verified (Manual)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>7</td><td>2026-03-22</td><td>Ledger #7</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>8</td><td>2026-03-25</td><td>Ledger #8</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>9</td><td>2026-03-29</td><td>Ledger #9</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-manual">Verified (Manual)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>10</td><td>2026-04-02</td><td>Ledger #10</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>11</td><td>2026-04-07</td><td>Ledger #11</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+    <tr>
+      <td>12</td><td>2026-04-12</td><td>Ledger #12</td>
+      <td><span class="badge-pending">Pending</span></td>
+      <td><span class="badge-auto">Verified (Auto)</span></td>
+      <td>Sarah Savery</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="fingerprint-block">
+  <div class="qr-placeholder">QR<br/>A3F291BC</div>
+  <div>
+    <strong>Document Fingerprint:</strong><br/>
+    <span class="fp">a3f291bc44de7e12c8f03b1d9a2e5f67d1b8c9e04f25a36b47c58d69e70f81g92h03i14j25k36l47</span>
+    <div style="font-size:9px;color:#666;margin-top:4px">
+      This SHA-256 hash uniquely identifies this export. Any change to the data will produce a different hash.
+    </div>
+  </div>
+</div>
+
+<div class="declaration">
+  <strong>Declaration of Accuracy</strong><br/><br/>
+  This document contains the complete and unaltered financial record for family <strong>Savery</strong>,
+  generated by Morechard on Sun Apr 20 2026.
+</div>
+
+</body>
+</html>

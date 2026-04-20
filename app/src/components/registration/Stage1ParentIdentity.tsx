@@ -58,6 +58,8 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
 
   const strength = getStrength(password)
 
+  const canContinue = !!displayName.trim() && isValidEmail(email) && password.length >= 8
+
   // Live validation — only show errors after field is touched or submit attempted
   const errors = {
     displayName: !displayName.trim()      ? 'Your name is required' : '',
@@ -106,7 +108,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
           Your Identity
         </h2>
         <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">
-          You are the Lead Custodian of this family record. All actions are
+          You are the Lead Parent of this family record. All actions are
           logged against your verified identity.
         </p>
       </div>
@@ -137,7 +139,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
             <ShieldCheck size={13} className="text-teal-600 mt-0.5 shrink-0" />
             <p className="text-xs text-teal-800 leading-relaxed">
               Dual-approval governance will be enabled. Your co-parent joins via
-              a secure invite code in Step 4.
+              a secure invite code in the final step.
             </p>
           </div>
         )}
@@ -235,9 +237,10 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
       <button
         type="submit"
         className={cn(
-          'w-full h-13 rounded-xl font-semibold text-base text-white',
-          'bg-teal-600 hover:bg-teal-700 active:scale-[0.98] cursor-pointer',
-          'transition-all duration-150 shadow-sm hover:shadow-md',
+          'w-full h-12 rounded-xl font-semibold text-sm transition-all duration-150',
+          canContinue
+            ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm active:scale-[0.98] cursor-pointer'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
         )}
       >

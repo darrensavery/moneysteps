@@ -41,7 +41,7 @@ export function getRole(): 'parent' | 'child' | null {
   return localStorage.getItem('mc_role') as 'parent' | 'child' | null;
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}, _retries = 2): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -50,7 +50,21 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
 
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
-  const data = await res.json() as T & { error?: string };
+
+  // D1 transient reset — retry up to twice with a short delay
+  if (res.status === 503 && _retries > 0) {
+    await new Promise(r => setTimeout(r, 800));
+    return request<T>(path, options, _retries - 1);
+  }
+
+  const text = await res.text();
+  let data: T & { error?: string };
+  try {
+    data = text ? JSON.parse(text) as T & { error?: string } : {} as T & { error?: string };
+  } catch {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    throw new Error('Unexpected response from server. Please try again.');
+  }
 
   if (!res.ok) {
     throw new Error((data as Record<string, unknown>).error as string ?? `HTTP ${res.status}`);
@@ -246,10 +260,11 @@ export interface Chore {
   created_at: number; updated_at: number;
 }
 
-export async function getChores(params: { family_id: string; child_id?: string; archived?: boolean }): Promise<{ chores: Chore[] }> {
+export async function getChores(params: { family_id: string; child_id?: string; archived?: boolean; assigned_to?: string }): Promise<{ chores: Chore[] }> {
   const q = new URLSearchParams({ family_id: params.family_id });
   if (params.child_id) q.set('child_id', params.child_id);
   if (params.archived) q.set('archived', '1');
+  if (params.assigned_to) q.set('assigned_to', params.assigned_to);
   return request(`/api/chores?${q}`);
 }
 
@@ -273,6 +288,10 @@ export async function archiveChore(id: string): Promise<void> {
 
 export async function restoreChore(id: string): Promise<void> {
   await request(`/api/chores/${id}/restore`, { method: 'POST' });
+}
+
+export async function claimChore(id: string): Promise<Chore> {
+  return request(`/api/chores/${id}/claim`, { method: 'POST' });
 }
 
 export async function submitChore(id: string, note?: string): Promise<{ id: string; status: string }> {

@@ -28,8 +28,12 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/auth': 'http://localhost:8787',
-      '/api':  'http://localhost:8787',
+      // /auth/verify is a React SPA route — must NOT be proxied to the worker
+      '/auth': {
+        target: 'http://localhost:8787',
+        bypass: (req) => (req.url?.startsWith('/auth/verify') ? req.url : undefined),
+      },
+      '/api': 'http://localhost:8787',
     },
   },
 })

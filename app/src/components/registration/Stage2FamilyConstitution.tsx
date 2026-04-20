@@ -6,12 +6,12 @@
  * For co-parenting only: governance_mode (amicable | standard)
  * Single-parent accounts always use amicable — no choice shown.
  *
- * Smart detection: uses navigator.language to pre-highlight cards,
- * but the user must tap to confirm. No selection = Continue is blocked.
+ * Smart detection: uses navigator.language to pre-suggest cards,
+ * but the user must tap to confirm. No selection = Continue is disabled.
  */
 
 import { useState, useEffect } from 'react'
-import { Info, Scale, Zap, BookOpen } from 'lucide-react'
+import { Info, Scale, Zap, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { detectLocale, type AppLocale } from '@/lib/locale'
 import type { RegistrationState } from './RegistrationShell'
@@ -24,7 +24,6 @@ interface Props {
 
 type Currency = 'GBP' | 'USD' | 'PLN'
 
-/** Detect likely currency from browser locale. Returns null if ambiguous. */
 function detectCurrency(): Currency | null {
   try {
     const lang = navigator.language ?? ''
@@ -36,16 +35,16 @@ function detectCurrency(): Currency | null {
   return null
 }
 
-const LANGUAGE_OPTIONS: { value: AppLocale; flag: string; label: string; region: string }[] = [
-  { value: 'en-GB', flag: '🇬🇧', label: 'UK English', region: 'United Kingdom' },
-  { value: 'en-US', flag: '🇺🇸', label: 'US English', region: 'United States'  },
-  { value: 'pl',    flag: '🇵🇱', label: 'Polish',     region: 'Poland'          },
+const LANGUAGE_OPTIONS: { value: AppLocale; flag: string; label: string; subLabel: string }[] = [
+  { value: 'en-GB', flag: '🇬🇧', label: 'English', subLabel: 'UK'     },
+  { value: 'en-US', flag: '🇺🇸', label: 'English', subLabel: 'US'     },
+  { value: 'pl',    flag: '🇵🇱', label: 'Polski',  subLabel: 'Poland' },
 ]
 
-const CURRENCY_OPTIONS: { value: Currency; symbol: string; label: string; region: string }[] = [
-  { value: 'GBP', symbol: '£',  label: 'British Pound', region: 'United Kingdom' },
-  { value: 'USD', symbol: '$',  label: 'US Dollar',     region: 'United States'  },
-  { value: 'PLN', symbol: 'zł', label: 'Polish Zloty',  region: 'Poland'          },
+const CURRENCY_OPTIONS: { value: Currency; symbol: string; label: string; subLabel: string }[] = [
+  { value: 'GBP', symbol: '£',  label: 'British Pound', subLabel: 'GBP' },
+  { value: 'USD', symbol: '$',  label: 'US Dollar',     subLabel: 'USD' },
+  { value: 'PLN', symbol: 'zł', label: 'Polish Zloty',  subLabel: 'PLN' },
 ]
 
 export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
@@ -62,7 +61,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
   const isCoParenting = data.parenting_mode === 'co-parenting'
 
   useEffect(() => {
-    if (data.locale || data.base_currency) return  // came back from step 3
+    if (data.locale || data.base_currency) return
     setSugLocale(detectLocale())
     const detectedCurrency = detectCurrency()
     if (detectedCurrency) setSugCurrency(detectedCurrency)
@@ -78,8 +77,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
     })
   }
 
-  const noSelection = !locale || !currency
-
+  const canContinue = !!locale && !!currency
   const moneyWord = locale === 'pl' ? 'kieszonkowe' : locale === 'en-US' ? 'allowance' : 'pocket money'
 
   return (
@@ -89,20 +87,13 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
       <div className="space-y-1.5">
         <h2 className="text-2xl font-bold tracking-tight">Family Setup</h2>
         <p className="text-[#6b6a66] text-sm leading-relaxed">
-          Choose your language and currency. These can be changed later in Settings.
+          Confirm your language and currency. Tap a card to lock in your choice.
         </p>
       </div>
 
       {/* Language selection */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-[#1C1C1A]">Language</span>
-          {sugLocale && !locale && (
-            <span className="text-[11px] text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-0.5 font-medium">
-              Detected from your device
-            </span>
-          )}
-        </div>
+        <span className="text-sm font-semibold text-[#1C1C1A]">Language</span>
 
         <div className="grid grid-cols-3 gap-2">
           {LANGUAGE_OPTIONS.map(opt => (
@@ -113,7 +104,8 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
               onClick={() => setLocale(opt.value)}
               symbol={opt.flag}
               label={opt.label}
-              region={opt.region}
+              subLabel={opt.subLabel}
+              confirmLabel={opt.value === 'en-GB' ? 'Use UK English' : opt.value === 'en-US' ? 'Use US English' : 'Użyj Polskiego'}
             />
           ))}
         </div>
@@ -125,14 +117,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
 
       {/* Currency selection */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-[#1C1C1A]">Base currency</span>
-          {sugCurrency && !currency && (
-            <span className="text-[11px] text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-0.5 font-medium">
-              Detected from your device
-            </span>
-          )}
-        </div>
+        <span className="text-sm font-semibold text-[#1C1C1A]">Base currency</span>
 
         <div className="grid grid-cols-3 gap-2">
           {CURRENCY_OPTIONS.map(opt => (
@@ -143,7 +128,8 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
               onClick={() => setCurrency(opt.value)}
               symbol={opt.symbol}
               label={opt.label}
-              region={opt.region}
+              subLabel={opt.subLabel}
+              confirmLabel={opt.value === 'GBP' ? 'Use £ Pounds' : opt.value === 'USD' ? 'Use $ Dollars' : 'Użyj zł Złotych'}
             />
           ))}
         </div>
@@ -153,16 +139,16 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
         )}
 
         {/* Ledger integrity notice */}
-        <div className="flex items-start gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3">
-          <BookOpen size={14} className="text-[#6b6a66] mt-0.5 shrink-0" />
-          <div>
-            <p className="text-xs font-semibold text-[#1C1C1A]">Locked to your current region</p>
-            <p className="text-xs text-[#6b6a66] mt-0.5 leading-relaxed">
-              To keep your financial history accurate, all entries must use a single
-              currency. All {moneyWord}, chores, and savings goals are tracked in this currency.
-              If you move country, a Relocation Audit entry can be added to the ledger at any time.
-            </p>
-          </div>
+        <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5">
+          <Lock size={15} className="text-[#6b6a66] mt-0.5 shrink-0" />
+          <ul className="space-y-1.5">
+            <li className="text-[13px] text-[#1C1C1A] font-medium leading-snug">
+              Your {moneyWord} history is locked to one currency.
+            </li>
+            <li className="text-[13px] text-[#6b6a66] leading-snug">
+              Moving country? Add a Relocation Audit to your ledger at any time in Settings.
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -251,31 +237,33 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
         <button
           type="button"
           onClick={handleNext}
+          disabled={!canContinue}
           className={cn(
-            'flex-[2] h-12 rounded-xl text-white text-sm font-semibold transition-all shadow-sm cursor-pointer active:scale-[0.98]',
-            noSelection
-              ? 'bg-teal-300 cursor-not-allowed'
-              : 'bg-teal-600 hover:bg-teal-700',
+            'flex-[2] h-12 rounded-xl text-sm font-semibold transition-all duration-150',
+            canContinue
+              ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm active:scale-[0.98] cursor-pointer'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed',
           )}
         >
-          Continue — Child Setup
+          Continue
         </button>
       </div>
     </div>
   )
 }
 
-// ── SelectionCard (shared for both language and currency) ─────────────────────
+// ── SelectionCard ─────────────────────────────────────────────────────────────
 
 function SelectionCard({
-  active, suggested, onClick, symbol, label, region,
+  active, suggested, onClick, symbol, label, subLabel, confirmLabel,
 }: {
   active: boolean
   suggested: boolean
   onClick: () => void
   symbol: string
   label: string
-  region: string
+  subLabel: string
+  confirmLabel: string
 }) {
   return (
     <button
@@ -286,15 +274,24 @@ function SelectionCard({
         active
           ? 'border-teal-500 bg-teal-50 shadow-md'
           : suggested
-          ? 'border-teal-300 bg-teal-50/40 shadow-sm'
+          ? 'border-dashed border-teal-400 bg-teal-50/30'
           : 'border-[#D3D1C7] bg-white hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-sm',
       )}
     >
-      {suggested && (
-        <span className="absolute top-2 right-2 text-[10px] font-semibold text-teal-600 bg-teal-100 rounded-full px-1.5 py-0.5">
-          Detected
+      {/* Suggested pill / confirmed tick */}
+      {active ? (
+        <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] font-semibold text-teal-700 bg-teal-100 rounded-full px-1.5 py-0.5">
+          <svg className="w-2.5 h-2.5" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Set
         </span>
-      )}
+      ) : suggested ? (
+        <span className="absolute top-2 right-2 text-[9px] font-semibold text-teal-600 bg-white border border-teal-300 rounded-full px-1.5 py-0.5 leading-tight text-center max-w-[52px]">
+          {confirmLabel}
+        </span>
+      ) : null}
+
       <span className={cn(
         'text-[22px] font-extrabold tabular-nums leading-none',
         active ? 'text-teal-700' : 'text-[#1C1C1A]',
@@ -302,8 +299,8 @@ function SelectionCard({
         {symbol}
       </span>
       <div>
-        <p className={cn('text-xs font-bold', active ? 'text-teal-700' : 'text-[#1C1C1A]')}>{label}</p>
-        <p className="text-[10px] text-[#9b9a96] mt-0.5">{region}</p>
+        <p className={cn('text-xs font-bold leading-tight', active ? 'text-teal-700' : 'text-[#1C1C1A]')}>{label}</p>
+        <p className="text-[10px] text-[#9b9a96] mt-0.5">{subLabel}</p>
       </div>
     </button>
   )

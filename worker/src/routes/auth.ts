@@ -214,9 +214,16 @@ export async function handleMagicLinkRequest(request: Request, env: Env): Promis
 // Consumes a magic link token. Returns JWT.
 // ----------------------------------------------------------------
 export async function handleMagicLinkVerify(request: Request, env: Env): Promise<Response> {
-  const url   = new URL(request.url);
-  const token = url.searchParams.get('token');
-  if (!token) return error('token required');
+  const url    = new URL(request.url);
+  const token  = url.searchParams.get('token');
+  const appUrl = env.APP_URL ?? 'https://app.morechard.com';
+
+  const redirect = (reason: string) => new Response(null, {
+    status: 302,
+    headers: { 'Location': `${appUrl}/auth/verify?error=${encodeURIComponent(reason)}` },
+  });
+
+  if (!token) return redirect('missing');
 
   const tokenHash = await sha256(token);
   const now       = Math.floor(Date.now() / 1000);
@@ -226,9 +233,9 @@ export async function handleMagicLinkVerify(request: Request, env: Env): Promise
     .bind(tokenHash)
     .first<{ id: number; user_id: string; expires_at: number; used_at: number | null }>();
 
-  if (!row)           return error('Invalid or unknown token', 401);
-  if (row.used_at)    return error('Token already used', 401);
-  if (now > row.expires_at) return error('Token expired', 401);
+  if (!row)              return redirect('invalid');
+  if (row.used_at)       return redirect('used');
+  if (now > row.expires_at) return redirect('expired');
 
   // Mark token used + mark email verified — atomic
   const user = await env.DB
@@ -238,12 +245,20 @@ export async function handleMagicLinkVerify(request: Request, env: Env): Promise
 
   if (!user) return error('User not found', 404);
 
+  const slt = nanoid(32);
+
   await env.DB.batch([
     env.DB.prepare('UPDATE magic_link_tokens SET used_at = ? WHERE id = ?').bind(now, row.id),
     env.DB.prepare('UPDATE users SET email_verified = 1 WHERE id = ?').bind(user.id),
+    env.DB.prepare('INSERT INTO slt_tokens (token, user_id, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)')
+      .bind(slt, user.id, now + 300, clientIp(request), request.headers.get('User-Agent') ?? ''),
   ]);
 
-  return issueParentJwt(user.id, user.family_id, request, env);
+  const appUrl = env.APP_URL ?? 'https://app.morechard.com';
+  return new Response(null, {
+    status: 302,
+    headers: { 'Location': `${appUrl}/auth/callback?slt=${slt}` },
+  });
 }
 
 // ----------------------------------------------------------------

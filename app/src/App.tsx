@@ -24,25 +24,41 @@ import * as Sentry from '@sentry/react'
  */
 const ML_SESSION_KEY = 'mc_ml_verified'
 
+const ERROR_MESSAGES: Record<string, { title: string; body: string }> = {
+  used:    { title: 'Link already used',   body: 'This magic link has already been used. Each link can only be used once.' },
+  expired: { title: 'Link expired',        body: 'Magic links expire after 15 minutes. Please request a new one.' },
+  invalid: { title: 'Link not recognised', body: 'This link is invalid or was not issued by Morechard.' },
+  missing: { title: 'No link token',       body: 'The sign-in link appears to be incomplete. Please use the full link from your email.' },
+}
+
 function MagicLinkVerifyScreen() {
   const [params]  = useSearchParams()
   const token     = params.get('token')
+  const errorCode = params.get('error')
 
   // If we already verified this session, restore identity without re-calling the API
   const cached = (() => {
     try { return JSON.parse(sessionStorage.getItem(ML_SESSION_KEY) ?? 'null') } catch { return null }
   })()
 
-  const [phase, setPhase]   = useState<'verifying' | 'welcome' | 'error'>(cached ? 'welcome' : 'verifying')
-  const [errMsg, setErrMsg] = useState('')
+  const [phase, setPhase]   = useState<'verifying' | 'welcome' | 'error'>(
+    errorCode ? 'error' : cached ? 'welcome' : 'verifying'
+  )
+  const [errMsg, setErrMsg] = useState(errorCode ? (ERROR_MESSAGES[errorCode]?.body ?? 'Something went wrong.') : '')
+  const [errTitle, setErrTitle] = useState(errorCode ? (ERROR_MESSAGES[errorCode]?.title ?? 'Sign-in failed') : '')
   const [identity, setIdentity] = useState<{
     family_id: string; user_id: string; display_name: string;
   } | null>(cached)
 
   useEffect(() => {
-    if (cached) return  // already verified this session — nothing to do
+    if (errorCode || cached) return  // error already set, or already verified
 
-    if (!token) { setPhase('error'); setErrMsg('No token found in link.'); return }
+    if (!token) {
+      setErrTitle('No link token')
+      setErrMsg('The sign-in link appears to be incomplete. Please use the full link from your email.')
+      setPhase('error')
+      return
+    }
 
     verifyMagicLink(token)
       .then(async (result) => {
@@ -65,10 +81,15 @@ function MagicLinkVerifyScreen() {
         setPhase('welcome')
       })
       .catch(e => {
-        setErrMsg(e.message ?? 'Verification failed.')
+        const raw: string = e.message ?? ''
+        const friendly = raw.includes('JSON') || raw.includes('fetch') || raw.includes('NetworkError')
+          ? 'This link has already been used or has expired. Please request a new one.'
+          : raw || 'Verification failed.'
+        setErrTitle('Sign-in failed')
+        setErrMsg(friendly)
         setPhase('error')
       })
-  }, [token])
+  }, [token, errorCode])
 
   function handleWelcomeDone() {
     if (!identity) return
@@ -103,15 +124,28 @@ function MagicLinkVerifyScreen() {
   if (phase === 'error') {
     return (
       <div className="min-h-svh flex items-center justify-center bg-[var(--color-bg)] px-5">
-        <div className="max-w-sm w-full text-center space-y-4">
-          <p className="text-[28px]">⚠️</p>
-          <h2 className="text-lg font-bold text-[var(--color-text)]">Link invalid or expired</h2>
-          <p className="text-sm text-[var(--color-text-muted)]">{errMsg}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">
-            Magic links expire after 15 minutes. Please{' '}
-            <a href="/register" className="text-[var(--brand-primary)] underline">register again</a>
-            {' '}or request a new link from the login page.
-          </p>
+        <div className="max-w-sm w-full text-center space-y-5">
+          <FullLogo iconSize={26} />
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-7 space-y-3 shadow-sm">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
+              <svg className="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+            <h2 className="text-base font-semibold text-[var(--color-text)]">{errTitle || 'Sign-in failed'}</h2>
+            <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">{errMsg}</p>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            <a
+              href="/auth/login"
+              className="block w-full rounded-xl bg-[var(--brand-primary)] py-3 text-sm font-semibold text-white text-center active:scale-[0.98] transition-transform"
+            >
+              Request a new link
+            </a>
+            <a href="/register" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+              Create a new account
+            </a>
+          </div>
         </div>
       </div>
     )
