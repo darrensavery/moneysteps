@@ -52,7 +52,7 @@ export function DataSettings({
       })
 
       if (!res.ok) {
-        const body = await res.json<{ error?: string }>().catch(() => ({}))
+        const body = await res.json().catch(() => ({})) as { error?: string }
         throw new Error(body.error ?? `Export failed (${res.status})`)
       }
 

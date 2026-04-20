@@ -1,6 +1,7 @@
 // app/src/hooks/useMarketRates.ts
 import { useState, useEffect } from 'react';
-import { getMarketRates, MarketRate, MarketRatesResponse } from '../lib/api';
+import { getMarketRates } from '../lib/api';
+import type { MarketRate, MarketRatesResponse } from '../lib/api';
 import { useLocale } from '../lib/locale';
 
 const SESSION_KEY = 'mc_market_rates';

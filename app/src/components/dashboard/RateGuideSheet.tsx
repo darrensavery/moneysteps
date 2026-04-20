@@ -1,7 +1,8 @@
 // app/src/components/dashboard/RateGuideSheet.tsx
 import { useState, useMemo } from 'react';
 import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates';
-import { useLocale, currencySymbol, AppLocale } from '../../lib/locale';
+import { useLocale, currencySymbol } from '../../lib/locale';
+import type { AppLocale } from '../../lib/locale';
 import type { MarketRate } from '../../lib/api';
 
 const CATEGORIES = [

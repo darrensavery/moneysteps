@@ -32,7 +32,7 @@ export function Toast({ message }: { message: string }) {
 // ── Row atoms ─────────────────────────────────────────────────────────────────
 
 export function SettingsRow({
-  icon, label, description, onClick, destructive = false, disabled = false, badge,
+  icon, label, description, onClick, destructive = false, disabled = false, badge, rightSlot,
 }: {
   icon?: React.ReactNode
   label: string
@@ -41,6 +41,7 @@ export function SettingsRow({
   destructive?: boolean
   disabled?: boolean
   badge?: string
+  rightSlot?: React.ReactNode
 }) {
   return (
     <button
@@ -76,7 +77,7 @@ export function SettingsRow({
           {badge}
         </span>
       )}
-      <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />
+      {rightSlot ?? <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />}
     </button>
   )
 }

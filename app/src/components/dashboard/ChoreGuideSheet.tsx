@@ -1,8 +1,10 @@
 // app/src/components/dashboard/ChoreGuideSheet.tsx
 import { useState, useMemo } from 'react';
 import { useMarketRates } from '../../hooks/useMarketRates';
-import { suggestChore, MarketRate } from '../../lib/api';
-import { useLocale, AppLocale, currencySymbol } from '../../lib/locale';
+import { suggestChore } from '../../lib/api';
+import type { MarketRate } from '../../lib/api';
+import { useLocale, currencySymbol } from '../../lib/locale';
+import type { AppLocale } from '../../lib/locale';
 
 const TIER_ORDER = ['oaks', 'saplings', 'seeds', 'discoverable'] as const;
 const TIER_HEADINGS: Record<string, string> = {
