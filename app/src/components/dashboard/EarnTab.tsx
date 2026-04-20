@@ -20,7 +20,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Chore, Completion } from '../../lib/api'
 import {
-  getChores, getCompletions, submitChore,
+  getChores, getCompletions, submitChore, claimChore,
   uploadProof, formatCurrency,
 } from '../../lib/api'
 import { track } from '../../lib/analytics'
@@ -44,10 +44,13 @@ interface SubmitState {
 
 export function EarnTab({ familyId, childId, currency }: Props) {
   const [chores,    setChores]    = useState<Chore[]>([])
+  const [openChores, setOpenChores] = useState<Chore[]>([])  // assigned_to='anyone', unclaimed
   const [available, setAvailable] = useState<Completion[]>([])  // status=available
   const [awaiting,  setAwaiting]  = useState<Completion[]>([])  // status=awaiting_review
   const [revisions, setRevisions] = useState<Completion[]>([])  // status=needs_revision
   const [loading,   setLoading]   = useState(true)
+  const [claiming,  setClaiming]  = useState<string | null>(null)  // chore id being claimed
+  const [claimError, setClaimError] = useState<string | null>(null)
   const [submit,    setSubmit]    = useState<SubmitState | null>(null)
   const [choreGuideOpen, setChoreGuideOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -56,19 +59,33 @@ export function EarnTab({ familyId, childId, currency }: Props) {
     setLoading(true)
     try {
       // GET /api/chores triggers lazy generation server-side for recurring chores
-      const [c, av, aw, rev] = await Promise.all([
+      const [c, open, av, aw, rev] = await Promise.all([
         getChores({ family_id: familyId, child_id: childId }).then(r => r.chores),
+        getChores({ family_id: familyId, assigned_to: 'anyone' }).then(r => r.chores).catch(() => [] as Chore[]),
         getCompletions({ family_id: familyId, child_id: childId, status: 'available' }).then(r => r.completions),
         getCompletions({ family_id: familyId, child_id: childId, status: 'awaiting_review' }).then(r => r.completions),
         getCompletions({ family_id: familyId, child_id: childId, status: 'needs_revision' }).then(r => r.completions),
       ])
       setChores(c)
+      setOpenChores(open)
       setAvailable(av)
       setAwaiting(aw)
       setRevisions(rev)
     } catch { /* silently degrade */ }
     finally { setLoading(false) }
   }, [familyId, childId])
+
+  async function handleClaim(choreId: string) {
+    setClaiming(choreId)
+    setClaimError(null)
+    try {
+      await claimChore(choreId)
+      await load()
+    } catch (err: unknown) {
+      setClaimError((err as Error).message)
+      setClaiming(null)
+    }
+  }
 
   useEffect(() => { load() }, [load])
 
@@ -143,7 +160,7 @@ export function EarnTab({ familyId, childId, currency }: Props) {
 
   if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
 
-  const hasAnything = revisions.length > 0 || available.length > 0 || awaiting.length > 0
+  const hasAnything = revisions.length > 0 || available.length > 0 || awaiting.length > 0 || openChores.length > 0
 
   return (
     <div className="space-y-6">
@@ -219,6 +236,40 @@ export function EarnTab({ familyId, childId, currency }: Props) {
         </section>
       )}
 
+      {/* ── OPEN TASKS (anyone can claim) ──────────────────────────── */}
+      {openChores.length > 0 && (
+        <section>
+          <h2 className="text-[13px] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
+            Open tasks — first come, first served
+          </h2>
+          {claimError && (
+            <p className="text-[12px] text-red-600 mb-2">{claimError}</p>
+          )}
+          <div className="space-y-2.5">
+            {openChores.map(chore => (
+              <div key={chore.id} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-semibold text-[var(--color-text)]">{chore.title}</p>
+                  <p className="text-[13px] text-[var(--color-text-muted)] mt-0.5 tabular-nums">
+                    {formatCurrency(chore.reward_amount, currency)}
+                  </p>
+                  {chore.description && (
+                    <p className="text-[12px] text-[var(--color-text-muted)] mt-1 leading-relaxed">{chore.description}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleClaim(chore.id)}
+                  disabled={claiming === chore.id}
+                  className="shrink-0 h-10 px-4 bg-[var(--brand-primary)] text-white rounded-xl font-bold text-[13px] hover:opacity-90 disabled:opacity-50 active:scale-95 transition-all cursor-pointer"
+                >
+                  {claiming === chore.id ? '…' : 'Grab it'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── AWAITING REVIEW ────────────────────────────────────────── */}
       {awaiting.length > 0 && (
         <section>
@@ -263,6 +314,7 @@ export function EarnTab({ familyId, childId, currency }: Props) {
         open={choreGuideOpen}
         onClose={() => setChoreGuideOpen(false)}
         context={null}
+        currency={currency}
       />
     </div>
   )

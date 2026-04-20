@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { exchangeSlt, setToken } from '../lib/api'
 import { setDeviceIdentity, toInitials } from '../lib/deviceIdentity'
 import { getLocale, isPolish } from '../lib/locale'
+import { FullLogo } from '../components/ui/Logo'
 
 type ScreenState = 'loading' | 'error'
 
@@ -82,9 +83,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-[var(--color-bg)]">
-      <h1 className="text-[24px] font-extrabold text-[var(--color-text)] tracking-tight">
-        🌳 Morechard
-      </h1>
+      <FullLogo iconSize={28} />
       <Loader2 className="w-7 h-7 text-[var(--brand-primary)] animate-spin" />
       <p className="text-[14px] text-[var(--color-text-muted)]">{bridgeText}</p>
     </div>

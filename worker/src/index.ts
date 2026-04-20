@@ -49,7 +49,7 @@ import * as Sentry from '@sentry/cloudflare';
 import { Env } from './types.js';
 import {
   handleChoreCreate, handleChoreList, handleChoreUpdate,
-  handleChoreArchive, handleChoreRestore, handleChoreSubmit,
+  handleChoreArchive, handleChoreRestore, handleChoreSubmit, handleChoreClaim,
 } from './routes/chores.js';
 import {
   handleCompletionList, handleCompletionCount, handleCompletionHistory,
@@ -161,9 +161,18 @@ export default Sentry.withSentry(
     try {
       response = await route(request, env, method, path);
     } catch (err) {
-      console.error(err);
-      Sentry.captureException(err);
-      response = error('Internal server error', 500);
+      // D1 Durable Object reset — transient platform error, not a code bug.
+      // Return 503 so clients can retry; suppress from Sentry to avoid noise.
+      if (err instanceof Error && err.message.includes('D1 DB storage operation exceeded timeout')) {
+        response = new Response(
+          JSON.stringify({ error: 'Database temporarily unavailable — please retry' }),
+          { status: 503, headers: { 'Content-Type': 'application/json', 'Retry-After': '2' } },
+        );
+      } else {
+        console.error(err);
+        Sentry.captureException(err);
+        response = error('Internal server error', 500);
+      }
     }
 
     const headers = new Headers(response.headers);
@@ -357,6 +366,8 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (path === '/api/chores' && method === 'GET')     return withAuth(request, auth, env, handleChoreList);
   const choreSubmitMatch = path.match(/^\/api\/chores\/([^/]+)\/submit$/);
   if (choreSubmitMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleChoreSubmit(req, e, choreSubmitMatch[1]));
+  const choreClaimMatch = path.match(/^\/api\/chores\/([^/]+)\/claim$/);
+  if (choreClaimMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleChoreClaim(req, e, choreClaimMatch[1]));
 
   // Completions — children can list their own & rate
   if (path === '/api/completions'         && method === 'GET')  return withAuth(request, auth, env, handleCompletionList);

@@ -4,8 +4,7 @@ import { createPortal } from 'react-dom';
 import { useMarketRates } from '../../hooks/useMarketRates';
 import { suggestChore } from '../../lib/api';
 import type { MarketRate } from '../../lib/api';
-import { useLocale, currencySymbol } from '../../lib/locale';
-import type { AppLocale } from '../../lib/locale';
+import { currencySymbol } from '../../lib/locale';
 
 const TIER_ORDER = ['oaks', 'saplings', 'seeds', 'discoverable'] as const;
 const TIER_HEADINGS: Record<string, string> = {
@@ -14,18 +13,6 @@ const TIER_HEADINGS: Record<string, string> = {
   seeds:        '🌱 Small Seeds',
   discoverable: '🔍 Discoverable',
 };
-
-function localeToCurrency(locale: AppLocale): string {
-  if (locale === 'pl')    return 'PLN';
-  if (locale === 'en-US') return 'USD';
-  return 'GBP';
-}
-
-function localeToRegionLabel(locale: AppLocale): string {
-  if (locale === 'pl')    return 'Poland';
-  if (locale === 'en-US') return 'the US';
-  return 'your area';
-}
 
 function formatAmount(amount: number | null, symbol: string): string {
   if (amount == null) return '—';
@@ -37,15 +24,14 @@ interface Props {
   onClose: () => void;
   /** Optional: module slug passed when navigating from a Learning Lab module */
   context?: string | null;
+  currency?: string;
 }
 
-export function ChoreGuideSheet({ open, onClose, context = null }: Props) {
-  const { rates, loading, error } = useMarketRates();
-  const { locale } = useLocale();
+export function ChoreGuideSheet({ open, onClose, context = null, currency = 'GBP' }: Props) {
+  const { rates, loading, error } = useMarketRates(currency);
 
-  const currency    = localeToCurrency(locale);
   const symbol      = currencySymbol(currency);
-  const regionLabel = localeToRegionLabel(locale);
+  const regionLabel = currency === 'PLN' ? 'Poland' : currency === 'USD' ? 'the US' : 'your area';
 
   const [suggested, setSuggested] = useState<string | null>(null); // id of just-suggested
   const [sending,   setSending]   = useState<string | null>(null);  // id currently sending

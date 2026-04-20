@@ -265,7 +265,7 @@ export function ParentDashboard() {
       <main className="flex-1 max-w-[560px] mx-auto w-full px-3.5 py-4">
         {activeChild ? (
           <>
-            {tab === 'chores'    && <ChoresTab        familyId={familyId} child={activeChild} />}
+            {tab === 'chores'    && <ChoresTab        familyId={familyId} child={activeChild} children={children} />}
             {tab === 'approvals' && <PendingTab        familyId={familyId} child={activeChild} onCountChange={setPendingCount} />}
             {tab === 'activity'  && <ActivityTab       familyId={familyId} child={activeChild} />}
             {tab === 'insights'  && <InsightsTab       familyId={familyId} child={activeChild} children={children} />}

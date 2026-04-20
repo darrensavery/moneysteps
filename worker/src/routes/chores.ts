@@ -40,7 +40,7 @@ export async function handleChoreCreate(request: Request, env: Env): Promise<Res
   if (!family_id   || typeof family_id   !== 'string') return error('family_id required');
   if (!assigned_to || typeof assigned_to !== 'string') return error('assigned_to required');
   if (!title       || typeof title       !== 'string') return error('title required');
-  if (!currency    || !['GBP','PLN'].includes(currency as string)) return error('Invalid currency');
+  if (!currency    || !['GBP','PLN','USD'].includes(currency as string)) return error('Invalid currency');
   if (!Number.isInteger(reward_amount) || (reward_amount as number) <= 0)
     return error('reward_amount must be a positive integer (pence/groszy)');
 
@@ -54,12 +54,16 @@ export async function handleChoreCreate(request: Request, env: Env): Promise<Res
   const proofRequired = proof_required ? 1 : 0;
   const autoApprove   = auto_approve   ? 1 : 0;
 
-  // Verify assigned_to is a child in this family
-  const child = await env.DB
-    .prepare(`SELECT u.id FROM users u JOIN family_roles fr ON fr.user_id = u.id
-              WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
-    .bind(assigned_to, family_id).first<{ id: string }>();
-  if (!child) return error('Child not found in this family', 404);
+  // 'anyone' and 'everyone' are sentinel values — skip child lookup.
+  // Any other value must be a real child in this family.
+  const isSentinel = (assigned_to as string) === 'anyone' || (assigned_to as string) === 'everyone';
+  if (!isSentinel) {
+    const child = await env.DB
+      .prepare(`SELECT u.id FROM users u JOIN family_roles fr ON fr.user_id = u.id
+                WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
+      .bind(assigned_to, family_id).first<{ id: string }>();
+    if (!child) return error('Child not found in this family', 404);
+  }
 
   const id = nanoid();
   const now = Math.floor(Date.now() / 1000);
@@ -91,17 +95,30 @@ export async function handleChoreCreate(request: Request, env: Env): Promise<Res
 }
 
 // ----------------------------------------------------------------
-// GET /api/chores?family_id=&child_id=&archived=
+// GET /api/chores?family_id=&child_id=&archived=&assigned_to=
 // ----------------------------------------------------------------
 export async function handleChoreList(request: Request, env: Env): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   const url = new URL(request.url);
-  const family_id = url.searchParams.get('family_id');
-  const child_id  = url.searchParams.get('child_id');
-  const archived  = url.searchParams.get('archived') === '1' ? 1 : 0;
+  const family_id   = url.searchParams.get('family_id');
+  const child_id    = url.searchParams.get('child_id');
+  const assigned_to = url.searchParams.get('assigned_to');  // 'anyone' sentinel filter
+  const archived    = url.searchParams.get('archived') === '1' ? 1 : 0;
 
   if (!family_id) return error('family_id required');
   if (family_id !== auth.family_id) return error('Forbidden', 403);
+
+  // Sentinel filter: return only open (unclaimed) chores
+  if (assigned_to === 'anyone') {
+    const { results } = await env.DB.prepare(
+      `SELECT c.*, NULL as child_name, p.display_name as parent_name
+       FROM chores c
+       LEFT JOIN users p ON p.id = c.created_by
+       WHERE c.family_id = ? AND c.assigned_to = 'anyone' AND c.archived = 0
+       ORDER BY c.is_priority DESC, c.created_at DESC`
+    ).bind(family_id).all();
+    return json({ chores: results });
+  }
 
   // Children can only see their own chores
   const effectiveChildId = auth.role === 'child' ? auth.sub : (child_id ?? null);
@@ -111,7 +128,7 @@ export async function handleChoreList(request: Request, env: Env): Promise<Respo
     stmt = env.DB.prepare(
       `SELECT c.*, u.display_name as child_name, p.display_name as parent_name
        FROM chores c
-       JOIN users u ON u.id = c.assigned_to
+       LEFT JOIN users u ON u.id = c.assigned_to
        JOIN users p ON p.id = c.created_by
        WHERE c.family_id = ? AND c.assigned_to = ? AND c.archived = ?
        ORDER BY c.is_priority DESC, c.due_date ASC, c.created_at DESC`
@@ -120,7 +137,7 @@ export async function handleChoreList(request: Request, env: Env): Promise<Respo
     stmt = env.DB.prepare(
       `SELECT c.*, u.display_name as child_name, p.display_name as parent_name
        FROM chores c
-       JOIN users u ON u.id = c.assigned_to
+       LEFT JOIN users u ON u.id = c.assigned_to
        JOIN users p ON p.id = c.created_by
        WHERE c.family_id = ? AND c.archived = ?
        ORDER BY c.is_priority DESC, c.due_date ASC, c.created_at DESC`
@@ -238,6 +255,42 @@ export async function handleChoreRestore(request: Request, env: Env, id: string)
     .run();
 
   return json({ ok: true });
+}
+
+// ----------------------------------------------------------------
+// POST /api/chores/:id/claim
+// Child claims an open ('anyone') chore.
+// Atomic: only succeeds if assigned_to is still 'anyone'.
+// ----------------------------------------------------------------
+export async function handleChoreClaim(request: Request, env: Env, id: string): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
+  if (auth.role !== 'child') return error('Only children can claim chores', 403);
+
+  const chore = await env.DB
+    .prepare('SELECT id, family_id, assigned_to, archived FROM chores WHERE id = ?')
+    .bind(id)
+    .first<{ id: string; family_id: string; assigned_to: string; archived: number }>();
+
+  if (!chore)                              return error('Chore not found', 404);
+  if (chore.family_id !== auth.family_id)  return error('Forbidden', 403);
+  if (chore.archived)                      return error('This chore has been removed');
+  if (chore.assigned_to !== 'anyone')      return error('This chore is no longer available to claim', 409);
+
+  // Atomic UPDATE: only touches the row if assigned_to is still 'anyone'.
+  // D1 executes this as a single statement so concurrent claims are safe.
+  const result = await env.DB
+    .prepare(`UPDATE chores SET assigned_to = ?, updated_at = ?
+              WHERE id = ? AND assigned_to = 'anyone'`)
+    .bind(auth.sub, Math.floor(Date.now() / 1000), id)
+    .run();
+
+  if (result.meta.changes === 0) {
+    // Another child claimed it in the same moment
+    return error('Someone else just claimed this task — check back for more!', 409);
+  }
+
+  const updated = await env.DB.prepare('SELECT * FROM chores WHERE id = ?').bind(id).first();
+  return json(updated);
 }
 
 // ----------------------------------------------------------------

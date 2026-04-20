@@ -13,24 +13,39 @@ CREATE TABLE users_new (
   email                TEXT UNIQUE,
   locale               TEXT NOT NULL DEFAULT 'en'
                          CHECK (locale IN ('en', 'en-US', 'pl')),
-  created_at           INTEGER NOT NULL DEFAULT (unixepoch()),
   password_hash        TEXT,
   pin_hash             TEXT,
   email_verified       INTEGER NOT NULL DEFAULT 0,
+  created_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
+  firebase_uid         TEXT DEFAULT NULL,
   allowance_amount     INTEGER NOT NULL DEFAULT 0,
   allowance_day        INTEGER NOT NULL DEFAULT 6 CHECK (allowance_day BETWEEN 0 AND 6),
   earnings_mode        TEXT NOT NULL DEFAULT 'HYBRID'
                          CHECK (earnings_mode IN ('ALLOWANCE','CHORES','HYBRID')),
   allowance_frequency  TEXT NOT NULL DEFAULT 'WEEKLY'
                          CHECK (allowance_frequency IN ('WEEKLY','BI_WEEKLY','MONTHLY')),
+  teen_mode            INTEGER NOT NULL DEFAULT 0,
+  email_pending        TEXT,
   parent_pin_hash      TEXT,
   pin_attempt_count    INTEGER NOT NULL DEFAULT 0,
   pin_locked_until     INTEGER,
   google_sub           TEXT,
-  google_picture       TEXT,
-  email_pending        TEXT
+  google_picture       TEXT
 );
-INSERT INTO users_new SELECT * FROM users;
+INSERT INTO users_new (
+  id, family_id, display_name, email, locale,
+  password_hash, pin_hash, email_verified, created_at, firebase_uid,
+  allowance_amount, allowance_day, earnings_mode, allowance_frequency,
+  teen_mode, email_pending, parent_pin_hash, pin_attempt_count,
+  pin_locked_until, google_sub, google_picture
+)
+SELECT
+  id, family_id, display_name, email, locale,
+  password_hash, pin_hash, email_verified, created_at, firebase_uid,
+  allowance_amount, allowance_day, earnings_mode, allowance_frequency,
+  teen_mode, email_pending, parent_pin_hash, pin_attempt_count,
+  pin_locked_until, google_sub, google_picture
+FROM users;
 DROP TABLE users;
 ALTER TABLE users_new RENAME TO users;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL;
