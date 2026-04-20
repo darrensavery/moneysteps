@@ -37,7 +37,6 @@ export function ChoresTab({ familyId, child, children }: Props) {
   const [showArchived, setShowArchived]   = useState(false)
   const [rateGuideOpen, setRateGuideOpen] = useState(false)
   const [preFill, setPreFill]             = useState<{ title: string; reward_amount: number } | null>(null)
-  const [showFastTrackPrompt, setShowFastTrackPrompt] = useState(false)
   const weekStart = getMondayISO()
 
   const load = useCallback(async () => {
@@ -187,23 +186,11 @@ export function ChoresTab({ familyId, child, children }: Props) {
           currency={CURRENCY}
           initialTitle={preFill?.title}
           initialRewardAmount={preFill?.reward_amount}
-          onCreated={() => { setShowSheet(false); setPreFill(null); setShowFastTrackPrompt(true); load() }}
+          onCreated={() => { setShowSheet(false); setPreFill(null); load() }}
           onClose={() => { setShowSheet(false); setPreFill(null) }}
         />
       )}
 
-      {/* Fast-Track prompt */}
-      {showFastTrackPrompt && (
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-3 flex items-center justify-between gap-2 text-xs">
-          <span className="text-[var(--color-text-muted)]">That was easy! Want to skip this step next time?</span>
-          <button
-            onClick={() => setShowFastTrackPrompt(false)}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] font-medium"
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       {/* Archived toggle */}
       {archived.length > 0 && (
