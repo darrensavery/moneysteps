@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import { User, Shield, AlertTriangle, X, LogOut } from 'lucide-react'
-import { AvatarSVG, AVATAR_CATEGORIES, avatarsForCategory, type AvatarCategory } from '../../../lib/avatars'
+import { AvatarSVG, DefaultAvatar, AVATAR_CATEGORIES, avatarsForCategory, type AvatarCategory } from '../../../lib/avatars'
 import type { MeResult } from '../../../lib/api'
 import { leaveFamily, deleteFamily, clearToken } from '../../../lib/api'
 import { clearDeviceIdentity, getDeviceIdentity } from '../../../lib/deviceIdentity'
@@ -39,7 +39,7 @@ export function ProfileSettings({
   onSaveName, onSaveEmail, onSetAvatar,
   onBack, onComingSoon: _onComingSoon, toast,
 }: Props) {
-  const myAvatar = settings?.avatar_id ?? 'bottts:spark'
+  const myAvatar = settings?.avatar_id ?? null
 
   // Avatar picker
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
@@ -152,7 +152,10 @@ export function ProfileSettings({
             className="relative cursor-pointer group shrink-0"
             title="Change avatar"
           >
-            <AvatarSVG id={myAvatar} size={52} />
+            {myAvatar
+              ? <AvatarSVG id={myAvatar} size={52} />
+              : <DefaultAvatar size={52} initials={identity?.initials ?? identity?.display_name ?? 'P'} />
+            }
             <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 rounded-full transition-colors text-white text-[18px] opacity-0 group-hover:opacity-100">✎</span>
           </button>
           <div>
