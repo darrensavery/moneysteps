@@ -163,6 +163,13 @@ export async function handleFamilyUpdate(request: Request, env: Env): Promise<Re
     if (!['amicable','standard'].includes(body.verify_mode as string)) return error('Invalid verify_mode');
     updates.push('verify_mode = ?'); values.push(body.verify_mode);
   }
+  if ('fast_track_enabled' in body) {
+    const val = body.fast_track_enabled;
+    if (val !== 0 && val !== 1 && val !== true && val !== false)
+      return error('fast_track_enabled must be a boolean');
+    updates.push('fast_track_enabled = ?');
+    values.push(val ? 1 : 0);
+  }
 
   if (updates.length === 0) return error('No valid fields to update');
   values.push(auth.family_id);

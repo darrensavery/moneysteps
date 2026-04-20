@@ -42,9 +42,14 @@ export async function handleCompletionList(request: Request, env: Env): Promise<
 
   const effectiveChildId = auth.role === 'child' ? auth.sub : (child_id ?? null);
 
+  // Audit columns (proof_hash, proof_exif, system_verify, verification_confidence)
+  // are intentionally excluded — they are reserved for the audit export route only.
   const baseQuery = `
     SELECT
-      comp.*,
+      comp.id, comp.family_id, comp.chore_id, comp.child_id,
+      comp.note, comp.status, comp.proof_url, comp.parent_notes,
+      comp.attempt_count, comp.ledger_id, comp.rating,
+      comp.submitted_at, comp.resolved_at, comp.resolved_by,
       ch.title        AS chore_title,
       ch.reward_amount,
       ch.currency,
@@ -112,9 +117,13 @@ export async function handleCompletionHistory(request: Request, env: Env): Promi
   const effectiveChildId = auth.role === 'child' ? auth.sub : (child_id ?? null);
   if (!effectiveChildId) return error('child_id required for history');
 
+  // Audit columns excluded — see handleCompletionList for rationale.
   const { results } = await env.DB.prepare(`
     SELECT
-      comp.*,
+      comp.id, comp.family_id, comp.chore_id, comp.child_id,
+      comp.note, comp.status, comp.proof_url, comp.parent_notes,
+      comp.attempt_count, comp.ledger_id, comp.rating,
+      comp.submitted_at, comp.resolved_at, comp.resolved_by,
       ch.title      AS chore_title,
       ch.reward_amount,
       ch.currency

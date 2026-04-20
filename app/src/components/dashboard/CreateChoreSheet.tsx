@@ -10,15 +10,18 @@
  *  - Uses family currency (passed from parent, defaults GBP)
  */
 
-import { useState, useRef, useEffect } from 'react'
-import type { ChildRecord } from '../../lib/api'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import type { ChildRecord, MarketRate } from '../../lib/api'
 import { createChore } from '../../lib/api'
 import { currencySymbol } from '../../lib/locale'
+import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates'
 
 interface Props {
   familyId: string
   child: ChildRecord
   currency: string          // 'GBP' | 'PLN'
+  initialTitle?: string
+  initialRewardAmount?: number  // in pence/groszy
   onCreated: () => void
   onClose: () => void
 }
@@ -50,6 +53,17 @@ const FREQUENCY_OPTIONS = [
 
 const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+const TILE_EMOJI: Record<string, string> = {
+  'Tidying Room':      '🛏️',
+  'Dishwashing':       '🍽️',
+  'Vacuuming':         '🧹',
+  'Taking Out Bins':   '🗑️',
+  'Walking Dog':       '🐕',
+  'Washing Car':       '🚗',
+  'Homework/Reading':  '📚',
+  'Making Bed':        '🛌',
+}
+
 // Quick-pick amounts per currency (in pence / groszy)
 const QUICK_AMOUNTS: Record<string, { label: string; value: number }[]> = {
   GBP: [
@@ -66,12 +80,23 @@ const QUICK_AMOUNTS: Record<string, { label: string; value: number }[]> = {
   ],
 }
 
-export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose }: Props) {
-  const [form, setForm]             = useState<Form>(BLANK)
+export function CreateChoreSheet({ familyId, child, currency, initialTitle, initialRewardAmount, onCreated, onClose }: Props) {
+  const [form, setForm]             = useState<Form>(() => ({
+    ...BLANK,
+    ...(initialTitle !== undefined ? { title: initialTitle } : {}),
+    ...(initialRewardAmount !== undefined ? { reward_amount: (initialRewardAmount / 100).toFixed(2) } : {}),
+  }))
   const [saving, setSaving]         = useState(false)
   const [error, setError]           = useState<string | null>(null)
   const [showDesc, setShowDesc]     = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
+  const suggestionsContainerRef = useRef<HTMLDivElement>(null)
+
+  const { rates } = useMarketRates()
+  const [searchQuery, setSearchQuery]         = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [sparkActive, setSparkActive]         = useState(false)
+  const sparkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const quickAmounts = QUICK_AMOUNTS[currency] ?? QUICK_AMOUNTS.GBP
   const sym = currencySymbol(currency)
@@ -80,6 +105,30 @@ export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose
   useEffect(() => {
     const t = setTimeout(() => titleRef.current?.focus(), 120)
     return () => clearTimeout(t)
+  }, [])
+
+  // Dismiss More Suggestions on outside click
+  useEffect(() => {
+    if (!showSuggestions) return
+    const handler = (e: MouseEvent) => {
+      if (!suggestionsContainerRef.current?.contains(e.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showSuggestions])
+
+  const selectRate = useCallback((rate: MarketRate) => {
+    setField('title', rate.canonical_name)
+    if (rate.median_amount != null) {
+      setField('reward_amount', (rate.median_amount / 100).toFixed(2))
+    }
+    setSearchQuery('')
+    setShowSuggestions(false)
+    if (sparkTimerRef.current) clearTimeout(sparkTimerRef.current)
+    setSparkActive(true)
+    sparkTimerRef.current = setTimeout(() => setSparkActive(false), 850)
   }, [])
 
   function setField<K extends keyof Form>(k: K, v: Form[K]) {
@@ -158,19 +207,88 @@ export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose
             </div>
           )}
 
-          {/* ── Task title ─────────────────────────────────────── */}
+          {/* ── Task title — tile grid + search + suggestions ── */}
           <div>
-            <label className="text-[12px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 block">
-              Task
-            </label>
-            <input
-              ref={titleRef}
-              className="w-full border border-[var(--color-border)] rounded-xl px-4 py-3 text-[15px] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
-              placeholder="e.g. Organising the bookshelf"
-              value={form.title}
-              onChange={e => setField('title', e.target.value)}
-              required
-            />
+            {/* Tile grid */}
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
+                Quick Pick
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {rates
+                  .filter(r => r.is_orchard_8)
+                  .sort((a, b) => a.sort_order - b.sort_order)
+                  .map(rate => (
+                    <button
+                      key={rate.id}
+                      type="button"
+                      onClick={() => selectRate(rate)}
+                      className="flex flex-col items-center justify-center gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-3 px-1 text-center hover:border-[var(--brand-primary)] transition-colors"
+                    >
+                      <span className="text-xl">{TILE_EMOJI[rate.canonical_name] ?? '✅'}</span>
+                      <span className="text-[10px] font-medium text-[var(--color-text)] leading-tight">
+                        {rate.canonical_name.split('/')[0]}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            {/* Search / title input */}
+            <div className="mb-1 relative">
+              <label className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">
+                Or search / enter a chore title
+              </label>
+              <input
+                ref={titleRef}
+                type="text"
+                value={form.title}
+                placeholder="e.g. Mowing the lawn…"
+                onFocus={() => setShowSuggestions(true)}
+                onChange={e => {
+                  const val = e.target.value
+                  setField('title', val)
+                  setSearchQuery(val)
+                  setShowSuggestions(true)
+                }}
+                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                required
+              />
+            </div>
+
+            {/* More Suggestions */}
+            {showSuggestions && (
+              <div ref={suggestionsContainerRef} className="mb-3 max-h-48 overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider sticky top-0 bg-[var(--color-surface)]">
+                  More Suggestions
+                </p>
+                {rates
+                  .filter(r => !r.is_orchard_8 && fuzzyMatch(r, searchQuery))
+                  .map(rate => (
+                    <button
+                      key={rate.id}
+                      type="button"
+                      onClick={() => selectRate(rate)}
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-[var(--color-surface-alt)] transition-colors"
+                    >
+                      <span className="flex items-center gap-1.5 text-sm text-[var(--color-text)]">
+                        <span className="text-[var(--brand-primary)]">🌱</span>
+                        {rate.canonical_name}
+                      </span>
+                      {rate.median_amount != null && (
+                        <span className="text-xs tabular-nums text-[var(--color-text-muted)]">
+                          {sym}{(rate.median_amount / 100).toFixed(2)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                {rates.filter(r => !r.is_orchard_8 && fuzzyMatch(r, searchQuery)).length === 0 && searchQuery && (
+                  <p className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
+                    No match — your custom chore will be added.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── Reward ─────────────────────────────────────────── */}
@@ -203,13 +321,16 @@ export function CreateChoreSheet({ familyId, child, currency, onCreated, onClose
                 {sym}
               </span>
               <input
-                className="w-full border border-[var(--color-border)] rounded-xl pl-9 pr-4 py-3 text-[15px] font-semibold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
+                className={`w-full border border-[var(--color-border)] rounded-xl pl-9 pr-4 py-3 text-[15px] font-semibold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition${sparkActive ? ' spark-animating ring-2 ring-[var(--brand-primary)]' : ''}`}
                 placeholder="0.00"
                 type="number"
                 min="0.01"
                 step="0.01"
                 value={form.reward_amount}
-                onChange={e => setField('reward_amount', e.target.value)}
+                onChange={e => {
+                  setSparkActive(false)
+                  setField('reward_amount', e.target.value)
+                }}
                 required
               />
             </div>

@@ -34,7 +34,7 @@ POSTHOG_HOST = "https://eu.i.posthog.com"
 # Payday sweep: every Saturday at 08:00 UTC
 # Governance expiry also runs in the same scheduled() handler.
 [triggers]
-crons = ["0 8 * * 6"]
+crons = ["0 8 * * 6", "0 3 * * 1"]
 
 # ── Production environment ────────────────────────────────────────────────────
 # Deploy with: wrangler deploy --env production

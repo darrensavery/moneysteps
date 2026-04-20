@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import type { Chore, Suggestion, Plan, ChildRecord } from '../../lib/api'
 import {
   getChores, archiveChore, restoreChore,
-  getSuggestions, getPlans, createPlan, deletePlan,
+  getSuggestions, rejectSuggestion, getPlans, createPlan, deletePlan,
   formatCurrency, getMondayISO,
 } from '../../lib/api'
 import { CreateChoreSheet } from './CreateChoreSheet'
+import { RateGuideSheet } from './RateGuideSheet'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const CURRENCY = 'GBP'
@@ -31,8 +32,11 @@ export function ChoresTab({ familyId, child }: Props) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [plans, setPlans]             = useState<Plan[]>([])
   const [loading, setLoading]         = useState(true)
-  const [showSheet, setShowSheet]     = useState(false)
-  const [showArchived, setShowArchived] = useState(false)
+  const [showSheet, setShowSheet]         = useState(false)
+  const [showArchived, setShowArchived]   = useState(false)
+  const [rateGuideOpen, setRateGuideOpen] = useState(false)
+  const [preFill, setPreFill]             = useState<{ title: string; reward_amount: number } | null>(null)
+  const [showFastTrackPrompt, setShowFastTrackPrompt] = useState(false)
   const weekStart = getMondayISO()
 
   const load = useCallback(async () => {
@@ -72,24 +76,77 @@ export function ChoresTab({ familyId, child }: Props) {
     await load()
   }
 
+  function handleSuggestionView(s: Suggestion) {
+    setPreFill({ title: s.title, reward_amount: s.proposed_amount })
+    setSuggestions(prev => prev.filter(x => x.id !== s.id))
+    setShowSheet(true)
+  }
+
   if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
 
   return (
     <div className="space-y-4">
       {/* Suggestions banner */}
       {suggestions.length > 0 && (
-        <div className="bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_25%,transparent)] rounded-xl p-3.5">
-          <p className="text-[13px] font-semibold text-[var(--brand-primary)] mb-2">
-            {suggestions.length} suggestion{suggestions.length > 1 ? 's' : ''} from {child.display_name}
-          </p>
-          {suggestions.map(s => (
-            <div key={s.id} className="flex items-center justify-between py-1.5">
-              <span className="text-[13px] text-[var(--color-text)]">{s.title}</span>
-              <span className="text-[13px] font-semibold text-[var(--brand-primary)]">{formatCurrency(s.proposed_amount, CURRENCY)}</span>
-            </div>
-          ))}
+        <div className="space-y-2">
+          {suggestions.map(s => {
+            const hasModule = s.reason?.startsWith('module:') ?? false
+            const moduleLabel = hasModule
+              ? s.reason!.replace('module:', '').replace(/-/g, ' ').replace(/^\d+\s*/, '')
+              : null
+            return (
+              <div key={s.id} className="bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_25%,transparent)] rounded-xl p-3.5">
+                <p className="text-[13px] text-[var(--color-text)] mb-2">
+                  {hasModule ? (
+                    <>
+                      <span className="font-semibold">{child.display_name}</span> just finished a lesson on{' '}
+                      <span className="capitalize">{moduleLabel}</span> and wants to put it into practice!
+                      They'd like to try <span className="font-semibold">{s.title}</span> for{' '}
+                      {formatCurrency(s.proposed_amount, CURRENCY)}.
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold">{child.display_name}</span> wants to earn{' '}
+                      {formatCurrency(s.proposed_amount, CURRENCY)} by{' '}
+                      <span className="font-semibold">{s.title}</span>.
+                    </>
+                  )}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleSuggestionView(s)}
+                    className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      hasModule
+                        ? 'border border-[var(--brand-primary)] text-[var(--brand-primary)]'
+                        : 'bg-[var(--brand-primary)] text-white'
+                    }`}
+                  >
+                    {hasModule && <span>🌱</span>}
+                    {hasModule ? 'Accept' : 'View'}
+                  </button>
+                  <button
+                    onClick={() => { rejectSuggestion(s.id); setSuggestions(prev => prev.filter(x => x.id !== s.id)) }}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
+
+      {/* Check Going Rates */}
+      <div className="flex justify-end mb-2">
+        <button
+          type="button"
+          onClick={() => setRateGuideOpen(true)}
+          className="text-xs font-medium text-[var(--brand-primary)] hover:underline underline-offset-2"
+        >
+          Check Going Rates
+        </button>
+      </div>
 
       {/* Active chores */}
       {chores.length === 0 ? (
@@ -124,9 +181,24 @@ export function ChoresTab({ familyId, child }: Props) {
           familyId={familyId}
           child={child}
           currency={CURRENCY}
-          onCreated={() => { setShowSheet(false); load() }}
-          onClose={() => setShowSheet(false)}
+          initialTitle={preFill?.title}
+          initialRewardAmount={preFill?.reward_amount}
+          onCreated={() => { setShowSheet(false); setPreFill(null); setShowFastTrackPrompt(true); load() }}
+          onClose={() => { setShowSheet(false); setPreFill(null) }}
         />
+      )}
+
+      {/* Fast-Track prompt */}
+      {showFastTrackPrompt && (
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-3 flex items-center justify-between gap-2 text-xs">
+          <span className="text-[var(--color-text-muted)]">That was easy! Want to skip this step next time?</span>
+          <button
+            onClick={() => setShowFastTrackPrompt(false)}
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] font-medium"
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       {/* Archived toggle */}
@@ -155,6 +227,8 @@ export function ChoresTab({ familyId, child }: Props) {
           )}
         </div>
       )}
+      {/* Rate Guide Sheet */}
+      <RateGuideSheet open={rateGuideOpen} onClose={() => setRateGuideOpen(false)} />
     </div>
   )
 }

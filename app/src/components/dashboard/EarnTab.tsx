@@ -24,6 +24,7 @@ import {
   uploadProof, formatCurrency,
 } from '../../lib/api'
 import { track } from '../../lib/analytics'
+import { ChoreGuideSheet } from './ChoreGuideSheet'
 
 interface Props {
   familyId: string
@@ -48,6 +49,7 @@ export function EarnTab({ familyId, childId, currency }: Props) {
   const [revisions, setRevisions] = useState<Completion[]>([])  // status=needs_revision
   const [loading,   setLoading]   = useState(true)
   const [submit,    setSubmit]    = useState<SubmitState | null>(null)
+  const [choreGuideOpen, setChoreGuideOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const load = useCallback(async () => {
@@ -145,6 +147,17 @@ export function EarnTab({ familyId, childId, currency }: Props) {
 
   return (
     <div className="space-y-6">
+
+      {/* ── CHORE GUIDE button ─────────────────────────────────────── */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setChoreGuideOpen(true)}
+          className="text-xs font-medium text-[var(--brand-primary)] hover:underline underline-offset-2"
+        >
+          Chore Guide
+        </button>
+      </div>
 
       {/* ── NEEDS REVISION — top priority ─────────────────────────── */}
       {revisions.length > 0 && (
@@ -244,6 +257,12 @@ export function EarnTab({ familyId, childId, currency }: Props) {
         capture="environment"
         className="hidden"
         onChange={handleFileChange}
+      />
+
+      <ChoreGuideSheet
+        open={choreGuideOpen}
+        onClose={() => setChoreGuideOpen(false)}
+        context={null}
       />
     </div>
   )

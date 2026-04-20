@@ -498,6 +498,9 @@ export async function getSuggestions(family_id: string, status?: string): Promis
 export async function createSuggestion(body: { family_id: string; title: string; proposed_amount: number; frequency?: string; reason?: string }): Promise<{ id: string }> {
   return request('/api/suggestions', { method: 'POST', body: JSON.stringify(body) });
 }
+export async function rejectSuggestion(id: string): Promise<void> {
+  await request(`/api/suggestions/${id}/reject`, { method: 'POST', body: JSON.stringify({}) });
+}
 
 // ----------------------------------------------------------------
 // Finance
@@ -676,4 +679,44 @@ export async function getChatHistory(limit = 20, offset = 0): Promise<ChatHistor
 
 export async function getChatModules(): Promise<ChatModulesResponse> {
   return request<ChatModulesResponse>('/api/chat/modules')
+}
+
+// ----------------------------------------------------------------
+// Market Rates
+// ----------------------------------------------------------------
+export interface MarketRate {
+  id: string;
+  canonical_name: string;
+  category: string;
+  synonyms: string[];
+  median_amount: number | null;
+  median_is_local: boolean;
+  value_tier: 'seeds' | 'saplings' | 'oaks' | 'discoverable';
+  value_tier_label: string;
+  is_orchard_8: boolean;
+  sort_order: number;
+  data_source: string;
+  sample_count: number;
+}
+
+export interface MarketRatesResponse {
+  tile_source: 'hardcoded_defaults' | 'locale_frequent' | 'user_frequent';
+  rates: MarketRate[];
+}
+
+export async function getMarketRates(locale?: string): Promise<MarketRatesResponse> {
+  const q = locale ? `?locale=${encodeURIComponent(locale)}` : '';
+  return request<MarketRatesResponse>(`/api/market-rates${q}`);
+}
+
+export async function suggestChore(body: {
+  canonical_name: string;
+  median_amount: number;
+  currency: string;
+  context: string | null;
+}): Promise<{ status: string }> {
+  return request('/api/market-rates/suggest', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }

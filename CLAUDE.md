@@ -138,7 +138,14 @@ wrangler deploy
   - [x] Polish localisation — `getPolishHonorific()`, Pan/Pani formal address, Mistrz Sadu persona, "Honor i Obowiązek Zbiorów" Pillar 5 framing
   - [x] Two AI personas: Orchard Lead (EN, collaborative) vs. Mistrz Sadu (PL, direct/formal)
   - [x] InsightsTab UI — typewriter animation (source=ai only), trend indicators on KPI gauges, parchment-tinted briefing card
-  - [x] 'Copy for Child' modal — Orchard experience (visual/orchard metaphors) and Clean experience (velocity/streak) templates with "Drafted by your Orchard Mentor" attribution
+  - [x] 'Copy for Child' modal — Seedling (visual/orchard metaphors) and Professional (velocity/streak) templates with "Drafted by your Orchard Mentor" attribution
+- [x] Rate Guide — market rate benchmarking for chores
+  - [x] Design spec (2026-04-19)
+  - [x] D1 migration + 30-row seed (0029_market_rates.sql)
+  - [x] GET /api/market-rates + suggest endpoint + CRON skeleton (Monday 03:00 UTC)
+  - [x] CreateChoreSheet tile grid + fuzzy search redesign
+  - [x] RateGuideSheet (parent) + ChoreGuideSheet (child)
+  - [x] Fast-Track suggestion flow (post-save prompt)
 - [ ] An AI-driven "Audit" of monthly spending across all children to identify family-wide trends
 - [ ] Linking "Seasonal" events (Birthdays, Holidays, School trips) to the Mentor's advice so it can predict future spending needs
 
