@@ -1,11 +1,14 @@
 {
   "scripts": {
     "build": "cd app && npm install && npm run build",
-    "dev": "concurrently --kill-others --names \"worker,app\" --prefix-colors \"cyan,green\" \"cd worker && npm run dev\" \"cd app && npm run dev\""
+    "dev": "concurrently --kill-others --names \"worker,app\" --prefix-colors \"cyan,green\" \"cd worker && npm run dev\" \"cd app && npm run dev\"",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "playwright": "^1.58.2",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "wrangler": "^4.83.0"
   }
 }
