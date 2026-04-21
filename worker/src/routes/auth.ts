@@ -254,7 +254,6 @@ export async function handleMagicLinkVerify(request: Request, env: Env): Promise
       .bind(slt, user.id, now + 300, clientIp(request), request.headers.get('User-Agent') ?? ''),
   ]);
 
-  const appUrl = env.APP_URL ?? 'https://app.morechard.com';
   return new Response(null, {
     status: 302,
     headers: { 'Location': `${appUrl}/auth/callback?slt=${slt}` },
@@ -1221,19 +1220,92 @@ async function sendMagicLinkEmail(
       from: 'Morechard <noreply@mail.morechard.com>',
       to,
       subject: 'Your Morechard sign-in link',
-      html: `
-        <p>Hi ${escHtml(name)},</p>
-        <p>Click the link below to sign in to Morechard. This link expires in 15 minutes and can only be used once.</p>
-        <p><a href="${link}" style="background:#16a34a;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;">Sign in to Morechard</a></p>
-        <p style="color:#666;font-size:12px;">If you didn't request this, you can safely ignore this email.</p>
-        <p style="color:#666;font-size:12px;">Link: ${link}</p>
-      `,
+      html: buildMagicLinkHtml(escHtml(name), link),
     }),
   });
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Resend error ${res.status}: ${body}`);
   }
+}
+
+function buildMagicLinkHtml(name: string, link: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in to Morechard</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F4F0;font-family:'Manrope','Segoe UI',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F4F0;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width:520px;">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="background:#0f1a14;border-radius:16px 16px 0 0;padding:32px 40px 28px;">
+              <!-- Leaf icon -->
+              <div style="display:inline-block;margin-bottom:14px;">
+                <div style="width:48px;height:48px;border-radius:12px;background:rgba(13,148,136,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                  <img src="https://morechard.com/icon-192.png" width="32" height="32" alt="" style="border-radius:6px;display:block;" />
+                </div>
+              </div>
+              <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#f0fdf4;line-height:1.2;margin-bottom:4px;">Morechard</div>
+              <div style="font-size:12px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#8ab8a4;">Family chore tracker</div>
+            </td>
+          </tr>
+
+          <!-- Body card -->
+          <tr>
+            <td style="background:#ffffff;border-left:1px solid #D3D1C7;border-right:1px solid #D3D1C7;padding:36px 40px 32px;">
+              <p style="margin:0 0 8px;font-size:15px;font-weight:600;color:#1C1C1A;">Hi ${name},</p>
+              <p style="margin:0 0 28px;font-size:15px;color:#5F5E5A;line-height:1.6;">
+                Here's your sign-in link for Morechard. It's valid for&nbsp;<strong style="color:#1C1C1A;">15&nbsp;minutes</strong> and can only be used once.
+              </p>
+
+              <!-- CTA button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+                <tr>
+                  <td align="center" style="border-radius:10px;background:#2E7A33;">
+                    <a href="${link}"
+                       style="display:inline-block;padding:15px 36px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;letter-spacing:-0.2px;white-space:nowrap;">
+                      Sign in to Morechard →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <hr style="border:none;border-top:1px solid #D3D1C7;margin:0 0 24px;" />
+
+              <!-- Fallback link -->
+              <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#888780;text-transform:uppercase;letter-spacing:0.6px;">Button not working?</p>
+              <p style="margin:0;font-size:12px;color:#888780;word-break:break-all;line-height:1.6;">
+                <a href="${link}" style="color:#0F766E;text-decoration:none;">${link}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#F1EFE8;border:1px solid #D3D1C7;border-top:none;border-radius:0 0 16px 16px;padding:20px 40px;">
+              <p style="margin:0;font-size:12px;color:#888780;line-height:1.6;">
+                If you didn't ask for this link, you can safely ignore this email — your account is fine.
+              </p>
+              <p style="margin:10px 0 0;font-size:11px;color:#B8B6AE;">
+                © Morechard · <a href="https://morechard.com" style="color:#888780;text-decoration:none;">morechard.com</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 function isValidEmail(email: string): boolean {
@@ -1255,4 +1327,52 @@ async function parseBody(request: Request): Promise<Record<string, unknown> | nu
 // Augmented request type used by middleware + auth routes
 export interface AuthedRequest extends Request {
   auth?: import('../lib/jwt.js').JwtPayload & { jti: string };
+}
+
+// Shared expense approval notification (pre-Phase 8 push bridge)
+export async function sendApprovalEmail(
+  to: string,
+  recipientName: string,
+  loggerName: string,
+  totalAmount: number,
+  currency: string,
+  description: string,
+  expenseId: number,
+  env: { RESEND_API_KEY: string },
+): Promise<void> {
+  const symbol = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : 'zł';
+  const formatted = `${symbol}${(totalAmount / 100).toFixed(2)}`;
+  const appUrl = 'https://morechard.com/parent?tab=pool';
+
+  const html = `
+    <p>Hi ${escHtml(recipientName)},</p>
+    <p><strong>${escHtml(loggerName)}</strong> has logged a shared expense that requires your approval:</p>
+    <blockquote style="border-left:3px solid #ccc;padding-left:12px;color:#555">
+      <strong>${escHtml(description)}</strong> — ${formatted}
+    </blockquote>
+    <p><a href="${appUrl}&expense=${expenseId}" style="background:#1a7a4a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block">
+      Review in Morechard →
+    </a></p>
+    <p style="color:#888;font-size:12px">If you weren't expecting this, you can safely ignore it.</p>
+  `;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Morechard <noreply@mail.morechard.com>',
+      to,
+      subject: `Shared expense of ${formatted} needs your approval`,
+      html,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`sendApprovalEmail Resend error ${res.status}: ${body}`);
+    // Non-fatal: expense is already recorded; email failure should not roll back the row.
+  }
 }
