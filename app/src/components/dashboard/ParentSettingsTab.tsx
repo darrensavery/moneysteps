@@ -154,6 +154,9 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
   const [family,        setFamily]        = useState<Record<string, unknown>>({})
   const [settings,      setSettings]      = useState<{ avatar_id: string; theme: string; locale: string } | null>(null)
   const [loading,       setLoading]       = useState(true)
+  const [threshold,      setThreshold]      = useState(5000) // 5000 pence = £50
+  const [splitBp,        setSplitBp]        = useState(5000) // 5000 bp = 50%
+  const [savingSettings, setSavingSettings] = useState(false)
 
   // Per-child settings (source of truth — passed to FamilySettings)
   const [appViews,       setAppViews]       = useState<Record<string, 'ORCHARD' | 'CLEAN'>>({})
@@ -281,6 +284,23 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
       })
     } finally {
       setGrowthBusy(null)
+    }
+  }
+
+  async function handleSaveCoParentSettings() {
+    setSavingSettings(true)
+    try {
+      await fetch('/api/family/settings', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shared_expense_threshold: threshold,
+          shared_expense_split_bp:  splitBp,
+        }),
+      })
+    } finally {
+      setSavingSettings(false)
     }
   }
 
@@ -468,6 +488,61 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
               </SectionCard>
             </div>
           ))}
+        </div>
+
+        {/* Shared Expense Settings */}
+        <div className="px-4 pb-4">
+          <div className="mt-6 flex flex-col gap-3">
+            <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              Shared Expenses
+            </h3>
+
+            {/* Trust Threshold */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                Approval threshold
+              </label>
+              <p className="text-xs text-[var(--color-text-muted)]">
+                Expenses above this amount require the other parent's approval (Verification mode only).
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-sm">£</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step="1"
+                  min="0"
+                  value={(threshold / 100).toFixed(0)}
+                  onChange={e => setThreshold(Math.round(parseFloat(e.target.value || '0') * 100))}
+                  className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-sm bg-[var(--color-surface-raised)] w-28 tabular-nums"
+                />
+              </div>
+            </div>
+
+            {/* Default Split */}
+            <div className="flex flex-col gap-1 mt-2">
+              <label className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                Default split — {(splitBp / 100).toFixed(0)}% / {(100 - splitBp / 100).toFixed(0)}%
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={10000}
+                step={100}
+                value={splitBp}
+                onChange={e => setSplitBp(Number(e.target.value))}
+                className="w-full mt-1"
+              />
+            </div>
+
+            <button
+              onClick={handleSaveCoParentSettings}
+              disabled={savingSettings}
+              className="mt-2 bg-[var(--brand-primary)] text-white font-semibold text-sm py-2 px-6 rounded-xl disabled:opacity-50 self-start"
+            >
+              {savingSettings ? 'Saving…' : 'Save'}
+            </button>
+          </div>
         </div>
 
         {/* Log out — footer with distinct tint */}

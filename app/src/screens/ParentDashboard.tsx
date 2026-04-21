@@ -9,6 +9,9 @@ import { ChoresTab }   from '../components/dashboard/JobsTab'
 import { ActivityTab } from '../components/dashboard/HistoryTab'
 import { InsightsTab } from '../components/dashboard/InsightsTab'
 import { ParentSettingsTab } from '../components/dashboard/ParentSettingsTab'
+import { PoolTab }         from '../components/dashboard/PoolTab'
+import { AddExpenseSheet } from '../components/dashboard/AddExpenseSheet'
+import { SettlementCard }  from '../components/dashboard/SettlementCard'
 import { GoalBoostingTab }  from '../components/dashboard/GoalBoostingTab'
 import { FullLogo } from '../components/ui/Logo'
 
@@ -27,7 +30,7 @@ function OfflineIcon() {
   )
 }
 
-type Tab = 'chores' | 'activity' | 'insights' | 'goals'
+type Tab = 'chores' | 'activity' | 'pool' | 'insights' | 'goals'
 
 export function ParentDashboard() {
   const navigate   = useNavigate()
@@ -36,10 +39,12 @@ export function ParentDashboard() {
 
   const [tab,        setTab]        = useState<Tab>(() => {
     const saved = sessionStorage.getItem('mc_parent_tab')
-    const valid: Tab[] = ['chores', 'activity', 'insights', 'goals']
+    const valid: Tab[] = ['chores', 'activity', 'pool', 'insights', 'goals']
     return valid.includes(saved as Tab) ? (saved as Tab) : 'chores'
   })
   const [showSettings, setShowSettings] = useState(false)
+  const [showAddExpense,  setShowAddExpense]  = useState(false)
+  const [showSettlement,  setShowSettlement]  = useState(false)
 
   function handleTabChange(t: Tab) {
     setTab(t)
@@ -103,6 +108,7 @@ export function ParentDashboard() {
   const TABS: { id: Tab; label: string; badge?: number }[] = [
     { id: 'chores',   label: 'Chores' },
     { id: 'activity', label: 'Activity', badge: pendingCount || undefined },
+    { id: 'pool',     label: 'Pool' },
     { id: 'insights', label: 'Insights' },
     { id: 'goals',    label: 'Goals' },
   ]
@@ -268,6 +274,14 @@ export function ParentDashboard() {
           <>
             {tab === 'chores'   && <ChoresTab       familyId={familyId} child={activeChild} children={children} />}
             {tab === 'activity' && <ActivityTab     familyId={familyId} child={activeChild} onCountChange={setPendingCount} />}
+            {tab === 'pool'     && (
+              <PoolTab
+                familyId={familyId}
+                currentUserId={getDeviceIdentity()?.user_id ?? ''}
+                onAddClick={() => setShowAddExpense(true)}
+                onReconcileClick={() => setShowSettlement(true)}
+              />
+            )}
             {tab === 'insights' && <InsightsTab     familyId={familyId} child={activeChild} children={children} />}
             {tab === 'goals'    && <GoalBoostingTab familyId={familyId} child={activeChild} />}
           </>
@@ -335,6 +349,22 @@ export function ParentDashboard() {
           v{__APP_VERSION__}
         </p>
       </footer>
+
+        {showAddExpense && (
+          <AddExpenseSheet
+            defaultSplitBp={5000}
+            currency="GBP"
+            onClose={() => setShowAddExpense(false)}
+            onSaved={() => { setShowAddExpense(false) }}
+          />
+        )}
+        {showSettlement && (
+          <SettlementCard
+            period={new Date().toISOString().slice(0, 7)}
+            onClose={() => setShowSettlement(false)}
+            onReconciled={() => { setShowSettlement(false) }}
+          />
+        )}
     </div>
   )
 }
