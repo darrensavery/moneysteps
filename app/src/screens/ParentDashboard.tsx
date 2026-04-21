@@ -90,7 +90,7 @@ export function ParentDashboard() {
   // Poll pending count
   useEffect(() => {
     if (!familyId || !activeChild) return
-    const load = () => getCompletions({ family_id: familyId, child_id: activeChild.id, status: 'pending' })
+    const load = () => getCompletions({ family_id: familyId, child_id: activeChild.id, status: 'awaiting_review' })
       .then(r => setPendingCount(r.completions.length))
       .catch(() => {})
     load()

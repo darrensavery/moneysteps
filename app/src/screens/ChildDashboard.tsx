@@ -113,7 +113,7 @@ export function ChildDashboard() {
         getChores({ family_id: familyId, child_id: userId }).then(r => r.chores),
         getBalance(familyId, userId),
         getGoals(familyId, userId).then(r => r.goals.filter(g => !g.archived)),
-        getCompletions({ family_id: familyId, child_id: userId, status: 'pending' }).then(r => r.completions),
+        getCompletions({ family_id: familyId, child_id: userId, status: 'awaiting_review' }).then(r => r.completions),
         getSettings(),
       ])
       setChores(c)

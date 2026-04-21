@@ -73,11 +73,22 @@ export async function handlePlanCreate(request: Request, env: Env): Promise<Resp
   const id  = nanoid();
   const now = Math.floor(Date.now() / 1000);
 
-  await env.DB.prepare(
-    `INSERT INTO plans (id, family_id, chore_id, child_id, day_of_week, week_start, added_at)
-     VALUES (?,?,?,?,?,?,?)`
-  ).bind(id, family_id as string, chore_id as string, child_id as string,
-    day_of_week, effectiveWeekStart, now).run();
+  try {
+    await env.DB.prepare(
+      `INSERT INTO plans (id, family_id, chore_id, child_id, day_of_week, week_start, added_at)
+       VALUES (?,?,?,?,?,?,?)`
+    ).bind(id, family_id as string, chore_id as string, child_id as string,
+      day_of_week, effectiveWeekStart, now).run();
+  } catch (e: unknown) {
+    // Unique constraint — another request beat us to it; treat as success
+    const msg = e instanceof Error ? e.message : '';
+    if (!msg.includes('UNIQUE') && !msg.includes('unique')) throw e;
+    const dupe = await env.DB
+      .prepare('SELECT id FROM plans WHERE chore_id = ? AND child_id = ? AND day_of_week = ? AND week_start = ?')
+      .bind(chore_id, child_id, day_of_week, effectiveWeekStart)
+      .first<{ id: string }>();
+    return json({ id: dupe?.id ?? id, ok: true }, 200);
+  }
 
   return json({ id, ok: true }, 201);
 }
