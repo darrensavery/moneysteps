@@ -25,6 +25,7 @@ export async function computeSharedExpenseHash(
   splitBp: number,
   previousHash: string,
 ): Promise<string> {
+  // description and category are intentionally excluded — only financial terms and chain linkage are hashed.
   const payload = [id, familyId, loggedBy, totalAmount, currency, splitBp, previousHash].join('|');
   return sha256(payload);
 }
