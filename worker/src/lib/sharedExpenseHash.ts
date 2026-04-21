@@ -41,6 +41,7 @@ export async function getLastCommittedHash(db: D1Database, familyId: string): Pr
       `SELECT record_hash FROM shared_expenses
        WHERE family_id = ?
          AND verification_status IN ('committed_auto', 'committed_manual', 'reversed')
+         AND record_hash != 'PENDING'
        ORDER BY id DESC
        LIMIT 1`,
     )

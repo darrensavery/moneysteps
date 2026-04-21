@@ -1,40 +1,16 @@
 // worker/src/routes/sharedExpenses.ts
-import { computeSharedExpenseHash, getLastCommittedHash, GENESIS_HASH } from '../lib/sharedExpenseHash';
-import { sendApprovalEmail } from './auth';
-
-type Env = {
-  DB: D1Database;
-  RESEND_API_KEY: string;
-  EVIDENCE: R2Bucket;
-};
-
-type AuthedRequest = Request & {
-  auth: { user_id: string; family_id: string; role: string; parent_role: string; email: string; display_name: string };
-};
-
-function ip(req: Request): string {
-  return req.headers.get('CF-Connecting-IP') ?? '0.0.0.0';
-}
-
-function jsonOk(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-function jsonErr(message: string, status: number): Response {
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
+import { computeSharedExpenseHash, getLastCommittedHash, GENESIS_HASH } from '../lib/sharedExpenseHash.js';
+import { sendApprovalEmail, AuthedRequest } from './auth.js';
+import { Env } from '../types.js';
+import { json as jsonOk, error as jsonErr, clientIp as ip } from '../lib/response.js';
 
 // ---------------------------------------------------------------------------
 // POST /api/shared-expenses
 // Log a new shared expense. Auto-commits if under threshold or amicable mode.
 // ---------------------------------------------------------------------------
 export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): Promise<Response> {
+  if (!req.auth) return jsonErr('Unauthorized', 401);
+
   const body = await req.json<{
     description: string;
     category: string;
@@ -45,7 +21,7 @@ export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): P
 
   if (!body.description?.trim()) return jsonErr('description required', 400);
   if (!body.category) return jsonErr('category required', 400);
-  if (!body.total_amount || body.total_amount <= 0) return jsonErr('total_amount must be positive integer', 400);
+  if (!Number.isInteger(body.total_amount) || body.total_amount <= 0) return jsonErr('total_amount must be a positive integer (pence)', 400);
 
   const VALID_CATEGORIES = ['education', 'health', 'clothing', 'travel', 'activities', 'other'];
   if (!VALID_CATEGORIES.includes(body.category)) return jsonErr('invalid category', 400);
@@ -58,7 +34,7 @@ export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): P
   if (!family) return jsonErr('family not found', 404);
 
   const splitBp = body.split_bp ?? family.shared_expense_split_bp;
-  if (splitBp < 0 || splitBp > 10000) return jsonErr('split_bp must be 0–10000', 400);
+  if (!Number.isInteger(splitBp) || splitBp < 0 || splitBp > 10000) return jsonErr('split_bp must be an integer 0–10000', 400);
 
   const isAmicable = family.verify_mode === 'amicable';
   const underThreshold = body.total_amount <= family.shared_expense_threshold;
@@ -73,7 +49,7 @@ export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): P
     previousHash = await getLastCommittedHash(env.DB, req.auth.family_id);
   }
 
-  const result = await env.DB
+  const insertStmt = env.DB
     .prepare(
       `INSERT INTO shared_expenses
          (family_id, logged_by, description, category, total_amount, currency,
@@ -82,7 +58,7 @@ export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): P
     )
     .bind(
       req.auth.family_id,
-      req.auth.user_id,
+      req.auth.sub,
       body.description.trim(),
       body.category,
       body.total_amount,
@@ -93,25 +69,25 @@ export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): P
       previousHash,
       recordHash,
       ip(req),
-    )
-    .run();
+    );
 
+  const result = await insertStmt.run();
   const newId = result.meta.last_row_id as number;
 
   if (autoCommit) {
     recordHash = await computeSharedExpenseHash(
       newId,
       req.auth.family_id,
-      req.auth.user_id,
+      req.auth.sub,
       body.total_amount,
       family.currency,
       splitBp,
       previousHash,
     );
-    await env.DB
-      .prepare('UPDATE shared_expenses SET record_hash = ? WHERE id = ?')
-      .bind(recordHash, newId)
-      .run();
+    // Atomic batch: write the hash immediately so concurrent reads never see PENDING for committed rows
+    await env.DB.batch([
+      env.DB.prepare('UPDATE shared_expenses SET record_hash = ? WHERE id = ?').bind(recordHash, newId),
+    ]);
   } else {
     const otherParent = await env.DB
       .prepare(
@@ -120,14 +96,20 @@ export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): P
          WHERE fr.family_id = ? AND fr.role = 'parent' AND u.id != ?
          LIMIT 1`,
       )
-      .bind(req.auth.family_id, req.auth.user_id)
+      .bind(req.auth.family_id, req.auth.sub)
       .first<{ email: string; display_name: string }>();
+
+    // Fetch the logging parent's display_name for the email notification
+    const loggerUser = await env.DB
+      .prepare('SELECT display_name FROM users WHERE id = ?')
+      .bind(req.auth.sub)
+      .first<{ display_name: string }>();
 
     if (otherParent?.email) {
       await sendApprovalEmail(
         otherParent.email,
         otherParent.display_name,
-        req.auth.display_name,
+        loggerUser?.display_name ?? 'A parent',
         body.total_amount,
         family.currency,
         body.description.trim(),
@@ -145,6 +127,8 @@ export async function handleCreateSharedExpense(req: AuthedRequest, env: Env): P
 // Returns all non-deleted expenses for the family, newest first.
 // ---------------------------------------------------------------------------
 export async function handleListSharedExpenses(req: AuthedRequest, env: Env): Promise<Response> {
+  if (!req.auth) return jsonErr('Unauthorized', 401);
+
   const rows = await env.DB
     .prepare(
       `SELECT se.*,
@@ -171,6 +155,8 @@ export async function handleApproveSharedExpense(
   env: Env,
   expenseId: string,
 ): Promise<Response> {
+  if (!req.auth) return jsonErr('Unauthorized', 401);
+
   const expense = await env.DB
     .prepare('SELECT * FROM shared_expenses WHERE id = ? AND family_id = ?')
     .bind(expenseId, req.auth.family_id)
@@ -181,7 +167,7 @@ export async function handleApproveSharedExpense(
 
   if (!expense) return jsonErr('expense not found', 404);
   if (expense.verification_status !== 'pending') return jsonErr('expense is not pending', 409);
-  if (expense.logged_by === req.auth.user_id) return jsonErr('cannot approve your own expense', 403);
+  if (expense.logged_by === req.auth.sub) return jsonErr('cannot approve your own expense', 403);
 
   const previousHash = await getLastCommittedHash(env.DB, req.auth.family_id);
   const recordHash = await computeSharedExpenseHash(
@@ -203,7 +189,7 @@ export async function handleApproveSharedExpense(
            record_hash = ?
        WHERE id = ?`,
     )
-    .bind(req.auth.user_id, previousHash, recordHash, expense.id)
+    .bind(req.auth.sub, previousHash, recordHash, expense.id)
     .run();
 
   return jsonOk({ id: expense.id, verification_status: 'committed_manual' });
@@ -218,6 +204,8 @@ export async function handleRejectSharedExpense(
   env: Env,
   expenseId: string,
 ): Promise<Response> {
+  if (!req.auth) return jsonErr('Unauthorized', 401);
+
   const expense = await env.DB
     .prepare('SELECT * FROM shared_expenses WHERE id = ? AND family_id = ?')
     .bind(expenseId, req.auth.family_id)
@@ -225,11 +213,11 @@ export async function handleRejectSharedExpense(
 
   if (!expense) return jsonErr('expense not found', 404);
   if (expense.verification_status !== 'pending') return jsonErr('expense is not pending', 409);
-  if (expense.logged_by === req.auth.user_id) return jsonErr('cannot reject your own expense', 403);
+  if (expense.logged_by === req.auth.sub) return jsonErr('cannot reject your own expense', 403);
 
   await env.DB
-    .prepare(`UPDATE shared_expenses SET verification_status = 'rejected' WHERE id = ?`)
-    .bind(expenseId)
+    .prepare(`UPDATE shared_expenses SET verification_status = 'rejected' WHERE id = ? AND family_id = ?`)
+    .bind(expenseId, req.auth.family_id)
     .run();
 
   return jsonOk({ id: Number(expenseId), verification_status: 'rejected' });
@@ -245,6 +233,8 @@ export async function handleDeleteSharedExpense(
   env: Env,
   expenseId: string,
 ): Promise<Response> {
+  if (!req.auth) return jsonErr('Unauthorized', 401);
+
   const expense = await env.DB
     .prepare('SELECT * FROM shared_expenses WHERE id = ? AND family_id = ?')
     .bind(expenseId, req.auth.family_id)
@@ -260,7 +250,7 @@ export async function handleDeleteSharedExpense(
     );
   }
 
-  if (expense.logged_by !== req.auth.user_id) {
+  if (expense.logged_by !== req.auth.sub) {
     return jsonErr('only the logging parent can remove this expense', 403);
   }
 
@@ -278,9 +268,13 @@ export async function handleDeleteSharedExpense(
 // Returns the settlement summary (net balance between parents).
 // ---------------------------------------------------------------------------
 export async function handleReconcileSharedExpenses(req: AuthedRequest, env: Env): Promise<Response> {
-  const bodyRaw = await req.text();
-  const body = bodyRaw ? JSON.parse(bodyRaw) : {};
+  if (!req.auth) return jsonErr('Unauthorized', 401);
+
+  const body = await req.json<{ period?: string }>().catch(() => ({} as { period?: string }));
   const period: string = body.period ?? new Date().toISOString().slice(0, 7);
+  if (!/^\d{4}-\d{2}$/.test(period)) {
+    return jsonErr('period must be YYYY-MM format', 400);
+  }
 
   const alreadyReconciled = await env.DB
     .prepare(
@@ -320,7 +314,7 @@ export async function handleReconcileSharedExpenses(req: AuthedRequest, env: Env
   for (const e of expenses.results) {
     const loggedByAmount = Math.round((e.total_amount * e.split_bp) / 10000);
     const otherAmount = e.total_amount - loggedByAmount;
-    if (e.logged_by === req.auth.user_id) {
+    if (e.logged_by === req.auth.sub) {
       netPence -= otherAmount;
     } else {
       netPence += loggedByAmount;
@@ -335,7 +329,7 @@ export async function handleReconcileSharedExpenses(req: AuthedRequest, env: Env
          SET settlement_period = ?, reconciled_at = ?, reconciled_by = ?
          WHERE id = ?`,
       )
-      .bind(period, now, req.auth.user_id, e.id)
+      .bind(period, now, req.auth.sub, e.id)
       .run();
   }
 
@@ -360,7 +354,15 @@ export async function handleReconcileSharedExpenses(req: AuthedRequest, env: Env
 // Only the lead parent can change family settings.
 // ---------------------------------------------------------------------------
 export async function handleUpdateFamilySettings(req: AuthedRequest, env: Env): Promise<Response> {
-  if (req.auth.parent_role !== 'lead') {
+  if (!req.auth) return jsonErr('Unauthorized', 401);
+
+  // Fetch parent_role from DB since it is not stored in the JWT
+  const callerRole = await env.DB
+    .prepare(`SELECT parent_role FROM family_roles WHERE user_id = ? AND family_id = ? AND role = 'parent'`)
+    .bind(req.auth.sub, req.auth.family_id)
+    .first<{ parent_role: string | null }>();
+
+  if (!callerRole || callerRole.parent_role !== 'lead') {
     return jsonErr('only the lead parent can change family settings', 403);
   }
 
@@ -381,8 +383,8 @@ export async function handleUpdateFamilySettings(req: AuthedRequest, env: Env): 
   }
 
   if (body.shared_expense_split_bp !== undefined) {
-    if (body.shared_expense_split_bp < 0 || body.shared_expense_split_bp > 10000) {
-      return jsonErr('shared_expense_split_bp must be 0–10000', 400);
+    if (!Number.isInteger(body.shared_expense_split_bp) || body.shared_expense_split_bp < 0 || body.shared_expense_split_bp > 10000) {
+      return jsonErr('shared_expense_split_bp must be an integer 0–10000', 400);
     }
     updates.push('shared_expense_split_bp = ?');
     values.push(body.shared_expense_split_bp);
