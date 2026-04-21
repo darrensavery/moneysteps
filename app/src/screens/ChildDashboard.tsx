@@ -644,8 +644,8 @@ function OrchardView({
           <span className="text-[20px]">⏳</span>
           <p className="text-[13px] text-amber-800 font-semibold">
             {pending.length === 1
-              ? `1 job is waiting for your parent to check`
-              : `${pending.length} jobs are waiting for your parent to check`}
+              ? `1 chore is waiting for your parent to check`
+              : `${pending.length} chores are waiting for your parent to check`}
           </p>
         </div>
       )}
@@ -863,7 +863,7 @@ function OrchardView({
 
       {unplannedChores.length > 0 && (
         <p className="text-center text-[12px] text-[var(--color-text-muted)]">
-          {unplannedChores.length} job{unplannedChores.length > 1 ? 's' : ''} not in your week yet — tap <PlantIcon inline /> to add them.
+          {unplannedChores.length} chore{unplannedChores.length > 1 ? 's' : ''} not in your week yet — tap <PlantIcon inline /> to add them.
         </p>
       )}
     </>
