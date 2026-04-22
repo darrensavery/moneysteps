@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ChildRecord } from '../lib/api'
-import { getChildren, getCompletions, clearToken } from '../lib/api'
+import { getChildren, getCompletions, clearToken, getUnpaidSummary, type UnpaidSummaryRow } from '../lib/api'
 import { getDeviceIdentity } from '../lib/deviceIdentity'
 import { useLocale, isPolish } from '../lib/locale'
 import { AvatarSVG } from '../lib/avatars'
@@ -14,6 +14,8 @@ import { AddExpenseSheet } from '../components/dashboard/AddExpenseSheet'
 import { SettlementCard }  from '../components/dashboard/SettlementCard'
 import { GoalBoostingTab }  from '../components/dashboard/GoalBoostingTab'
 import { FullLogo } from '../components/ui/Logo'
+import { UnpaidIndicator } from '../components/payment/UnpaidIndicator'
+import { PaymentBridgeSheet } from '../components/payment/PaymentBridgeSheet'
 
 // Offline signal SVG
 function OfflineIcon() {
@@ -55,6 +57,34 @@ export function ParentDashboard() {
   const [childrenLoaded, setChildrenLoaded] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [online,     setOnline]     = useState(navigator.onLine)
+  const [unpaid, setUnpaid] = useState<UnpaidSummaryRow[]>([])
+  const [bridgeCtx, setBridgeCtx] = useState<null | {
+    child: ChildRecord; completionIds: string[]; total: number; currency: string;
+  }>(null)
+
+  async function refreshUnpaid() {
+    if (!familyId) return
+    try { setUnpaid((await getUnpaidSummary(familyId)).children) }
+    catch { /* non-fatal */ }
+  }
+
+  useEffect(() => { refreshUnpaid() }, [familyId])
+
+  async function openBridgeForChild(child: ChildRecord, row: UnpaidSummaryRow) {
+    const r = await getCompletions({
+      family_id: familyId, child_id: child.id, status: 'completed',
+    })
+    const unpaidIds = r.completions
+      .filter((c) => c.paid_out_at == null)
+      .map((c) => c.id)
+    if (unpaidIds.length === 0) { refreshUnpaid(); return }
+    setBridgeCtx({
+      child,
+      completionIds: unpaidIds,
+      total: row.unpaid_total,
+      currency: row.currency,
+    })
+  }
 
   // Trial nudge: shown once after first child is added (set by WelcomeOrchardScreen)
   const [showTrialNudge, setShowTrialNudge] = useState(() => {
@@ -173,22 +203,33 @@ export function ParentDashboard() {
         {/* Child selector */}
         {children.length > 1 && (
           <div className="max-w-[560px] mx-auto px-3.5 pb-2.5 flex gap-2 overflow-x-auto scrollbar-hide">
-            {children.map(child => (
-              <button
-                key={child.id}
-                onClick={() => setActiveChild(child)}
-                className={`
-                  shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold
-                  transition-colors duration-100 cursor-pointer
-                  ${activeChild?.id === child.id
-                    ? 'bg-[var(--brand-primary)] text-white'
-                    : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:opacity-80'}
-                `}
-              >
-                <AvatarSVG id={child.avatar_id ?? 'bottts:spark'} size={20} />
-                {child.display_name}
-              </button>
-            ))}
+            {children.map(child => {
+              const row = unpaid.find((u) => u.child_id === child.id)
+              return (
+                <div key={child.id} className="shrink-0 flex items-center gap-1.5">
+                  <button
+                    onClick={() => setActiveChild(child)}
+                    className={`
+                      shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold
+                      transition-colors duration-100 cursor-pointer
+                      ${activeChild?.id === child.id
+                        ? 'bg-[var(--brand-primary)] text-white'
+                        : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:opacity-80'}
+                    `}
+                  >
+                    <AvatarSVG id={child.avatar_id ?? 'bottts:spark'} size={20} />
+                    {child.display_name}
+                  </button>
+                  {row && (
+                    <UnpaidIndicator
+                      unpaidMinorUnits={row.unpaid_total}
+                      currency={row.currency}
+                      onClick={() => openBridgeForChild(child, row)}
+                    />
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
 
@@ -363,6 +404,18 @@ export function ParentDashboard() {
             period={new Date().toISOString().slice(0, 7)}
             onClose={() => setShowSettlement(false)}
             onReconciled={() => { setShowSettlement(false) }}
+          />
+        )}
+        {bridgeCtx && (
+          <PaymentBridgeSheet
+            open={true}
+            onClose={() => setBridgeCtx(null)}
+            familyId={familyId}
+            child={bridgeCtx.child}
+            completionIds={bridgeCtx.completionIds}
+            totalMinorUnits={bridgeCtx.total}
+            currency={bridgeCtx.currency}
+            onPaid={() => { refreshUnpaid(); setBridgeCtx(null) }}
           />
         )}
     </div>
