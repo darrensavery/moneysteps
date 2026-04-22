@@ -17,6 +17,8 @@ import {
   getCompletions, approveCompletion, reviseCompletion,
   approveAll, formatCurrency, getProofUrl,
 } from '../../lib/api'
+import { PaymentBridgeSheet } from '../payment/PaymentBridgeSheet'
+import { useToast, Toast } from '../settings/shared'
 
 interface Props {
   familyId: string
@@ -33,6 +35,16 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
   const [busy, setBusy]               = useState<string | null>(null)
   const [approveAllBusy, setApproveAllBusy] = useState(false)
   const [showApproveAllModal, setShowApproveAllModal] = useState(false)
+  const { toast, showToast } = useToast()
+  const [bridgeCtx, setBridgeCtx] = useState<null | {
+    completionIds: string[];
+    total: number;
+    currency: string;
+  }>(null)
+  const [pendingToastAction, setPendingToastAction] = useState<null | {
+    label: string;
+    onClick: () => void;
+  }>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -46,8 +58,24 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
 
   async function handleApprove(id: string) {
     setBusy(id)
-    try { await approveCompletion(id); await load() }
-    finally { setBusy(null) }
+    try {
+      await approveCompletion(id)
+      const approved = completions.find((c) => c.id === id)
+      await load()
+      if (approved) {
+        setPendingToastAction({
+          label: `Pay Now (${formatCurrency(approved.reward_amount, approved.currency)})`,
+          onClick: () => setBridgeCtx({
+            completionIds: [approved.id],
+            total: approved.reward_amount,
+            currency: approved.currency,
+          }),
+        })
+        showToast(`Approved ✓`)
+      }
+    } finally {
+      setBusy(null)
+    }
   }
 
   async function handleRevise(id: string) {
@@ -66,8 +94,38 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
   async function handleConfirmApproveAll() {
     setShowApproveAllModal(false)
     setApproveAllBusy(true)
-    try { await approveAll(familyId, child.id); await load() }
-    finally { setApproveAllBusy(false) }
+    const snapshot = completions.map((c) => ({
+      id: c.id, amount: c.reward_amount, currency: c.currency,
+    }))
+    try {
+      await approveAll(familyId, child.id)
+      await load()
+
+      const byCurrency = new Map<string, { ids: string[]; total: number }>()
+      for (const r of snapshot) {
+        const bucket = byCurrency.get(r.currency) ?? { ids: [], total: 0 }
+        bucket.ids.push(r.id)
+        bucket.total += r.amount
+        byCurrency.set(r.currency, bucket)
+      }
+
+      if (byCurrency.size === 1) {
+        const [[currency, bucket]] = [...byCurrency.entries()]
+        setPendingToastAction({
+          label: `Pay Now (${formatCurrency(bucket.total, currency)})`,
+          onClick: () => setBridgeCtx({
+            completionIds: bucket.ids,
+            total: bucket.total,
+            currency,
+          }),
+        })
+      }
+      // Multi-currency: skip auto-offer, parent uses Unpaid pill.
+
+      showToast(`${snapshot.length} approved ✓`)
+    } finally {
+      setApproveAllBusy(false)
+    }
   }
 
   // Totals for the modal
@@ -167,6 +225,33 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
             </div>
           </div>
         </div>
+      )}
+      {toast && <Toast message={toast} />}
+
+      {toast && pendingToastAction && (
+        <button
+          type="button"
+          onClick={() => {
+            pendingToastAction.onClick()
+            setPendingToastAction(null)
+          }}
+          className="fixed bottom-36 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-600 text-white text-[13px] font-semibold shadow-lg"
+        >
+          {pendingToastAction.label}
+        </button>
+      )}
+
+      {bridgeCtx && (
+        <PaymentBridgeSheet
+          open={true}
+          onClose={() => setBridgeCtx(null)}
+          familyId={familyId}
+          child={child}
+          completionIds={bridgeCtx.completionIds}
+          totalMinorUnits={bridgeCtx.total}
+          currency={bridgeCtx.currency}
+          onPaid={() => { /* parent dashboard refetches unpaid-summary on its own */ }}
+        />
       )}
     </div>
   )
