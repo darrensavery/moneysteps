@@ -141,11 +141,15 @@ ALTER TABLE completions ADD COLUMN paid_out_at INTEGER;
 -- Stamped by POST /api/completions/:id/mark-paid after parent confirms "Yes, sent"
 -- in the Payment Bridge.
 
--- 2. Public payment handles on the child record.
-ALTER TABLE children ADD COLUMN monzo_handle TEXT;
-ALTER TABLE children ADD COLUMN revolut_handle TEXT;
-ALTER TABLE children ADD COLUMN paypal_handle TEXT;
-ALTER TABLE children ADD COLUMN venmo_handle TEXT;
+-- 2. Public payment handles on the user record.
+-- Morechard uses a single `users` table for both parents and children; role is
+-- resolved via `family_roles`. Child-specific fields like allowance_amount,
+-- earnings_mode, teen_mode already live on `users`, so payment handles follow
+-- that pattern. A parent row with these NULL is harmless.
+ALTER TABLE users ADD COLUMN monzo_handle TEXT;
+ALTER TABLE users ADD COLUMN revolut_handle TEXT;
+ALTER TABLE users ADD COLUMN paypal_handle TEXT;
+ALTER TABLE users ADD COLUMN venmo_handle TEXT;
 -- Public-facing handles only (the part of monzo.me/<handle>/... or venmo.com/<handle>).
 -- No leading '@', no URL. Server-side storage is acceptable because these are already
 -- shareable public URLs by design. NOT suitable for sort codes / account numbers —

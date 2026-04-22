@@ -167,15 +167,19 @@ ALTER TABLE completions ADD COLUMN paid_out_at INTEGER;
 -- money. Stamped by POST /api/completions/:id/mark-paid after the parent
 -- confirms "Yes, sent" in the Payment Bridge.
 
--- Public payment handles on the child record. These are the shareable
--- parts of URLs like monzo.me/<handle>/<amount> or venmo.com/<handle>,
--- so server-side storage is acceptable (already public by design).
--- NOT suitable for sort codes / account numbers — those live in
--- localStorage until Spec B ships the encrypted vault.
-ALTER TABLE children ADD COLUMN monzo_handle TEXT;
-ALTER TABLE children ADD COLUMN revolut_handle TEXT;
-ALTER TABLE children ADD COLUMN paypal_handle TEXT;
-ALTER TABLE children ADD COLUMN venmo_handle TEXT;
+-- Public payment handles on the user record. Morechard uses a single
+-- `users` table for both parents and children; role is resolved via
+-- `family_roles`. Child-specific fields (allowance_amount, earnings_mode,
+-- teen_mode) already live on `users`, so payment handles follow that
+-- pattern. Parent rows leaving these NULL is harmless.
+-- These are the shareable parts of URLs like monzo.me/<handle>/<amount>
+-- or venmo.com/<handle>, so server-side storage is acceptable (already
+-- public by design). NOT suitable for sort codes / account numbers —
+-- those live in localStorage until Spec B ships the encrypted vault.
+ALTER TABLE users ADD COLUMN monzo_handle TEXT;
+ALTER TABLE users ADD COLUMN revolut_handle TEXT;
+ALTER TABLE users ADD COLUMN paypal_handle TEXT;
+ALTER TABLE users ADD COLUMN venmo_handle TEXT;
 ```
 
 - [ ] **Step 2: Apply locally**
@@ -183,7 +187,7 @@ ALTER TABLE children ADD COLUMN venmo_handle TEXT;
 Run from the project root:
 
 ```bash
-cd worker && npx wrangler d1 migrations apply morechard-db --local
+cd worker && npx wrangler d1 migrations apply morechard --local
 ```
 
 Expected: `Migrations applied. 0037_payment_bridge.sql`.
@@ -191,13 +195,13 @@ Expected: `Migrations applied. 0037_payment_bridge.sql`.
 - [ ] **Step 3: Verify columns exist**
 
 ```bash
-cd worker && npx wrangler d1 execute morechard-db --local --command "PRAGMA table_info(completions);"
+cd worker && npx wrangler d1 execute morechard --local --command "PRAGMA table_info(completions);"
 ```
 
 Expected: output contains a row where name is `paid_out_at` and type is `INTEGER`.
 
 ```bash
-cd worker && npx wrangler d1 execute morechard-db --local --command "PRAGMA table_info(children);"
+cd worker && npx wrangler d1 execute morechard --local --command "PRAGMA table_info(users);"
 ```
 
 Expected: output contains rows `monzo_handle`, `revolut_handle`, `paypal_handle`, `venmo_handle`, all TEXT.
@@ -208,9 +212,9 @@ Expected: output contains rows `monzo_handle`, `revolut_handle`, `paypal_handle`
 git add worker/migrations/0037_payment_bridge.sql
 git commit -m "feat(db): 0037 payment bridge schema
 
-Adds paid_out_at to completions and four public payment handles to
-children. paid_out_at is metadata, not a ledger entry — the hash chain
-is unaffected."
+Adds paid_out_at to completions and four public payment handles to the
+users table (which holds both parents and children). paid_out_at is
+metadata, not a ledger entry — the hash chain is unaffected."
 ```
 
 ---
@@ -921,7 +925,7 @@ Expected: `Listening at http://localhost:8787`. Keep it running.
 In a second terminal from project root, create a test completion row that's already in `status='completed'` but with `paid_out_at IS NULL`:
 
 ```bash
-cd worker && npx wrangler d1 execute morechard-db --local --command "
+cd worker && npx wrangler d1 execute morechard --local --command "
   SELECT id, child_id, status, paid_out_at FROM completions WHERE status = 'completed' LIMIT 3;
 "
 ```
@@ -981,7 +985,7 @@ curl -s -X POST http://localhost:8787/api/completions/mark-paid-batch \
 Expected: `{"error": "Completion bogus_id not found"}`, HTTP 404. Verify `<CID2>` is still `paid_out_at = NULL`:
 
 ```bash
-cd worker && npx wrangler d1 execute morechard-db --local --command "
+cd worker && npx wrangler d1 execute morechard --local --command "
   SELECT id, paid_out_at FROM completions WHERE id = '<CID2>';
 "
 ```
@@ -2201,12 +2205,14 @@ export async function handleSetPaymentHandles(
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch { return error('Invalid JSON body'); }
 
+  // Morechard uses `users` + `family_roles` — verify the target is a child
+  // in the caller's family in one query (pattern from chores.ts:61-65).
   const child = await env.DB
-    .prepare('SELECT id, family_id FROM children WHERE id = ?')
-    .bind(childId)
-    .first<{ id: string; family_id: string }>();
-  if (!child) return error('Child not found', 404);
-  if (child.family_id !== auth.family_id) return error('Forbidden', 403);
+    .prepare(`SELECT u.id FROM users u JOIN family_roles fr ON fr.user_id = u.id
+              WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
+    .bind(childId, auth.family_id)
+    .first<{ id: string }>();
+  if (!child) return error('Child not found in this family', 404);
 
   const allowed = ['monzo_handle', 'revolut_handle', 'paypal_handle', 'venmo_handle'];
   const updates: { col: string; val: string | null }[] = [];
@@ -2224,7 +2230,7 @@ export async function handleSetPaymentHandles(
   const set = updates.map((u) => `${u.col} = ?`).join(', ');
   const vals = updates.map((u) => u.val);
   await env.DB
-    .prepare(`UPDATE children SET ${set} WHERE id = ?`)
+    .prepare(`UPDATE users SET ${set} WHERE id = ?`)
     .bind(...vals, childId)
     .run();
 
@@ -2309,8 +2315,8 @@ Expected: no errors.
 2. Enter a Monzo handle, blur the input.
 3. Verify in DB:
    ```bash
-   cd worker && npx wrangler d1 execute morechard-db --local --command "
-     SELECT id, monzo_handle FROM children WHERE id = '<CID>';"
+   cd worker && npx wrangler d1 execute morechard --local --command "
+     SELECT id, monzo_handle FROM users WHERE id = '<CID>';"
    ```
    Expected: handle matches what you typed.
 4. Approve a chore → open bridge → Monzo tile now shows no "No handle" hint; tapping it attempts the deep link.
@@ -2482,7 +2488,7 @@ with a proper inline form. Details remain in localStorage until Spec B."
 - [ ] **Step 1: Fresh-install sanity pass**
 
 1. Stop worker and app.
-2. Clear local D1: `cd worker && npx wrangler d1 execute morechard-db --local --command "DELETE FROM ledger; DELETE FROM completions; DELETE FROM chores;"` (do NOT delete children/families — too much setup).
+2. Clear local D1: `cd worker && npx wrangler d1 execute morechard --local --command "DELETE FROM ledger; DELETE FROM completions; DELETE FROM chores;"` (do NOT delete users/families — too much setup).
 3. Clear browser localStorage for localhost.
 4. Start worker + app: `npm run dev` from project root.
 5. Add a chore as a parent, submit as a child, approve as a parent.
@@ -2509,7 +2515,7 @@ with a proper inline form. Details remain in localStorage until Spec B."
 2. Approve, open bridge, confirm "Yes, sent" twice in quick succession.
 3. Expected: second request (if any) returns `was_already_paid: true`, no double-stamp — verify `paid_out_at` is the *first* timestamp (not overwritten):
    ```bash
-   cd worker && npx wrangler d1 execute morechard-db --local --command "
+   cd worker && npx wrangler d1 execute morechard --local --command "
      SELECT id, paid_out_at FROM completions ORDER BY paid_out_at DESC LIMIT 5;"
    ```
 
@@ -2518,7 +2524,7 @@ with a proper inline form. Details remain in localStorage until Spec B."
 Verify the ledger hash chain is unaffected by payment stamping:
 
 ```bash
-cd worker && npx wrangler d1 execute morechard-db --local --command "
+cd worker && npx wrangler d1 execute morechard --local --command "
   SELECT id, previous_hash, record_hash FROM ledger ORDER BY id DESC LIMIT 3;"
 ```
 
@@ -2561,7 +2567,7 @@ git push -u origin HEAD
 gh pr create --title "feat: Payment Bridge V1" --body "$(cat <<'EOF'
 ## Summary
 - Zero-fee hand-off from virtual ledger to real-world payout via deep links (Monzo, Revolut, PayPal, Venmo) and Smart Copy (UK bank transfer, Zelle)
-- Adds `paid_out_at` timestamp on completions and four public payment handles on children (migration `0037`)
+- Adds `paid_out_at` timestamp on completions and four public payment handles on `users` (migration `0037`)
 - Three new worker routes (`mark-paid`, `mark-paid-batch`, `unpaid-summary`) — parent-only, family-scoped, idempotent
 - Android Back button closes nested views before closing the sheet; `visibilitychange`-based deep-link success detection; Capacitor haptics fallback chain
 - Bank details stored in `localStorage` only — known temporary, replaced by Spec B's encrypted vault
