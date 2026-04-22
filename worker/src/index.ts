@@ -63,6 +63,9 @@ import {
   handleCompletionApprove, handleCompletionRevise,
   handleCompletionRate, handleApproveAll,
 } from './routes/completions.js';
+import {
+  handleMarkPaid, handleMarkPaidBatch, handleUnpaidSummary,
+} from './routes/payments.js';
 import { handleProofUpload, handleProofGet } from './routes/proof.js';
 import {
   handleGoalList, handleGoalCreate, handleGoalUpdate,
@@ -477,6 +480,12 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (choreIdMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleChoreArchive(req, e, choreIdMatch[1]));
   const choreRestoreMatch = path.match(/^\/api\/chores\/([^/]+)\/restore$/);
   if (choreRestoreMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleChoreRestore(req, e, choreRestoreMatch[1]));
+
+  // Completions — payment bridge (static paths before :id regex)
+  if (path === '/api/completions/mark-paid-batch'  && method === 'POST') return withAuth(request, auth, env, handleMarkPaidBatch);
+  if (path === '/api/completions/unpaid-summary'   && method === 'GET')  return withAuth(request, auth, env, handleUnpaidSummary);
+  const compMarkPaidMatch = path.match(/^\/api\/completions\/([^/]+)\/mark-paid$/);
+  if (compMarkPaidMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleMarkPaid(req, e, compMarkPaidMatch[1]));
 
   // Completions — parent approval
   const compApproveMatch = path.match(/^\/api\/completions\/([^/]+)\/approve$/);
