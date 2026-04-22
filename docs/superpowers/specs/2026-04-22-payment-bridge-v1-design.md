@@ -418,6 +418,42 @@ After the user returns from a deep-link or completes Smart Copy, the bridge show
 Honest copy is deliberate here — brand-book tone (no euphemisms, no pretending we
 have bank integration).
 
+## Platform Notes
+
+**Android hardware Back button (Capacitor).** The Payment Bridge is a modal bottom
+sheet and must intercept the Android Back button to close itself rather than exiting
+the app. Implementation in `PaymentBridgeSheet.tsx`:
+
+```ts
+useEffect(() => {
+  if (!Capacitor.isNativePlatform()) return;
+  const sub = App.addListener('backButton', () => {
+    if (confirmSheetOpen) {
+      setConfirmSheetOpen(false);    // Back from confirm → back to tile grid
+    } else {
+      onClose();                      // Back from grid → close bridge
+    }
+  });
+  return () => { sub.then(s => s.remove()); };
+}, [confirmSheetOpen, onClose]);
+```
+
+Same pattern for any nested sheet (e.g., Smart Copy panel expanded from a tile).
+
+**`navigator.vibrate` user-gesture requirement.** Android Chrome only allows vibration
+inside a user-gesture callback. This is fine for Copy buttons (direct tap → tick), but
+we must NOT trigger haptics in response to:
+- async promise resolution without a fresh gesture (e.g., haptic on `mark-paid` 200 — too late)
+- visibility-change return from bank app (no gesture context)
+
+The haptic tick on the confirmation "Yes, sent" button fires from inside the click
+handler before the API call, not from its `.then()`.
+
+**Clipboard in non-HTTPS dev.** `navigator.clipboard.writeText` is gated behind secure
+context. Local dev over `http://localhost` works (loopback is secure by spec); LAN IPs
+(`http://192.168.x.x`) do not. The fallback textarea + manual copy path covers this,
+but flag it in the dev README so nobody burns an hour debugging.
+
 ## Error Handling
 
 | Scenario | Handling |
