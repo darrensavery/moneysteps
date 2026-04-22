@@ -12,6 +12,7 @@ import { PaymentTileGrid, type Provider } from './PaymentTileGrid';
 import { DeepLinkHandler } from './DeepLinkHandler';
 import { SmartCopyPanel } from './SmartCopyPanel';
 import { PaymentConfirmSheet } from './PaymentConfirmSheet';
+import { getDetails } from '../../lib/localBankDetails';
 
 type Props = {
   open: boolean;
@@ -70,8 +71,34 @@ export function PaymentBridgeSheet(props: Props) {
 
   function handleTileSelect(p: Provider) {
     if (p === 'bank') {
-      // Handled in Task 12.
-      setView({ kind: 'bank-copy', rows: [] });
+      const saved = getDetails(familyId, child.id);
+      // UK has sort code + account number; US uses Zelle (email/phone).
+      if (saved?.zelleHandle && !saved?.sortCode) {
+        setView({
+          kind: 'zelle-copy',
+          rows: [
+            { label: 'Zelle (email/phone)', value: saved.zelleHandle },
+            { label: 'Amount', value: formatCurrency(totalMinorUnits, currency) },
+            { label: 'Reference', value: reference },
+          ],
+        });
+        return;
+      }
+      if (saved?.sortCode && saved?.accountNumber) {
+        setView({
+          kind: 'bank-copy',
+          rows: [
+            { label: 'Sort Code', value: saved.sortCode },
+            { label: 'Account Number', value: saved.accountNumber },
+            { label: 'Amount', value: formatCurrency(totalMinorUnits, currency) },
+            { label: 'Reference', value: reference },
+          ],
+        });
+        return;
+      }
+      // No saved details — prompt the parent inline. V1 minimal form:
+      // eslint-disable-next-line no-alert
+      alert(`No bank details saved for ${child.display_name}. Add them in the child's profile first.`);
       return;
     }
     if (p === 'monzo' && child.monzo_handle) {
@@ -169,7 +196,41 @@ export function PaymentBridgeSheet(props: Props) {
             />
           )}
 
-          {/* bank-copy and zelle-copy rendered in Task 12 */}
+          {view.kind === 'bank-copy' && (
+            <>
+              <SmartCopyPanel
+                rows={view.rows}
+                warningBanner="Saved on this device only. We'll upgrade this to encrypted storage soon."
+              />
+              <div className="px-4 pb-4">
+                <button
+                  type="button"
+                  onClick={() => setView({ kind: 'confirm' })}
+                  className="w-full rounded-2xl bg-neutral-900 py-3 font-semibold text-white"
+                >
+                  I&apos;ve sent it — next
+                </button>
+              </div>
+            </>
+          )}
+
+          {view.kind === 'zelle-copy' && (
+            <>
+              <SmartCopyPanel
+                rows={view.rows}
+                warningBanner="Open your banking app and find Zelle to complete the transfer."
+              />
+              <div className="px-4 pb-4">
+                <button
+                  type="button"
+                  onClick={() => setView({ kind: 'confirm' })}
+                  className="w-full rounded-2xl bg-neutral-900 py-3 font-semibold text-white"
+                >
+                  I&apos;ve sent it — next
+                </button>
+              </div>
+            </>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
