@@ -749,7 +749,7 @@ export async function suggestChore(body: {
 
 export type MarkPaidResult = {
   completion_id: string;
-  paid_out_at: number;
+  paid_out_at: number | null;
   was_already_paid: boolean;
 };
 
