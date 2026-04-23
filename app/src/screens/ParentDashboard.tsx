@@ -320,7 +320,7 @@ export function ParentDashboard() {
         {!childrenLoaded ? null : activeChild ? (
           <>
             {tab === 'chores'   && <ChoresTab       familyId={familyId} child={activeChild} children={children} />}
-            {tab === 'activity' && <ActivityTab     familyId={familyId} child={activeChild} onCountChange={setPendingCount} />}
+            {tab === 'activity' && <ActivityTab     familyId={familyId} child={activeChild} childCount={children.length} onCountChange={setPendingCount} />}
             {tab === 'pool'     && (
               <PoolTab
                 familyId={familyId}

@@ -11,6 +11,7 @@ import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles } from '../ui
 interface Props {
   familyId: string
   child: ChildRecord
+  childCount: number
   onCountChange: (n: number) => void
   /** Reserved for next iteration — real goal progress data */
   goalProgress?: { goalName: string; choresRemaining: number } | null
@@ -25,7 +26,7 @@ const STATUS_STYLES: Record<string, { label: string; bg: string; text: string }>
   suggestion: { label: 'Suggestion', bg: 'bg-blue-100',   text: 'text-blue-700' },
 }
 
-export function ActivityTab({ familyId, child, onCountChange, goalProgress }: Props) {
+export function ActivityTab({ familyId, child, childCount, onCountChange, goalProgress }: Props) {
   // ── Pending completions (absorbed from PendingTab) ───────────────────────────
   const { challenge, GatekeeperModal } = useGatekeeper()
   const [completions,         setCompletions]         = useState<Completion[]>([])
@@ -271,7 +272,7 @@ export function ActivityTab({ familyId, child, onCountChange, goalProgress }: Pr
 
       {/* ── AI Mentor empty-state card (shown only when no pending approvals) ── */}
       {!pendingLoading && completions.length === 0 && (
-        <MentorEmptyCard childName={child.display_name} goalProgress={goalProgress ?? null} />
+        <MentorEmptyCard childName={child.display_name} childCount={childCount} goalProgress={goalProgress ?? null} />
       )}
 
       {/* ── Pay out bottom sheet ──────────────────────────────────────────────── */}
@@ -504,14 +505,20 @@ interface GoalProgress {
 
 function MentorEmptyCard({
   childName,
+  childCount,
   goalProgress,
 }: {
   childName: string
+  childCount: number
   goalProgress: GoalProgress | null
 }) {
+  const heading = `${childName} is all caught up! 🎉`
+
   const mentorLine = goalProgress
     ? `It looks like ${childName} is ${goalProgress.choresRemaining} chore${goalProgress.choresRemaining !== 1 ? 's' : ''} away from their '${goalProgress.goalName}' goal.`
-    : `Keep an eye on ${childName}'s progress — their next goal milestone is coming up soon.`
+    : childCount === 1
+      ? `Keep an eye on ${childName}'s progress — their next goal milestone is coming up soon.`
+      : `No pending tasks for ${childName} right now. Check the other children's tabs for any outstanding approvals.`
 
   return (
     <PremiumShell>
@@ -527,7 +534,7 @@ function MentorEmptyCard({
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
               </div>
               <p className="text-[15px] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
-                The kids are all caught up! 🎉
+                {heading}
               </p>
             </div>
           </div>
