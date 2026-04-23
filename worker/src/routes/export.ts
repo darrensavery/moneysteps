@@ -123,6 +123,25 @@ export async function handleExportPdf(request: Request, env: Env): Promise<Respo
 
   if (!family) return error('Family not found', 404);
 
+  // Server-side tier enforcement — prevents crafted requests bypassing frontend gates
+  if (tier === 'behavioral') {
+    const tierRow = await env.DB
+      .prepare('SELECT ai_subscription_expiry FROM families WHERE id = ?')
+      .bind(family_id)
+      .first<{ ai_subscription_expiry: string | null }>();
+    const active = tierRow?.ai_subscription_expiry
+      && new Date(tierRow.ai_subscription_expiry).getTime() > Date.now();
+    if (!active) return error('AI Mentor subscription required', 403);
+  }
+
+  if (tier === 'forensic') {
+    const tierRow = await env.DB
+      .prepare('SELECT has_shield FROM families WHERE id = ?')
+      .bind(family_id)
+      .first<{ has_shield: number }>();
+    if (!tierRow?.has_shield) return error('Shield plan required', 403);
+  }
+
   const labelMap   = buildLabelMap(labelsRes.results as unknown as LabelRow[], lang);
   const ledgerRows = ledgerRes.results as unknown as LedgerRow[];
   const govRows    = govRes.results as unknown as GovRow[];
@@ -249,6 +268,83 @@ export async function handleExportPdf(request: Request, env: Env): Promise<Respo
       'Content-Type': 'text/html; charset=utf-8',
       'Content-Disposition': `inline; filename="morechard-${tier}-report-${family_id}-${Date.now()}.html"`,
     },
+  });
+}
+
+// ----------------------------------------------------------------
+// POST /api/export/prune
+// Lead-parent only. Identifies ledger rows older than 2 years,
+// archives their hashes, then zeroes PII columns (description,
+// ip_address, receipt_id). Also nulls proof_exif and system_verify
+// on linked completions. Hash-chain columns are untouched.
+// ----------------------------------------------------------------
+export async function handleExportPrune(
+  request: Request,
+  env: Env,
+  auth: { sub: string; family_id: string; role: string },
+): Promise<Response> {
+  const family_id = auth.family_id;
+
+  // Lead-only gate
+  const caller = await env.DB
+    .prepare(`SELECT parent_role FROM family_roles WHERE user_id = ? AND family_id = ? AND role = 'parent'`)
+    .bind(auth.sub, family_id)
+    .first<{ parent_role: string }>();
+  if (!caller || caller.parent_role !== 'lead') {
+    return error('Only the lead parent can prune data', 403);
+  }
+
+  const cutoff = Math.floor(Date.now() / 1000) - 2 * 365 * 86400;
+
+  const { results: candidates } = await env.DB
+    .prepare(`
+      SELECT id, record_hash, previous_hash
+      FROM ledger
+      WHERE family_id = ? AND created_at < ? AND pruned_at IS NULL
+    `)
+    .bind(family_id, cutoff)
+    .all<{ id: number; record_hash: string; previous_hash: string }>();
+
+  if (candidates.length === 0) {
+    return new Response(JSON.stringify({ pruned: 0, archived: 0 }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  let archived = 0;
+
+  for (const row of candidates) {
+    // Archive hash proof before scrubbing
+    await env.DB
+      .prepare(`INSERT INTO ledger_prune_archive (ledger_id, record_hash, previous_hash, archived_at) VALUES (?, ?, ?, unixepoch())`)
+      .bind(row.id, row.record_hash, row.previous_hash)
+      .run();
+
+    // Zero PII on ledger row (hash-chain columns untouched)
+    await env.DB
+      .prepare(`UPDATE ledger SET description = '[archived]', ip_address = NULL, receipt_id = NULL, pruned_at = unixepoch() WHERE id = ? AND family_id = ?`)
+      .bind(row.id, family_id)
+      .run();
+
+    // Zero PII on linked completions (EXIF + system verify contain GPS/IP)
+    await env.DB
+      .prepare(`
+        UPDATE completions
+        SET proof_exif = NULL, system_verify = NULL
+        WHERE chore_id IN (
+          SELECT chore_id FROM ledger WHERE id = ? AND family_id = ? AND chore_id IS NOT NULL
+        )
+      `)
+      .bind(row.id, family_id)
+      .run();
+
+    archived++;
+  }
+
+  return new Response(JSON.stringify({ pruned: candidates.length, archived }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
