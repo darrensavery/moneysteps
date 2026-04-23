@@ -50,8 +50,11 @@
  * │     • Download Ledger          [Planned]                        │
  * │     • Data Pruning *           [Planned]  (LEAD_PARENT only)    │
  * │                                                                 │
- * │  7. Referrals                  [Planned]                        │
- * │     • Share the Grove          [Planned]                        │
+ * │  7. Referrals                  [UI Shell]                       │
+ * │     • Invite a Family (Peer)   [UI Shell]                       │
+ * │     • Solicitors & Mediators   [UI Shell]  (EN only)            │
+ * │     • Content Creators         [UI Shell]  (EN only)            │
+ * │     • Hardship Licence         [UI Shell]                       │
  * │                                                                 │
  * │  8. About & Support            [UI Shell]                       │
  * │     • Version Info             [UI Shell]                       │
@@ -87,6 +90,7 @@ import { SecuritySettings }   from '../settings/sections/SecuritySettings'
 import { AppearanceSettings } from '../settings/sections/AppearanceSettings'
 import { BillingSettings }    from '../settings/sections/BillingSettings'
 import { DataSettings }       from '../settings/sections/DataSettings'
+import { ReferralsSettings }  from '../settings/sections/ReferralsSettings'
 import { AboutSettings }      from '../settings/sections/AboutSettings'
 import { AvatarSVG }          from '../../lib/avatars'
 
@@ -325,6 +329,7 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
     if (view.section === 'appearance') return <ProfileSection><AppearanceSettings toast={toast} onBack={back} /></ProfileSection>
     if (view.section === 'billing')    return <ProfileSection><BillingSettings    toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
     if (view.section === 'data')       return <ProfileSection><DataSettings       isLead={isLead} hasAiMentor={Boolean(trial?.ai_subscription_active)} hasShield={Boolean(trial?.has_shield)} toast={toast} onBack={back} onNavigateToPlan={() => setView({ type: 'section', section: 'billing' })} /></ProfileSection>
+    if (view.section === 'referrals')  return <ProfileSection><ReferralsSettings  toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
     if (view.section === 'about')      return <ProfileSection><AboutSettings      toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
   }
 
@@ -424,7 +429,7 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
       title: pl ? 'Narzędzia' : 'Tools',
       items: [
         { id: 'data',      icon: <Database size={16} />, label: pl ? 'Dane i eksport'      : 'Data & Exports',    description: pl ? 'Pobierz księgę, archiwizacja'   : 'Download ledger, data pruning' },
-        { id: 'referrals', icon: <Gift size={16} />,     label: pl ? 'Polecenia'            : 'Referrals',         description: pl ? 'Poleć rodzinę, zdobądź nagrody' : 'Refer a family, earn rewards', onAction: comingSoon },
+        { id: 'referrals', icon: <Gift size={16} />,     label: pl ? 'Polecenia'            : 'Referrals',         description: pl ? 'Poleć rodzinę, zdobądź nagrody' : 'Refer a family, earn rewards' },
         { id: 'about',     icon: <Info size={16} />,     label: pl ? 'O aplikacji i pomoc' : 'About & Support',   description: pl ? 'Wersja, prawo, pomoc'            : 'Version, legal, support' },
       ],
     },
