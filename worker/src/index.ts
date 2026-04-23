@@ -375,6 +375,18 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (childGrowthMatch && method === 'GET')   return withAuth(request, auth, env, (req, e) => handleChildGrowthGet(req, e, childGrowthMatch[1]));
   if (childGrowthMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleChildGrowthUpdate(req, e, childGrowthMatch[1]));
 
+  // Child settings via /api/child/:id/settings — delegates to existing handlers with user_id injected
+  const childSettingsMatch = path.match(/^\/api\/child\/([^/]+)\/settings$/);
+  if (childSettingsMatch) {
+    const childId = childSettingsMatch[1];
+    const rewritten = new Request(
+      new URL(`/api/settings?user_id=${childId}`, new URL(request.url).origin),
+      request,
+    );
+    if (method === 'GET')   return withAuth(rewritten, auth, env, handleSettingsGet);
+    if (method === 'PATCH') return withAuth(rewritten, auth, env, handleSettingsUpdate);
+  }
+
   // Child rename + login history (parent only — placed before trial gate intentionally)
   const childIdMatch = path.match(/^\/api\/child\/([^/]+)\/display-name$/);
   if (childIdMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleChildRename(req, e, childIdMatch[1]));

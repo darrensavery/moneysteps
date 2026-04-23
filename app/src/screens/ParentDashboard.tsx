@@ -124,15 +124,21 @@ export function ParentDashboard() {
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
   }, [])
 
-  // Poll pending count
+  // Poll pending count — pauses when the tab is hidden to avoid wasteful background requests
   useEffect(() => {
     if (!familyId || !activeChild) return
-    const load = () => getCompletions({ family_id: familyId, child_id: activeChild.id, status: 'awaiting_review' })
-      .then(r => setPendingCount(r.completions.length))
-      .catch(() => {})
+    const load = () => {
+      if (document.hidden) return
+      getCompletions({ family_id: familyId, child_id: activeChild.id, status: 'awaiting_review' })
+        .then(r => setPendingCount(r.completions.length))
+        .catch(() => {})
+    }
     load()
     const t = setInterval(load, 30_000)
-    return () => clearInterval(t)
+    // Also fire immediately when the tab becomes visible again after being hidden
+    const onVisible = () => { if (!document.hidden) load() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', onVisible) }
   }, [familyId, activeChild])
 
   const TABS: { id: Tab; label: string; badge?: number }[] = [
