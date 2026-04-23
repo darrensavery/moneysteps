@@ -212,11 +212,29 @@ export interface TrialStatus {
   is_expired:           boolean
   has_lifetime_license: boolean
   ai_subscription_active: boolean
-  has_legal_bundle:     boolean   // Legal Integrity Bundle add-on (Phase 7)
+  has_shield:           boolean   // Shield plan add-on (Phase 7)
 }
 
 export async function getTrialStatus(): Promise<TrialStatus> {
   return request('/api/trial/status')
+}
+
+export interface PaymentRecord {
+  payment_type: 'LIFETIME' | 'AI_ANNUAL'
+  amount_paid_int: number
+  currency: string
+  created_at: string
+}
+
+export async function getBillingHistory(): Promise<{ payments: PaymentRecord[] }> {
+  return request('/api/billing/history')
+}
+
+export async function createCheckoutSession(payment_type: 'LIFETIME' | 'AI_ANNUAL'): Promise<{ url: string }> {
+  return request('/api/stripe/create-checkout', {
+    method: 'POST',
+    body: JSON.stringify({ payment_type }),
+  })
 }
 
 export async function updateFamily(body: Record<string, unknown>): Promise<void> {
