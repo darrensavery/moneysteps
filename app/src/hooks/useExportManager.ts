@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { apiUrl, authHeaders } from '../lib/api'
 
 type ExportKey = 'json-basic' | 'pdf-basic' | 'pdf-behavioral' | 'pdf-forensic' | 'prune'
@@ -12,6 +12,10 @@ interface UseExportManager {
   prunedCount:   number | null
 }
 
+const SUCCESS_RESET_MS = 3_000
+// allow browser to begin download before revoking
+const REVOKE_URL_DELAY_MS = 100
+
 export function useExportManager(familyId: string): UseExportManager {
   const [states, setStates] = useState<Map<ExportKey, ExportState>>(new Map())
   const [errors, setErrors] = useState<Map<ExportKey, string | null>>(new Map())
@@ -20,13 +24,23 @@ export function useExportManager(familyId: string): UseExportManager {
   // Keep refs to active success-reset timers so we never leak them
   const resetTimers = useRef<Map<ExportKey, ReturnType<typeof setTimeout>>>(new Map())
 
-  function getState(key: ExportKey): ExportState {
-    return states.get(key) ?? 'idle'
-  }
+  // Clear all pending reset timers on unmount
+  useEffect(() => {
+    return () => {
+      resetTimers.current.forEach(id => clearTimeout(id))
+      resetTimers.current.clear()
+    }
+  }, [])
 
-  function getError(key: ExportKey): string | null {
-    return errors.get(key) ?? null
-  }
+  const getState = useCallback(
+    (key: ExportKey): ExportState => states.get(key) ?? 'idle',
+    [states],
+  )
+
+  const getError = useCallback(
+    (key: ExportKey): string | null => errors.get(key) ?? null,
+    [errors],
+  )
 
   function setState(key: ExportKey, value: ExportState) {
     setStates(prev => {
@@ -44,18 +58,22 @@ export function useExportManager(familyId: string): UseExportManager {
     })
   }
 
-  function scheduleReset(key: ExportKey) {
+  const scheduleReset = useCallback((key: ExportKey) => {
     // Clear any existing reset timer for this key
     const existing = resetTimers.current.get(key)
     if (existing !== undefined) clearTimeout(existing)
 
     const id = setTimeout(() => {
-      setState(key, 'idle')
+      setStates(prev => {
+        const next = new Map(prev)
+        next.set(key, 'idle')
+        return next
+      })
       resetTimers.current.delete(key)
-    }, 3000)
+    }, SUCCESS_RESET_MS)
 
     resetTimers.current.set(key, id)
-  }
+  }, [])
 
   const triggerExport = useCallback(
     async (format: 'pdf' | 'json', tier: 'basic' | 'behavioral' | 'forensic') => {
@@ -65,10 +83,8 @@ export function useExportManager(familyId: string): UseExportManager {
       setError(key, null)
 
       try {
-        const url =
-          apiUrl(`/api/export/${format}`) +
-          '?tier=' + tier +
-          '&family_id=' + familyId
+        const params = new URLSearchParams({ tier, family_id: familyId })
+        const url = apiUrl(`/api/export/${format}`) + '?' + params.toString()
 
         const res = await fetch(url, { headers: authHeaders() })
 
@@ -94,7 +110,7 @@ export function useExportManager(familyId: string): UseExportManager {
         anchor.click()
         document.body.removeChild(anchor)
 
-        setTimeout(() => URL.revokeObjectURL(objectUrl), 100)
+        setTimeout(() => URL.revokeObjectURL(objectUrl), REVOKE_URL_DELAY_MS)
 
         setState(key, 'success')
         scheduleReset(key)
@@ -104,8 +120,7 @@ export function useExportManager(familyId: string): UseExportManager {
         setError(key, message)
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [familyId],
+    [familyId, scheduleReset],
   )
 
   const triggerPrune = useCallback(async () => {
@@ -134,7 +149,6 @@ export function useExportManager(familyId: string): UseExportManager {
       setState(key, 'error')
       setError(key, message)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [familyId])
 
   return {
