@@ -353,10 +353,13 @@ export interface Completion {
   rejection_note: string | null;
   parent_notes: string | null;
   proof_url: string | null;      // R2 object key — fetch presigned URL separately
+  proof_exif: Record<string, unknown> | null;  // EXIF metadata; null when pruned or not captured
+  system_verify: Record<string, unknown> | null; // GPS/device verification data; null when pruned
   attempt_count: number;         // > 1 means resubmission
   status: 'awaiting_review' | 'completed' | 'needs_revision' | 'pending';
   rating: number; submitted_at: number; resolved_at: number | null;
   paid_out_at: number | null;
+  pruned_at?: number | null;     // set by migration 0039 when evidence is archived (2+ years old)
 }
 
 export async function getCompletions(params: {

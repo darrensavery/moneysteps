@@ -584,8 +584,12 @@ function AuditCard({
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
 
-      {/* Proof image */}
-      {hasProof && (
+      {/* Proof image / archived evidence guard */}
+      {c.pruned_at != null && c.proof_exif == null ? (
+        <p className="px-4 pt-3 pb-1 text-[12px] text-[var(--color-text-muted)] italic">
+          Details archived (2+ years old)
+        </p>
+      ) : hasProof && (
         <div className="relative h-44 bg-[var(--color-surface-alt)] overflow-hidden">
           {loadingProof && (
             <div className="absolute inset-0 flex items-center justify-center">
