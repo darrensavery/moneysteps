@@ -20,10 +20,11 @@
  *   goals_locked_pence      — sum of (target - saved) across active goals
  */
 
-import { Env } from '../types.js';
+import { Env, FamilyContext } from '../types.js';
 import { json, error } from '../lib/response.js';
 import { JwtPayload } from '../lib/jwt.js';
 import { captureAiGeneration } from '../lib/posthog.js';
+import { getFamilyContext } from '../lib/intelligence.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -47,6 +48,18 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
 
   const periodStart = getPeriodStart(period);
   const now         = Math.floor(Date.now() / 1000);
+
+  // Family context — queried fresh, not cached
+  const familyCtx = await getFamilyContext(env.DB, family_id).catch((): FamilyContext => ({
+    parenting_mode:   'single',
+    child_count:      1,
+    child_names:      [],
+    parent_names:     [],
+    family_name:      'the family',
+    co_parent_active: false,
+    approval_skew:    null,
+    has_shield:       false,
+  }));
 
   // ── 1. First-Time Pass Rate ───────────────────────────────────────────────
   const passRateRow = await env.DB.prepare(`
@@ -337,6 +350,7 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
         locale,
         childName,
         honorific,
+        familyCtx,
       });
 
       // Persist to D1 so the next call within this week is instant.
@@ -477,6 +491,49 @@ interface BriefingInput {
   locale:                 'en' | 'pl';
   childName:              string;   // first name only, used for formal Polish address
   honorific:              string;   // 'Pan' | 'Pani' | 'Młody Ekspercie'
+  familyCtx:              FamilyContext;
+}
+
+function buildInsightsFamilyBlock(familyCtx: FamilyContext, childName: string, locale: 'en' | 'pl'): string {
+  const isPl = locale === 'pl'
+  const coParentLine = familyCtx.parenting_mode === 'co-parenting' && familyCtx.parent_names.length >= 2
+    ? (isPl
+        ? `Rodzice: ${familyCtx.parent_names.join(' i ')}. Zwracaj się do obojga rodziców, gdy to stosowne.`
+        : `Parents: ${familyCtx.parent_names.join(' and ')}. Address both parents when contextually relevant.`)
+    : (isPl
+        ? 'Rodzina z jednym rodzicem. Nie używaj "oboje rodziców" ani nie wspominaj o współrodzicielstwie.'
+        : 'Single-parent family. Never say "both parents" or reference a co-parent.')
+
+  const siblingLine = familyCtx.child_count > 1
+    ? (isPl
+        ? `Rodzina ma ${familyCtx.child_count} dzieci. Możesz świętować sukcesy całej rodziny (np. "Cały Sad kwitnie"), ale NIGDY nie porównuj postępów dzieci.`
+        : `This family has ${familyCtx.child_count} children. You may celebrate whole-family milestones (e.g. "The whole Orchard is thriving"), but NEVER compare children's progress.`)
+    : (isPl
+        ? `${childName} jest jedynym dzieckiem w tej rodzinie.`
+        : `${childName} is the only child in this family.`)
+
+  const nudgeRule = familyCtx.parenting_mode === 'co-parenting' && !familyCtx.has_shield
+    && familyCtx.co_parent_active && (familyCtx.approval_skew ?? 0) > 80
+    ? (isPl
+        ? 'WSKAZÓWKA WSPÓŁPRACY (dozwolona raz w briefingu): Zauważyliśmy, że ostatnio zatwierdzenia pochodzą głównie od jednego rodzica — partner może chcieć bardziej zaangażować się w tym tygodniu. Ton: obserwacja, nie dyrektywa.'
+        : "COLLABORATION NUDGE (allowed once in this briefing): We've noticed most approvals have come from one parent recently — your co-parent might enjoy being more involved this week. Tone: observation, never directive.")
+    : ''
+
+  if (isPl) {
+    return `KONTEKST RODZINNY (obowiązkowy):
+- ${coParentLine}
+- ${siblingLine}
+- Nazwa rodziny: ${familyCtx.family_name}
+- ZAKAZ używania "dzieci" (użyj imienia dziecka lub "Twoje dziecko").
+${nudgeRule}`
+  }
+
+  return `FAMILY CONTEXT (mandatory):
+- ${coParentLine}
+- ${siblingLine}
+- Family name: ${familyCtx.family_name}
+- NEVER say "the kids" — use the child's name or "your child".
+${nudgeRule}`
 }
 
 function buildSystemPrompt(
@@ -484,6 +541,7 @@ function buildSystemPrompt(
   isTeenMode: boolean,
   childName: string,
   honorific: string,
+  familyCtx: FamilyContext,
 ): string {
   const isPl           = locale === 'pl';
   const useFormalPl    = isPl && isTeenMode;
@@ -496,7 +554,10 @@ function buildSystemPrompt(
       ? `FORMALNOŚĆ: Zwracaj się do dziecka per "${formalAddress}" w nudge'u. Ton: formalny, bezpośredni, szanujący autonomię.`
       : `FORMALNOŚĆ: Używaj prostego, ciepłego języka odpowiedniego dla młodszych dzieci. Bez formalnych tytułów.`;
 
-    return `Jesteś "Mistrzem Sadu" (Mistrz Sadu) — wysokiej klasy konsultantem finansowym dla rodziców. \
+    const familyBlock = buildInsightsFamilyBlock(familyCtx, childName, locale)
+    return `${familyBlock}
+
+Jesteś "Mistrzem Sadu" (Mistrz Sadu) — wysokiej klasy konsultantem finansowym dla rodziców. \
 Twoim celem jest analiza danych finansowych dziecka i przygotowanie profesjonalnego raportu opartego na Matrycy Edukacji Finansowej Morechard.
 
 MATRYCA EDUKACJI FINANSOWEJ (obowiązkowy program nauczania):
@@ -535,7 +596,10 @@ Schemat odpowiedzi (ścisły):
   }
 
   // ── English persona: Collaborative Coach (Orchard Lead) ──────────────────
-  return `You are the 'Orchard Lead', a collaborative financial coach for parents. \
+  const familyBlock = buildInsightsFamilyBlock(familyCtx, childName, locale)
+  return `${familyBlock}
+
+You are the 'Orchard Lead', a collaborative financial coach for parents. \
 Your goal is to analyse child financial behaviour data and produce a professional executive briefing grounded in the Morechard Financial Literacy Matrix.
 
 THE LITERACY MATRIX (your mandatory syllabus):
@@ -572,12 +636,55 @@ Response schema (strict):
 }`;
 }
 
+function applyCollaborationNudge(
+  briefing: MentorBriefing,
+  familyCtx: FamilyContext,
+  locale: 'en' | 'pl',
+  isSeedling: boolean,
+): MentorBriefing {
+  const shouldNudge =
+    familyCtx.parenting_mode === 'co-parenting' &&
+    !familyCtx.has_shield &&
+    familyCtx.co_parent_active &&
+    (familyCtx.approval_skew ?? 0) > 80
+
+  if (!shouldNudge) return briefing
+
+  const coParentName = familyCtx.parent_names.length >= 2
+    ? familyCtx.parent_names[1]
+    : (locale === 'pl' ? 'partner' : 'your partner')
+
+  const nudgeSuffix = locale === 'pl'
+    ? ` Zauważyliśmy również, że ostatnio zatwierdzenia pochodzą głównie od jednego rodzica — ${coParentName} może chcieć bardziej zaangażować się w tym tygodniu.`
+    : ` We've also noticed most approvals have come from one parent recently — ${coParentName} might enjoy being more involved this week.`
+
+  return {
+    ...briefing,
+    the_nudge: briefing.the_nudge + nudgeSuffix,
+  }
+}
+
 function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
   const {
     trends, consistencyScore, firstTimePassRate, planningHorizon,
     velocityContext, availableBalancePence, goalsLockedPence, locale,
-    childName, honorific,
+    childName, honorific, familyCtx,
   } = input;
+
+  // Co-parent address string
+  const coParentName = familyCtx.parenting_mode === 'co-parenting' && familyCtx.parent_names.length >= 2
+    ? familyCtx.parent_names.filter(n => n !== familyCtx.parent_names[0])[0] ?? 'your partner'
+    : null;
+  const parentAddress = coParentName
+    ? (locale === 'pl' ? `Ty i ${coParentName}` : `you and ${coParentName}`)
+    : (locale === 'pl' ? 'Ty' : 'you');
+
+  // Sibling team line for Pillar 5 (positive-only)
+  const siblingTeamLine = familyCtx.child_count > 1
+    ? (locale === 'pl'
+        ? ` Cały Sad ${familyCtx.family_name} kwitnie w tym tygodniu.`
+        : ` The whole ${familyCtx.family_name} Orchard is thriving this week.`)
+    : '';
 
   const isSeedling      = velocityContext.mode === 'seedling';
   const isPl            = locale === 'pl';
@@ -602,11 +709,11 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
 
     const obs = hasSurplus
       ? (isPl
-          ? `Zauważyliśmy, że dostępne saldo przekroczyło ${balanceDisplay}—w Sadzie zgromadził się znaczący nadmiar.`
-          : `We have noted that the available balance has exceeded ${balanceDisplay}—a meaningful surplus has accumulated in the Orchard.`)
+          ? `Zauważyliśmy, że dostępne saldo przekroczyło ${balanceDisplay}—w Sadzie zgromadził się znaczący nadmiar.${siblingTeamLine}`
+          : `We have noted that the available balance has exceeded ${balanceDisplay}—a meaningful surplus has accumulated in the Orchard.${siblingTeamLine}`)
       : (isPl
-          ? 'Zauważyliśmy, że wszystkie aktywne cele oszczędnościowe zostały w pełni sfinansowane w tym okresie—to ważny kamień milowy w cyklu Zbiorów.'
-          : 'We have observed that all active savings goals have been fully funded this period—a significant milestone in the Harvest cycle.');
+          ? `Zauważyliśmy, że wszystkie aktywne cele oszczędnościowe zostały w pełni sfinansowane w tym okresie—to ważny kamień milowy w cyklu Zbiorów.${siblingTeamLine}`
+          : `We have observed that all active savings goals have been fully funded this period—a significant milestone in the Harvest cycle.${siblingTeamLine}`);
 
     // Polish Pillar 5: "Honor i Obowiązek Zbiorów" framing (cultural duty, not optional charity)
     const root = isPl
@@ -625,7 +732,7 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
           ? `You might consider exploring a small giving goal together—even £1–£2 toward a cause ${childName} cares about introduces the Give grove without disrupting their savings rhythm.`
           : `You might consider introducing a Social Allocation target (e.g., 5–10% of surplus) and discussing with ${childName} what they would fund—this anchors Pillar 5 in a real decision rather than an abstract concept.`);
 
-    return { observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' };
+    return applyCollaborationNudge({ observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' }, familyCtx, locale, isSeedling);
   }
 
   // ── Priority 2: Pillar 3 — Opportunity Cost ───────────────────────────────
@@ -647,7 +754,7 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
       : (isSeedling
           ? `You might consider identifying one thing ${childName} bought recently and asking: "What goal could that have moved forward?"—this is the Pruning conversation in its simplest form.`
           : `You might consider calculating the "Time-to-Goal cost" of ${childName}'s recent discretionary spends—presenting this as a trade-off ratio (e.g., "3 days of velocity") makes the Opportunity Cost tangible.`);
-    return { observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' };
+    return applyCollaborationNudge({ observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' }, familyCtx, locale, isSeedling);
   }
 
   // ── Priority 3: Pillar 1 — Labour Value ──────────────────────────────────
@@ -680,7 +787,7 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
       : (isSeedling
           ? `You might consider restating the task-to-reward equation simply to ${childName}: "Each completed task = one step closer to your goal"—reanchoring the effort-value link visually.`
           : `You might consider introducing a "High-Integrity Streak" bonus for ${childName} for five consecutive first-time passes—framing it as a professional quality metric rather than a reward for compliance.`);
-    return { observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' };
+    return applyCollaborationNudge({ observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' }, familyCtx, locale, isSeedling);
   }
 
   // ── Priority 4: Pillar 2 — Delayed Gratification ─────────────────────────
@@ -702,7 +809,7 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
       : (isSeedling
           ? `You might consider calculating how many tasks remain until ${childName}'s goal is reached and displaying it as a countdown—making the "Season" feel tangible and near.`
           : `You might consider reviewing the Time-to-Goal estimate with ${childName} and discussing whether adjusting the savings allocation rate would meaningfully accelerate the harvest date.`);
-    return { observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' };
+    return applyCollaborationNudge({ observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' }, familyCtx, locale, isSeedling);
   }
 
   // ── Priority 5: Pillar 4 — Capital Management ────────────────────────────
@@ -726,9 +833,9 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
           ? `Możesz rozważyć wprowadzenie idei "Wzmocnienia" jako wkładu dopasowującego rodzica—przedstawiając to ${childName} jako "Sad rosnący z nasienia" czyni procent składany intuicyjnym.`
           : `Możesz rozważyć wspólne modelowanie z ${formalAddr}, jak wyglądałby 5% lub 10% roczny zwrot na obecnym saldzie oszczędności—zakotwicza to Filar 4 w realnej liczbie.`)
       : (isSeedling
-          ? `You might consider introducing the idea of a "Boost" from a parent as a matching contribution—framing it to ${childName} as "the Orchard growing your seed" makes compound interest intuitive.`
-          : `You might consider modelling with ${childName} what a 5% or 10% annual return would look like on their current savings balance—this anchors Pillar 4 in a real number rather than an abstract concept.`);
-    return { observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' };
+          ? `You might consider ${coParentName ? `${parentAddress} introducing` : 'introducing'} the idea of a "Boost" as a matching contribution—framing it to ${childName} as "the Orchard growing your seed" makes compound interest intuitive.`
+          : `You might consider ${coParentName ? `${parentAddress} modelling` : 'modelling'} with ${childName} what a 5% or 10% annual return would look like on their current savings balance—this anchors Pillar 4 in a real number rather than an abstract concept.`);
+    return applyCollaborationNudge({ observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' }, familyCtx, locale, isSeedling);
   }
 
   // ── Default: mixed signals ────────────────────────────────────────────────
@@ -745,12 +852,12 @@ function buildRuleBasedBriefing(input: BriefingInput): MentorBriefing {
     : (isSeedling
         ? `You might consider holding the current structure steady and focusing on ${childName} completing one full week of tasks without revision—building the consistency baseline before introducing new complexity.`
         : `You might consider reviewing ${childName}'s current task portfolio and assessing whether the reward structure is appropriately calibrated to the effort required—misalignment is a common driver of mixed-signal periods.`);
-  return { observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' };
+  return applyCollaborationNudge({ observation: obs, behavioral_root: root, the_nudge: nudge, source: 'fallback' }, familyCtx, locale, isSeedling);
 }
 
 async function generateBriefing(env: Env, childId: string, input: BriefingInput): Promise<MentorBriefing> {
   const isTeenMode   = input.velocityContext.mode === 'professional';
-  const systemPrompt = buildSystemPrompt(input.locale, isTeenMode, input.childName, input.honorific);
+  const systemPrompt = buildSystemPrompt(input.locale, isTeenMode, input.childName, input.honorific, input.familyCtx);
 
   const userMessage = JSON.stringify({
     consistency_score:       input.consistencyScore,
