@@ -98,7 +98,7 @@ import {
 import { handleLedgerPost, handleLedgerGet, handleLedgerDispute } from './routes/ledger.js';
 import { handleLedgerVerify } from './routes/verify.js';
 import { handleRaiseDispute } from './routes/raise-dispute.js';
-import { handleExportJson, handleExportPdf } from './routes/export.js';
+import { handleExportJson, handleExportPdf, handleExportPrune } from './routes/export.js';
 import {
   handleGovernanceRequest,
   handleGovernanceConfirm,
@@ -572,10 +572,32 @@ async function route(request: Request, env: Env, method: string, path: string): 
     if (famCheck) return famCheck;
     return handleExportPdf(request, env);
   }
+  if (path === '/api/export/prune' && method === 'POST') {
+    const parentCheck = requireRole(auth, 'parent');
+    if (parentCheck) return parentCheck;
+    return handleExportPrune(request, env, auth);
+  }
 
   // Stripe checkout (parent only, post-auth)
   if (path === '/api/stripe/create-checkout' && method === 'POST') {
     return handleCreateCheckout(request, env, auth);
+  }
+
+  // Payment history (parent only)
+  if (path === '/api/billing/history' && method === 'GET') {
+    const leadCheck = requireRole(auth, 'parent');
+    if (leadCheck) return leadCheck;
+    const rows = await env.DB
+      .prepare(`
+        SELECT payment_type, amount_paid_int, currency, created_at
+        FROM payment_audit_log
+        WHERE family_id = ?
+        ORDER BY created_at DESC
+        LIMIT 50
+      `)
+      .bind(auth.family_id)
+      .all<{ payment_type: string; amount_paid_int: number; currency: string; created_at: string }>();
+    return json({ payments: rows.results });
   }
 
   // Governance
