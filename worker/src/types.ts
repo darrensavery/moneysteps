@@ -50,6 +50,18 @@ export type Currency = 'GBP' | 'PLN' | 'USD';
 export type Locale = 'en' | 'en-US' | 'pl';
 export type VerifyMode = 'amicable' | 'standard';
 export type ParentingMode = 'single' | 'co-parenting';
+
+export interface FamilyContext {
+  parenting_mode:   'single' | 'co-parenting';
+  child_count:      number;
+  child_names:      string[];    // first names of all children
+  parent_names:     string[];    // first names of lead + all co-parents
+  family_name:      string;      // families.name fallback: "the family"
+  co_parent_active: boolean;     // both parents approved ≥1 chore in last 30d
+  approval_skew:    number | null; // % of approvals by most-active parent (last 30d); null when single or <5 approvals
+  has_shield:       boolean;     // Shield plan active — suppresses collaboration nudges
+}
+
 export type InviteRole = 'child' | 'co-parent';
 export type EntryType = 'credit' | 'reversal' | 'payment';
 export type VerificationStatus = 'pending' | 'verified_auto' | 'verified_manual' | 'disputed' | 'reversed';
