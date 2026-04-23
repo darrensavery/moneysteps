@@ -24,7 +24,7 @@ export interface Env {
 // 'needs_revision'  — parent sent back with notes
 export type CompletionStatus = 'available' | 'awaiting_review' | 'completed' | 'needs_revision';
 
-export type PaymentType = 'LIFETIME' | 'AI_ANNUAL';
+export type PaymentType = 'LIFETIME' | 'AI_ANNUAL' | 'SHIELD';
 
 /** Shape returned by SELECT on the families table for trial/license checks. */
 export interface FamilyLicenseRow {
@@ -33,6 +33,7 @@ export interface FamilyLicenseRow {
   is_activated: number;              // D1 returns booleans as 0/1
   has_lifetime_license: number;
   ai_subscription_expiry: string | null;
+  has_shield: number;                // 0 or 1
 }
 
 /** Result shape passed to the frontend for the TrialCountdown component. */
@@ -42,7 +43,7 @@ export interface TrialStatus {
   is_expired: boolean;
   has_lifetime_license: boolean;
   ai_subscription_active: boolean;
-  has_legal_bundle: boolean;       // Legal Integrity Bundle add-on (Phase 7)
+  has_shield: boolean;              // Shield plan add-on (£149.99 one-off)
 }
 
 export type Currency = 'GBP' | 'PLN' | 'USD';

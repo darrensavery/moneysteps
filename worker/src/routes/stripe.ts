@@ -24,6 +24,7 @@ import { JwtPayload } from '../lib/jwt.js';
 const PRODUCTS: Record<PaymentType, { amount: number; currency: string; label: string }> = {
   LIFETIME:  { amount: 3499, currency: 'gbp', label: 'Morechard Lifetime Tracker' },
   AI_ANNUAL: { amount: 1999, currency: 'gbp', label: 'Morechard AI Coach — Annual' },
+  SHIELD:    { amount: 14999, currency: 'gbp', label: 'Shield — Legal Protection' },
 };
 
 // ----------------------------------------------------------------
@@ -37,8 +38,8 @@ export async function handleCreateCheckout(
   const body = await request.json() as { payment_type?: unknown };
   const payment_type = body.payment_type as PaymentType;
 
-  if (payment_type !== 'LIFETIME' && payment_type !== 'AI_ANNUAL') {
-    return error('payment_type must be LIFETIME or AI_ANNUAL', 400);
+  if (payment_type !== 'LIFETIME' && payment_type !== 'AI_ANNUAL' && payment_type !== 'SHIELD') {
+    return error('payment_type must be LIFETIME, AI_ANNUAL, or SHIELD', 400);
   }
 
   const product = PRODUCTS[payment_type];
