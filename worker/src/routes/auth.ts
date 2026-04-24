@@ -80,10 +80,20 @@ export async function handleCreateFamily(request: Request, env: Env): Promise<Re
   const base_currency    = (body['base_currency']    === 'PLN')      ? 'PLN'           : 'GBP';
   const parenting_mode   = (body['parenting_mode']   === 'co-parenting') ? 'co-parenting' : 'single';
 
+  // Referral attribution — silently ignore unknown codes
+  let referred_by_code: string | null = (body['referred_by_code'] as string | undefined)?.trim().toUpperCase() ?? null;
+  if (referred_by_code) {
+    const referrer = await env.DB
+      .prepare('SELECT id FROM families WHERE referral_code = ?')
+      .bind(referred_by_code)
+      .first();
+    if (!referrer) referred_by_code = null;
+  }
+
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO families (id, name, currency, verify_mode, base_currency, parenting_mode) VALUES (?, ?, ?, ?, ?, ?)`
-    ).bind(familyId, display_name, base_currency, governance_mode, base_currency, parenting_mode),
+      `INSERT INTO families (id, name, currency, verify_mode, base_currency, parenting_mode, referred_by_code) VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).bind(familyId, display_name, base_currency, governance_mode, base_currency, parenting_mode, referred_by_code),
     env.DB.prepare(`
       INSERT INTO users (id, family_id, display_name, email, locale, password_hash, email_verified)
       VALUES (?,?,?,?,?,?,0)
