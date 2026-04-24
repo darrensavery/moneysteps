@@ -833,3 +833,25 @@ export async function setPaymentHandles(
     body: JSON.stringify(handles),
   });
 }
+
+// ── Referrals ─────────────────────────────────────────────────────────────────
+
+export async function getReferralCode(): Promise<{ code: string; share_url: string }> {
+  return request('/api/referrals/me');
+}
+
+export async function getReferralStats(): Promise<{
+  clicks: number;
+  sign_ups: number;
+  conversions: number;
+  rewards_pending: number;
+}> {
+  return request('/api/referrals/stats');
+}
+
+export async function trackReferralClick(code: string): Promise<void> {
+  await request('/api/referrals/click', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
