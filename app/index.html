@@ -44,5 +44,19 @@
   <body style="overscroll-behavior-y: none;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Freshdesk Web Chat Widget — bubble hidden via Freshdesk dashboard settings.
+         Opened programmatically via window.fdWidget.open() from Help & Support menu. -->
+    <script>
+      function initFreshdesk() {
+        window.fdWidget.init({
+          token: "01KPY3BEPJXE9TE69WHM6N2HSJ",
+          host: "https://eagereverest.freshdesk.com",
+          widgetId: "01KPY3BHVH5WKGH346XNTT7EV9"
+        });
+      }
+      function initialize(i,t){var e;i.getElementById(t)?initFreshdesk():((e=i.createElement("script")).id=t,e.async=!0,e.src="https://eagereverest.freshdesk.com/webchat/js/widget.js",e.onload=initFreshdesk,i.head.appendChild(e))}
+      function initiateCall(){initialize(document,"Freshdesk-js-sdk")}
+      window.addEventListener?window.addEventListener("load",initiateCall,!1):window.attachEvent("load",initiateCall,!1);
+    </script>
   </body>
 </html>

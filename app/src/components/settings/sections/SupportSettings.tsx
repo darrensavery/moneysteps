@@ -18,8 +18,6 @@ declare const __APP_VERSION__: string | undefined
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const FRESHDESK_SEARCH_URL  = 'https://support.morechard.com'
-const FRESHDESK_CONTACT_URL = 'https://support.morechard.com/support/tickets/new'
 const PRIVACY_URL          = 'https://morechard.com/privacy-policy'
 const TERMS_URL            = 'https://morechard.com/terms'
 
@@ -202,31 +200,38 @@ export function SupportSettings({ toast, onBack }: Props) {
       {toast && <Toast message={toast} />}
       <SectionHeader title="Help & Support" onBack={onBack} />
 
-      {/* ── Search the help desk — hero row ── */}
-      <a
-        href={FRESHDESK_SEARCH_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 px-4 py-3.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
+      {/* ── Search / Contact — open Freshdesk widget ── */}
+      <button
+        type="button"
+        onClick={() => window.fdWidget?.open()}
+        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
       >
         <span className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)] text-[var(--brand-primary)]">
           <Search size={17} />
         </span>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 text-left">
           <p className="text-[14px] font-bold text-[var(--color-text)]">Search the Help Desk</p>
           <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">Browse guides, FAQs, and tutorials</p>
         </div>
-        <ExternalLink size={14} className="shrink-0 text-[var(--brand-primary)]" />
-      </a>
+        <ChevronRight size={14} className="shrink-0 text-[var(--brand-primary)]" />
+      </button>
 
       {/* ── Contact support ── */}
       <SectionCard>
-        <LinkRow
-          icon={<MessageCircle size={15} />}
-          label="Contact Support"
-          description="Submit a ticket — we reply within 24h"
-          href={FRESHDESK_CONTACT_URL}
-        />
+        <button
+          type="button"
+          onClick={() => window.fdWidget?.open()}
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
+        >
+          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+            <MessageCircle size={15} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-semibold text-[var(--color-text)]">Contact Support</p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">Submit a ticket — we reply within 24h</p>
+          </div>
+          <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />
+        </button>
       </SectionCard>
 
       {/* ── App updates ── */}
