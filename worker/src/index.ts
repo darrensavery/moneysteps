@@ -358,6 +358,9 @@ async function route(request: Request, env: Env, method: string, path: string): 
   // Market rates — CRON health check (no user auth)
   if (path === '/api/market-rates/cron' && method === 'GET') return handleMarketRateCron(request, env);
 
+  // Referral click tracking — public (no auth)
+  if (path === '/api/referrals/click' && method === 'POST') return handleReferralClick(request, env);
+
   // ── All authenticated routes require a valid JWT ─────────────
   const auth = await requireAuth(request, env);
   if (auth instanceof Response) return auth;
@@ -453,10 +456,9 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (path === '/api/market-rates' && method === 'GET')        return withAuth(request, auth, env, handleMarketRateList);
   if (path === '/api/market-rates/suggest' && method === 'POST') return withAuth(request, auth, env, handleMarketRateSuggest);
 
-  // Referrals — parent only (me + stats); click is public
+  // Referrals — parent only (me + stats)
   if (path === '/api/referrals/me'    && method === 'GET')  return withAuth(request, auth, env, handleReferralMe);
   if (path === '/api/referrals/stats' && method === 'GET')  return withAuth(request, auth, env, handleReferralStats);
-  if (path === '/api/referrals/click' && method === 'POST') return handleReferralClick(request, env);
 
   // Spending — child logs, both read
   if (path === '/api/spending' && method === 'GET')   return withAuth(request, auth, env, handleSpendingList);
