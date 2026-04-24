@@ -1,25 +1,23 @@
 /**
  * ReferralsSettings — Partnerships & Referrals section.
  *
- * Four partnership types, each as UI shell only (no backend wiring yet).
- * Each row fires a "Coming Soon" / "Notify me" toast.
- *
  * Sub-views:
  *   menu       — three grouped rows (Peer / Professional Network ×2 / Community)
- *   peer       — "Invite a Family" overview: 3 months AI Mentor both sides
- *   pro-legal  — For Solicitors & Mediators — free professional accounts (EN only)
- *   pro-media  — For Content Creators — affiliate programme (EN only)
- *   hardship   — Hardship Licence — charity partnerships
+ *   peer       — "Invite a Family": live referral link + Web Share API + stats
+ *   pro-legal  — For Solicitors & Mediators — mailto CTA (EN only)
+ *   pro-media  — For Content Creators — mailto CTA (EN only)
+ *   hardship   — Hardship Licence — mailto CTA
  *
  * Locale rules:
  *   - EN:  all four options visible
  *   - PL:  Peer + Hardship only (pro rows hidden until Polish Bar rules checked)
  */
 
-import { useState } from 'react'
-import { Gift, Scale, Megaphone, HeartHandshake, Sparkles, Mail, Users } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Gift, Scale, Megaphone, HeartHandshake, Sparkles, Users, Copy, CheckCircle2, Share2, ExternalLink } from 'lucide-react'
 import { Toast, SettingsRow, SectionCard, SectionHeader } from '../shared'
 import { useLocale, isPolish } from '../../../lib/locale'
+import { getReferralCode, getReferralStats } from '../../../lib/api'
 
 type SubView = 'menu' | 'peer' | 'pro-legal' | 'pro-media' | 'hardship'
 
@@ -29,11 +27,55 @@ interface Props {
   onComingSoon: () => void
 }
 
+// ── Referral data hook ─────────────────────────────────────────────────────────
+
+function useReferral() {
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [code, setCode] = useState<string | null>(null)
+  const [stats, setStats] = useState<{ clicks: number; sign_ups: number; conversions: number } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([getReferralCode(), getReferralStats()])
+      .then(([codeData, statsData]) => {
+        setCode(codeData.code)
+        setShareUrl(codeData.share_url)
+        setStats(statsData)
+      })
+      .catch(() => null)
+      .finally(() => setLoading(false))
+  }, [])
+
+  return { code, shareUrl, stats, loading }
+}
+
 // ── Peer referral sub-view ─────────────────────────────────────────────────────
 
 function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: string) => void }) {
   const { locale } = useLocale()
   const pl = isPolish(locale)
+  const { code, shareUrl, stats, loading } = useReferral()
+  const [copied, setCopied] = useState(false)
+
+  async function handleShare() {
+    if (!shareUrl) return
+    if (navigator.share) {
+      await navigator.share({ title: 'Join Morechard', url: shareUrl }).catch(() => null)
+    } else {
+      await navigator.clipboard.writeText(shareUrl).catch(() => null)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+      showToast(pl ? 'Link skopiowany' : 'Link copied')
+    }
+  }
+
+  async function handleCopyUrl() {
+    if (!shareUrl) return
+    await navigator.clipboard.writeText(shareUrl).catch(() => null)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2500)
+    showToast(pl ? 'Link skopiowany' : 'Link copied')
+  }
 
   return (
     <div className="space-y-4">
@@ -43,26 +85,92 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
         onBack={onBack}
       />
 
+      {/* Reward banner */}
       <SectionCard>
-        <div className="px-4 py-4">
-          <div className="flex items-start gap-3 mb-3">
-            <span className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] text-[var(--brand-primary)]">
-              <Sparkles size={18} />
-            </span>
-            <div>
-              <p className="text-[14px] font-bold text-[var(--color-text)]">
-                {pl ? '3 miesiące Mentora AI gratis' : '3 months AI Mentor free'}
-              </p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
-                {pl
-                  ? 'Dla Ciebie i zaproszonej rodziny — po aktywacji licencji dożywotniej.'
-                  : 'For you and the family you invite — unlocked when they activate a Lifetime licence.'}
-              </p>
-            </div>
+        <div className="px-4 py-4 flex items-start gap-3">
+          <span className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] text-[var(--brand-primary)]">
+            <Sparkles size={18} />
+          </span>
+          <div>
+            <p className="text-[14px] font-bold text-[var(--color-text)]">
+              {pl ? '3 miesiące Mentora AI gratis' : '3 months AI Mentor free'}
+            </p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              {pl
+                ? 'Dla Ciebie i zaproszonej rodziny — po aktywacji licencji dożywotniej.'
+                : 'For you and the family you invite — unlocked when they activate a Lifetime licence.'}
+            </p>
           </div>
         </div>
       </SectionCard>
 
+      {/* Share box */}
+      <SectionCard>
+        <div className="px-4 py-4">
+          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
+            {pl ? 'Twój link polecający' : 'Your referral link'}
+          </p>
+          {loading ? (
+            <div className="h-10 rounded-lg bg-[var(--color-surface-alt)] animate-pulse" />
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex-1 min-w-0 px-3 py-2.5 rounded-lg bg-[var(--color-surface-alt)] border border-[var(--color-border)]">
+                  <p className="text-[13px] font-mono text-[var(--color-text)] truncate">{shareUrl}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyUrl}
+                  className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-[var(--color-surface-alt)] border border-[var(--color-border)] hover:bg-[var(--color-surface)] transition-colors cursor-pointer"
+                  aria-label={pl ? 'Kopiuj link' : 'Copy link'}
+                >
+                  {copied
+                    ? <CheckCircle2 size={16} className="text-green-600" />
+                    : <Copy size={16} className="text-[var(--color-text-muted)]" />
+                  }
+                </button>
+              </div>
+
+              {/* Code pill */}
+              {code && (
+                <p className="text-[11px] text-[var(--color-text-muted)] mb-3">
+                  {pl ? 'Twój kod: ' : 'Your code: '}
+                  <span className="font-mono font-bold text-[var(--color-text)]">{code}</span>
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[var(--brand-primary)] text-white text-[14px] font-semibold hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
+              >
+                <Share2 size={15} />
+                {pl ? 'Udostępnij link' : 'Share this link'}
+              </button>
+            </>
+          )}
+        </div>
+      </SectionCard>
+
+      {/* Stats */}
+      {stats && (
+        <SectionCard>
+          <div className="px-4 py-3 grid grid-cols-3 gap-3 text-center">
+            {[
+              { label: pl ? 'Kliknięcia' : 'Clicks',    value: stats.clicks },
+              { label: pl ? 'Rejestracje' : 'Sign-ups', value: stats.sign_ups },
+              { label: pl ? 'Zakupy' : 'Conversions',   value: stats.conversions },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <p className="text-[20px] font-bold tabular-nums text-[var(--color-text)]">{value}</p>
+                <p className="text-[11px] text-[var(--color-text-muted)]">{label}</p>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {/* How it works */}
       <SectionCard>
         <div className="px-4 py-3">
           <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
@@ -71,27 +179,18 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
           <ol className="space-y-2 text-[12px] text-[var(--color-text)] leading-relaxed">
             <li className="flex gap-2">
               <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold flex items-center justify-center">1</span>
-              <span>{pl ? 'Wygeneruj swój unikalny link polecający.' : 'Generate your unique referral link.'}</span>
+              <span>{pl ? 'Wyślij swój unikalny link znajomej rodzinie.' : 'Send your unique link to a family you think would benefit.'}</span>
             </li>
             <li className="flex gap-2">
               <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold flex items-center justify-center">2</span>
-              <span>{pl ? 'Podziel się nim z rodziną lub przyjaciółmi.' : 'Share it with a family you think would benefit.'}</span>
+              <span>{pl ? 'Dołączają i kupują licencję.' : 'They join and purchase a Lifetime licence.'}</span>
             </li>
             <li className="flex gap-2">
               <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold flex items-center justify-center">3</span>
-              <span>{pl ? 'Gdy dołączą i kupią licencję — obie rodziny otrzymują 3 miesiące Mentora AI gratis.' : 'When they join and buy a Lifetime licence, both families get 3 months of AI Mentor — on us.'}</span>
+              <span>{pl ? 'Obie rodziny otrzymują 3 miesiące Mentora AI gratis.' : 'Both families get 3 months of AI Mentor — on us.'}</span>
             </li>
           </ol>
         </div>
-      </SectionCard>
-
-      <SectionCard>
-        <SettingsRow
-          icon={<Gift size={15} />}
-          label={pl ? 'Powiadom mnie, gdy będzie dostępne' : 'Notify me when ready'}
-          description={pl ? 'Pracujemy nad tym — powiadomimy Cię e-mailem.' : 'We\'re building this — we\'ll email you the moment it\'s live.'}
-          onClick={() => showToast(pl ? '🌱 Dodamy Cię do listy' : '🌱 You\'re on the list')}
-        />
       </SectionCard>
     </div>
   )
@@ -99,7 +198,7 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
 
 // ── Professional: Legal sub-view (EN only) ─────────────────────────────────────
 
-function ProLegalView({ onBack, showToast }: { onBack: () => void; showToast: (m: string) => void }) {
+function ProLegalView({ onBack }: { onBack: () => void }) {
   return (
     <div className="space-y-4">
       <SectionHeader
@@ -150,12 +249,19 @@ function ProLegalView({ onBack, showToast }: { onBack: () => void; showToast: (m
       </SectionCard>
 
       <SectionCard>
-        <SettingsRow
-          icon={<Mail size={15} />}
-          label="Register your interest"
-          description="We'll contact you when professional onboarding opens."
-          onClick={() => showToast('🌿 We\'ll be in touch')}
-        />
+        <a
+          href="mailto:hello@morechard.com?subject=Professional%20Access%20%E2%80%94%20Solicitor%2FMediator%20Enquiry&body=Name%3A%0AOrganisation%3A%0ASRA%20number%20or%20accreditation%3A%0AHow%20I%20plan%20to%20use%20Morechard%3A"
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
+        >
+          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+            <ExternalLink size={15} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-semibold text-[var(--color-text)]">Register your interest</p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">Opens a pre-filled email to our partnerships team</p>
+          </div>
+          <ExternalLink size={13} className="shrink-0 text-[var(--color-text-muted)]" />
+        </a>
       </SectionCard>
     </div>
   )
@@ -163,7 +269,7 @@ function ProLegalView({ onBack, showToast }: { onBack: () => void; showToast: (m
 
 // ── Professional: Media sub-view (EN only) ─────────────────────────────────────
 
-function ProMediaView({ onBack, showToast }: { onBack: () => void; showToast: (m: string) => void }) {
+function ProMediaView({ onBack }: { onBack: () => void }) {
   return (
     <div className="space-y-4">
       <SectionHeader
@@ -214,12 +320,19 @@ function ProMediaView({ onBack, showToast }: { onBack: () => void; showToast: (m
       </SectionCard>
 
       <SectionCard>
-        <SettingsRow
-          icon={<Mail size={15} />}
-          label="Apply to the programme"
-          description="Tell us about your audience — we'll review and come back to you."
-          onClick={() => showToast('🌿 Application noted')}
-        />
+        <a
+          href="mailto:hello@morechard.com?subject=Affiliate%20Programme%20Application&body=Name%3A%0AChannel%2FBlog%20URL%3A%0AApproximate%20audience%20size%3A%0AContent%20type%3A"
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
+        >
+          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-violet-100 text-violet-700">
+            <ExternalLink size={15} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-semibold text-[var(--color-text)]">Apply to the programme</p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">Opens a pre-filled email to our affiliate team</p>
+          </div>
+          <ExternalLink size={13} className="shrink-0 text-[var(--color-text-muted)]" />
+        </a>
       </SectionCard>
     </div>
   )
@@ -227,7 +340,7 @@ function ProMediaView({ onBack, showToast }: { onBack: () => void; showToast: (m
 
 // ── Hardship licence sub-view ──────────────────────────────────────────────────
 
-function HardshipView({ onBack, showToast }: { onBack: () => void; showToast: (m: string) => void }) {
+function HardshipView({ onBack }: { onBack: () => void }) {
   const { locale } = useLocale()
   const pl = isPolish(locale)
 
@@ -297,12 +410,25 @@ function HardshipView({ onBack, showToast }: { onBack: () => void; showToast: (m
       </SectionCard>
 
       <SectionCard>
-        <SettingsRow
-          icon={<Users size={15} />}
-          label={pl ? 'Jestem z organizacji' : 'I represent a charity'}
-          description={pl ? 'Opowiedz nam o Waszej pracy — oddzwonimy.' : 'Tell us about your organisation — we\'ll reach out.'}
-          onClick={() => showToast(pl ? '💚 Dziękujemy za zgłoszenie' : '💚 Thank you — we\'ll be in touch')}
-        />
+        <a
+          href={pl
+            ? 'mailto:hello@morechard.com?subject=Licencja%20solidarno%C5%9Bciowa%20%E2%80%94%20Zapytanie%20organizacji&body=Nazwa%20organizacji%3A%0AStrona%20internetowa%3A%0AOpis%20dzia%C5%82alno%C5%9Bci%3A'
+            : 'mailto:hello@morechard.com?subject=Hardship%20Licence%20%E2%80%94%20Charity%20Enquiry&body=Organisation%20name%3A%0AWebsite%3A%0ACharity%20number%3A%0AHow%20we%20support%20families%3A'}
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
+        >
+          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-rose-100 text-rose-700">
+            <Users size={15} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-semibold text-[var(--color-text)]">
+              {pl ? 'Jestem z organizacji' : 'I represent a charity'}
+            </p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              {pl ? 'Otwiera wstępnie wypełniony e-mail do naszego zespołu' : 'Opens a pre-filled email to our partnerships team'}
+            </p>
+          </div>
+          <ExternalLink size={13} className="shrink-0 text-[var(--color-text-muted)]" />
+        </a>
       </SectionCard>
     </div>
   )
@@ -324,9 +450,9 @@ export function ReferralsSettings({ toast, onBack, onComingSoon: _onComingSoon }
   const activeToast = localToast ?? toast
 
   if (sub === 'peer')      return <div className="space-y-4">{activeToast && <Toast message={activeToast} />}<PeerView onBack={() => setSub('menu')} showToast={showToast} /></div>
-  if (sub === 'pro-legal') return <div className="space-y-4">{activeToast && <Toast message={activeToast} />}<ProLegalView onBack={() => setSub('menu')} showToast={showToast} /></div>
-  if (sub === 'pro-media') return <div className="space-y-4">{activeToast && <Toast message={activeToast} />}<ProMediaView onBack={() => setSub('menu')} showToast={showToast} /></div>
-  if (sub === 'hardship')  return <div className="space-y-4">{activeToast && <Toast message={activeToast} />}<HardshipView onBack={() => setSub('menu')} showToast={showToast} /></div>
+  if (sub === 'pro-legal') return <div className="space-y-4">{activeToast && <Toast message={activeToast} />}<ProLegalView onBack={() => setSub('menu')} /></div>
+  if (sub === 'pro-media') return <div className="space-y-4">{activeToast && <Toast message={activeToast} />}<ProMediaView onBack={() => setSub('menu')} /></div>
+  if (sub === 'hardship')  return <div className="space-y-4">{activeToast && <Toast message={activeToast} />}<HardshipView onBack={() => setSub('menu')} /></div>
 
   return (
     <div className="space-y-4">
@@ -394,8 +520,8 @@ export function ReferralsSettings({ toast, onBack, onComingSoon: _onComingSoon }
       <div className="px-1 pt-1">
         <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
           {pl
-            ? 'Wszystkie programy partnerskie są w budowie. Kliknij poszczególne opcje, aby zgłosić zainteresowanie — powiadomimy Cię, gdy będą gotowe.'
-            : 'All partnership programmes are in development. Tap through to register interest — we\'ll notify you when each one goes live.'}
+            ? 'Kliknij "Zaproś rodzinę", aby wygenerować swój unikalny link polecający. Programy partnerskie dla profesjonalistów i organizacji charytatywnych są w budowie.'
+            : 'Tap "Invite a Family" to get your unique referral link. Professional and charity partnership programmes open soon — tap through to register interest.'}
         </p>
       </div>
     </div>
