@@ -17,6 +17,7 @@ function useSwipeBack(onBack: (() => void) | undefined) {
 
   useEffect(() => {
     if (!onBack) return
+    const back = onBack
 
     function onTouchStart(e: TouchEvent) {
       startX.current = e.touches[0].clientX
@@ -27,7 +28,7 @@ function useSwipeBack(onBack: (() => void) | undefined) {
       if (startX.current === null || startY.current === null) return
       const dx = e.changedTouches[0].clientX - startX.current
       const dy = Math.abs(e.changedTouches[0].clientY - startY.current)
-      if (dx > 40 && dy < 60) onBack()
+      if (dx > 40 && dy < 60) back()
       startX.current = null
       startY.current = null
     }
