@@ -54,12 +54,25 @@ async function recordReferralConversion(
 }
 
 // ----------------------------------------------------------------
-// Product catalogue (amounts in pence)
+// Product catalogue — Stripe price IDs (test mode)
+// Products created via API 2026-04-24. Switch to live price IDs before going live.
 // ----------------------------------------------------------------
-const PRODUCTS: Record<PaymentType, { amount: number; currency: string; label: string }> = {
-  LIFETIME:  { amount: 3499, currency: 'gbp', label: 'Morechard Lifetime Tracker' },
-  AI_ANNUAL: { amount: 1999, currency: 'gbp', label: 'Morechard AI Coach — Annual' },
-  SHIELD:    { amount: 14999, currency: 'gbp', label: 'Shield — Legal Protection' },
+const PRICE_IDS: Record<PaymentType, string> = {
+  COMPLETE:  'price_1TPqqZKGVFJVwtJFo37uEPPW',  // £44.99 one-off
+  SHIELD:    'price_1TPqqcKGVFJVwtJF6cFgzWf9',  // £149.99 one-off
+  AI_ANNUAL: 'price_1TPqqfKGVFJVwtJFpkbuPGCh',  // £19.99/year recurring
+  LIFETIME:  '',  // legacy SKU — no Stripe product; kept for webhook backwards-compat
+};
+
+// AI_ANNUAL uses Stripe subscription mode; all others are one-time payments
+const SUBSCRIPTION_TYPES: PaymentType[] = ['AI_ANNUAL'];
+
+// Amounts kept for audit log only (price is authoritative in Stripe)
+const AUDIT_AMOUNTS: Record<PaymentType, number> = {
+  COMPLETE:  4499,
+  SHIELD:    14999,
+  AI_ANNUAL: 1999,
+  LIFETIME:  3499,
 };
 
 // ----------------------------------------------------------------
@@ -73,24 +86,23 @@ export async function handleCreateCheckout(
   const body = await request.json() as { payment_type?: unknown };
   const payment_type = body.payment_type as PaymentType;
 
-  if (payment_type !== 'LIFETIME' && payment_type !== 'AI_ANNUAL' && payment_type !== 'SHIELD') {
-    return error('payment_type must be LIFETIME, AI_ANNUAL, or SHIELD', 400);
+  if (!['COMPLETE', 'AI_ANNUAL', 'SHIELD'].includes(payment_type)) {
+    return error('payment_type must be COMPLETE, AI_ANNUAL, or SHIELD', 400);
   }
 
-  const product = PRODUCTS[payment_type];
+  const priceId = PRICE_IDS[payment_type];
+  const mode    = SUBSCRIPTION_TYPES.includes(payment_type) ? 'subscription' : 'payment';
 
   // Build Stripe Checkout session via REST API (no npm package — Workers-compatible)
   const params = new URLSearchParams({
-    'payment_method_types[]':               'card',
-    'line_items[0][price_data][currency]':   product.currency,
-    'line_items[0][price_data][product_data][name]': product.label,
-    'line_items[0][price_data][unit_amount]': String(product.amount),
-    'line_items[0][quantity]':               '1',
-    'mode':                                  'payment',
-    'metadata[family_id]':                   auth.family_id,
-    'metadata[payment_type]':                payment_type,
-    'success_url':                           `${env.APP_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-    'cancel_url':                            `${env.APP_URL}/paywall`,
+    'payment_method_types[]':    'card',
+    'line_items[0][price]':      priceId,
+    'line_items[0][quantity]':   '1',
+    'mode':                      mode,
+    'metadata[family_id]':       auth.family_id,
+    'metadata[payment_type]':    payment_type,
+    'success_url':               `${env.APP_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+    'cancel_url':                `${env.APP_URL}/paywall`,
   });
 
   const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
@@ -148,7 +160,7 @@ export async function handleStripeWebhook(
 async function handleCheckoutCompleted(session: StripeSession, env: Env): Promise<void> {
   const { family_id, payment_type } = session.metadata ?? {};
 
-  if (!family_id || (payment_type !== 'LIFETIME' && payment_type !== 'AI_ANNUAL' && payment_type !== 'SHIELD')) {
+  if (!family_id || !(['LIFETIME', 'COMPLETE', 'AI_ANNUAL', 'SHIELD'] as string[]).includes(payment_type)) {
     console.error('Webhook: missing or invalid metadata', session.metadata);
     return;
   }
@@ -164,8 +176,6 @@ async function handleCheckoutCompleted(session: StripeSession, env: Env): Promis
     return;
   }
 
-  const product = PRODUCTS[payment_type as PaymentType];
-
   const now = Math.floor(Date.now() / 1000);
 
   // Write audit log first (Truth Engine: never lose the payment record)
@@ -174,14 +184,14 @@ async function handleCheckoutCompleted(session: StripeSession, env: Env): Promis
       INSERT INTO payment_audit_log (family_id, stripe_session_id, amount_paid_int, currency, payment_type)
       VALUES (?, ?, ?, ?, ?)
     `)
-    .bind(family_id, session.id, product.amount, product.currency.toUpperCase(), payment_type)
+    .bind(family_id, session.id, AUDIT_AMOUNTS[payment_type as PaymentType] ?? 0, 'GBP', payment_type)
     .run();
 
   // Record referral conversion if this family was referred
   await recordReferralConversion(env, family_id, payment_type, session.id, now);
 
   // Update license columns on families table
-  if (payment_type === 'LIFETIME') {
+  if (payment_type === 'LIFETIME' || payment_type === 'COMPLETE') {
     await env.DB
       .prepare('UPDATE families SET has_lifetime_license = TRUE WHERE id = ?')
       .bind(family_id)

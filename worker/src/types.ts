@@ -24,7 +24,7 @@ export interface Env {
 // 'needs_revision'  — parent sent back with notes
 export type CompletionStatus = 'available' | 'awaiting_review' | 'completed' | 'needs_revision';
 
-export type PaymentType = 'LIFETIME' | 'AI_ANNUAL' | 'SHIELD';
+export type PaymentType = 'LIFETIME' | 'COMPLETE' | 'AI_ANNUAL' | 'SHIELD';
 
 /** Shape returned by SELECT on the families table for trial/license checks. */
 export interface FamilyLicenseRow {
