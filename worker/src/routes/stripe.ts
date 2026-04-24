@@ -19,6 +19,34 @@ import { json, error } from '../lib/response.js';
 import { JwtPayload } from '../lib/jwt.js';
 
 // ----------------------------------------------------------------
+// Referral conversion — fires on every successful checkout
+// ----------------------------------------------------------------
+async function recordReferralConversion(
+  env: Env,
+  familyId: string,
+  paymentType: string,
+  stripeSessionId: string,
+  now: number,
+): Promise<void> {
+  const family = await env.DB
+    .prepare('SELECT referred_by_code FROM families WHERE id = ?')
+    .bind(familyId)
+    .first<{ referred_by_code: string | null }>();
+
+  if (!family?.referred_by_code) return;
+
+  // INSERT OR IGNORE — stripe_session_id has UNIQUE constraint for idempotency
+  await env.DB
+    .prepare(`
+      INSERT OR IGNORE INTO referral_conversions
+        (referral_code, referred_family, payment_type, stripe_session_id, converted_at)
+      VALUES (?, ?, ?, ?, ?)
+    `)
+    .bind(family.referred_by_code, familyId, paymentType, stripeSessionId, now)
+    .run();
+}
+
+// ----------------------------------------------------------------
 // Product catalogue (amounts in pence)
 // ----------------------------------------------------------------
 const PRODUCTS: Record<PaymentType, { amount: number; currency: string; label: string }> = {
@@ -131,6 +159,8 @@ async function handleCheckoutCompleted(session: StripeSession, env: Env): Promis
 
   const product = PRODUCTS[payment_type as PaymentType];
 
+  const now = Math.floor(Date.now() / 1000);
+
   // Write audit log first (Truth Engine: never lose the payment record)
   await env.DB
     .prepare(`
@@ -139,6 +169,9 @@ async function handleCheckoutCompleted(session: StripeSession, env: Env): Promis
     `)
     .bind(family_id, session.id, product.amount, product.currency.toUpperCase(), payment_type)
     .run();
+
+  // Record referral conversion if this family was referred
+  await recordReferralConversion(env, family_id, payment_type, session.id, now);
 
   // Update license columns on families table
   if (payment_type === 'LIFETIME') {
