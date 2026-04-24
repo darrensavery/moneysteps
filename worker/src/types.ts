@@ -237,3 +237,10 @@ export interface MentorResponse {
   locale: Locale;
   unlock_slug?: string; // present only when this response triggered a module unlock
 }
+
+export interface ReferralStats {
+  clicks:          number;
+  sign_ups:        number;
+  conversions:     number;
+  rewards_pending: number;
+}
