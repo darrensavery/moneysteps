@@ -241,6 +241,18 @@ export default function App() {
     window.location.href = '/parent'
   }
 
+  // Capture ?ref= referral code on first load and persist to localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref && ref.length >= 6) {
+      localStorage.setItem('morechard_referral_code', ref.toUpperCase())
+      import('./lib/api').then(({ trackReferralClick }) =>
+        trackReferralClick(ref.toUpperCase()).catch(() => null)
+      )
+    }
+  }, [])
+
   // Read app_view from localStorage so ThemeProvider can bias 'system' → 'dark'
   // for CLEAN-view users before any API call completes.
   const storedAppView = localStorage.getItem('mc_app_view') ?? 'ORCHARD'
