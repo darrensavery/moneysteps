@@ -9,8 +9,8 @@
  *   history      — payment audit log
  */
 
-import { useState, useEffect } from 'react'
-import { CreditCard, Clock, Receipt, Zap, Shield, Star, X, Check } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { CreditCard, Clock, Receipt, Zap, Shield, Star, X, Check, ExternalLink } from 'lucide-react'
 import { Toast, SettingsRow, SectionCard, SectionHeader } from '../shared'
 import {
   getTrialStatus, getBillingHistory, createCheckoutSession,
@@ -18,12 +18,15 @@ import {
 } from '../../../lib/api'
 import { cn } from '../../../lib/utils'
 
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/morechard' // update once portal is live
+
 type SubView = 'menu' | 'trial' | 'plan' | 'history'
 
 interface Props {
   toast:        string | null
   onBack:       () => void
   onComingSoon: () => void
+  initialView?: 'plan'
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -576,14 +579,20 @@ function HistoryView({ onBack }: { onBack: () => void }) {
 
 // ── Root billing menu ──────────────────────────────────────────────────────────
 
-export function BillingSettings({ toast, onBack, onComingSoon: _onComingSoon }: Props) {
-  const [sub, setSub] = useState<SubView>('menu')
+export function BillingSettings({ toast, onBack, onComingSoon: _onComingSoon, initialView }: Props) {
+  const [sub, setSub] = useState<SubView>(initialView ?? 'menu')
   const [localToast, setLocalToast] = useState<string | null>(null)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  function showToast(msg: string) {
+  useEffect(() => () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+  }, [])
+
+  const showToast = useCallback((msg: string) => {
     setLocalToast(msg)
-    setTimeout(() => setLocalToast(null), 3000)
-  }
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = setTimeout(() => setLocalToast(null), 3000)
+  }, [])
 
   const activeToast = localToast ?? toast
 
@@ -614,6 +623,23 @@ export function BillingSettings({ toast, onBack, onComingSoon: _onComingSoon }: 
           description="View past invoices and payments"
           onClick={() => setSub('history')}
         />
+        <a
+          href={STRIPE_PORTAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left border-t border-[var(--color-border)] hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
+        >
+          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+            <CreditCard size={15} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-semibold text-[var(--color-text)]">Manage My Subscription</p>
+            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              Update billing, download receipts, or cancel
+            </p>
+          </div>
+          <ExternalLink size={13} className="shrink-0 text-[var(--color-text-muted)]" />
+        </a>
       </SectionCard>
     </div>
   )

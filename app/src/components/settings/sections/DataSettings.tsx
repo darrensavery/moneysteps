@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Database, FileText, Scale, AlertTriangle, Download } from 'lucide-react'
+import { Database, FileText, Scale, AlertTriangle, Download, Lock, Zap, Shield } from 'lucide-react'
 import { Toast, useToast, SettingsRow, SectionCard, SectionHeader } from '../shared'
 import { getFamilyId } from '../../../lib/api'
 import { useExportManager } from '../../../hooks/useExportManager'
@@ -71,10 +71,9 @@ export function DataSettings({
     return idleLabel
   }
 
-  function exportRightSlot(key: Parameters<typeof stateOf>[0], locked: boolean, lockBadgeLabel: string) {
+  function exportRightSlot(key: Parameters<typeof stateOf>[0]) {
     const s = stateOf(key)
     if (s === 'generating') return <Spinner aria-hidden="true" />
-    if (locked)             return <LockedBadge label={lockBadgeLabel} />
     if (s === 'success')    return <Download size={14} className="text-[var(--brand-primary)]" />
     return <Download size={14} className="text-gray-400" />
   }
@@ -100,7 +99,7 @@ export function DataSettings({
           description="Full transaction history — GDPR Article 20 data portability"
           onClick={() => triggerExport('json', 'basic')}
           disabled={stateOf('json-basic') === 'generating'}
-          rightSlot={exportRightSlot('json-basic', false, '')}
+          rightSlot={exportRightSlot('json-basic')}
         />
         {stateOf('json-basic') === 'error' && (
           <ErrorNote message={errorOf('json-basic')} />
@@ -112,7 +111,7 @@ export function DataSettings({
           description="Earnings, task ledger, and status log"
           onClick={() => triggerExport('pdf', 'basic')}
           disabled={stateOf('pdf-basic') === 'generating'}
-          rightSlot={exportRightSlot('pdf-basic', false, '')}
+          rightSlot={exportRightSlot('pdf-basic')}
         />
         {stateOf('pdf-basic') === 'error' && (
           <ErrorNote message={errorOf('pdf-basic')} />
@@ -128,27 +127,83 @@ export function DataSettings({
         </div>
 
         {/* Growth & Learning — requires AI Mentor */}
-        <SettingsRow
-          icon={<FileText size={15} className="text-purple-500" />}
-          label={exportLabel('pdf-behavioral', 'Growth & Learning Report')}
-          description="Adds Learning Lab modules and Behavioural Pulse"
-          onClick={handleBehavioralClick}
-          disabled={stateOf('pdf-behavioral') === 'generating'}
-          rightSlot={exportRightSlot('pdf-behavioral', !hasAiMentor, 'Add AI Mentor')}
-        />
+        <div className={!hasAiMentor ? 'opacity-50' : undefined}>
+          <SettingsRow
+            icon={<FileText size={15} className="text-purple-500" />}
+            label={exportLabel('pdf-behavioral', 'Growth & Learning Report')}
+            description="Adds Learning Lab modules and Behavioural Pulse"
+            onClick={hasAiMentor ? handleBehavioralClick : undefined}
+            disabled={!hasAiMentor || stateOf('pdf-behavioral') === 'generating'}
+            rightSlot={
+              !hasAiMentor
+                ? <Lock size={14} className="text-[var(--color-text-muted)]" />
+                : exportRightSlot('pdf-behavioral')
+            }
+          />
+        </div>
+        {!hasAiMentor && (
+          <button
+            type="button"
+            onClick={handleBehavioralClick}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-violet-50 border-t border-violet-100 hover:bg-violet-100 active:bg-violet-100 transition-colors text-left"
+          >
+            <span className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center bg-violet-100 text-violet-600">
+              <Zap size={12} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-semibold text-violet-700 leading-snug">
+                Requires AI Mentor (£19.99/yr)
+              </p>
+              <p className="text-[11px] text-violet-500 leading-snug">
+                Tap to unlock — personalised learning insights for your child
+              </p>
+            </div>
+            <span className="shrink-0 text-[11px] font-bold text-violet-600 whitespace-nowrap">
+              Add AI Mentor →
+            </span>
+          </button>
+        )}
         {stateOf('pdf-behavioral') === 'error' && (
           <ErrorNote message={errorOf('pdf-behavioral')} />
         )}
 
         {/* Forensic Report — requires Shield */}
-        <SettingsRow
-          icon={<Scale size={15} className="text-orange-600" />}
-          label={exportLabel('pdf-forensic', 'Forensic Report')}
-          description="Tamper-evident record with secure digital signatures and device verification"
-          onClick={handleForensicClick}
-          disabled={stateOf('pdf-forensic') === 'generating'}
-          rightSlot={exportRightSlot('pdf-forensic', !hasShield, 'Add Shield')}
-        />
+        <div className={!hasShield ? 'opacity-50 border-t border-[var(--color-border)]' : 'border-t border-[var(--color-border)]'}>
+          <SettingsRow
+            icon={<Scale size={15} className="text-orange-600" />}
+            label={exportLabel('pdf-forensic', 'Forensic Report')}
+            description="Tamper-evident record with secure digital signatures and device verification"
+            onClick={hasShield ? handleForensicClick : undefined}
+            disabled={!hasShield || stateOf('pdf-forensic') === 'generating'}
+            rightSlot={
+              !hasShield
+                ? <Lock size={14} className="text-[var(--color-text-muted)]" />
+                : exportRightSlot('pdf-forensic')
+            }
+          />
+        </div>
+        {!hasShield && (
+          <button
+            type="button"
+            onClick={handleForensicClick}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-amber-50 border-t border-amber-100 hover:bg-amber-100 active:bg-amber-100 transition-colors text-left"
+          >
+            <span className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center bg-amber-100 text-amber-600">
+              <Shield size={12} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-semibold text-amber-700 leading-snug">
+                Requires Shield (£149.99 one-time)
+              </p>
+              <p className="text-[11px] text-amber-500 leading-snug">
+                Tap to unlock — court-ready tamper-evident exports
+              </p>
+            </div>
+            <span className="shrink-0 text-[11px] font-bold text-amber-600 whitespace-nowrap">
+              Add Shield →
+            </span>
+          </button>
+        )}
         {stateOf('pdf-forensic') === 'error' && (
           <ErrorNote message={errorOf('pdf-forensic')} />
         )}
@@ -232,14 +287,6 @@ function Spinner({ 'aria-hidden': ariaHidden }: { 'aria-hidden'?: boolean | 'tru
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
     </svg>
-  )
-}
-
-function LockedBadge({ label }: { label?: string }) {
-  return (
-    <span className="text-[9px] font-semibold text-gray-400 border border-gray-200 rounded-full px-2 py-0.5">
-      {label ?? 'Upgrade'}
-    </span>
   )
 }
 

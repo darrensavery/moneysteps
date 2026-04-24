@@ -388,10 +388,16 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (childGrowthMatch && method === 'GET')   return withAuth(request, auth, env, (req, e) => handleChildGrowthGet(req, e, childGrowthMatch[1]));
   if (childGrowthMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleChildGrowthUpdate(req, e, childGrowthMatch[1]));
 
-  // Child settings via /api/child/:id/settings — delegates to existing handlers with user_id injected
+  // Child settings via /api/child/:id/settings — parent only, family-ownership verified
   const childSettingsMatch = path.match(/^\/api\/child\/([^/]+)\/settings$/);
   if (childSettingsMatch) {
+    const parentCheck = requireRole(auth, 'parent');
+    if (parentCheck) return parentCheck;
     const childId = childSettingsMatch[1];
+    const owned = await env.DB.prepare(
+      `SELECT id FROM family_roles WHERE user_id = ? AND family_id = ? AND role = 'child' LIMIT 1`
+    ).bind(childId, auth.family_id).first();
+    if (!owned) return new Response(JSON.stringify({ error: 'Not found' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     const rewritten = new Request(
       new URL(`/api/settings?user_id=${childId}`, new URL(request.url).origin),
       request,
@@ -592,6 +598,8 @@ async function route(request: Request, env: Env, method: string, path: string): 
 
   // Export
   if (path === '/api/export/json' && method === 'GET') {
+    const parentCheck = requireRole(auth, 'parent');
+    if (parentCheck) return parentCheck;
     const famCheck = requireFamilyMatch(auth, new URL(request.url).searchParams.get('family_id') ?? '');
     if (famCheck) return famCheck;
     return handleExportJson(request, env);

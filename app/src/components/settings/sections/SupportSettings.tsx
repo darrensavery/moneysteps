@@ -8,9 +8,9 @@
 
 import { useState } from 'react'
 import {
-  Search, CreditCard, Sparkles, MessageSquarePlus,
+  Search, Sparkles,
   FileText, ShieldCheck, ChevronRight, ExternalLink,
-  Zap, Tag, Wrench,
+  Tag, Wrench,
 } from 'lucide-react'
 import { Toast, SectionCard, SectionHeader } from '../shared'
 
@@ -19,8 +19,6 @@ declare const __APP_VERSION__: string | undefined
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const FRESHDESK_SEARCH_URL = 'https://support.morechard.com'
-const FRESHDESK_TICKET_URL = 'https://support.morechard.com/support/tickets/new'
-const STRIPE_PORTAL_URL    = 'https://billing.stripe.com/p/login/morechard' // update once portal is live
 const PRIVACY_URL          = 'https://morechard.com/privacy-policy'
 const TERMS_URL            = 'https://morechard.com/terms'
 
@@ -220,44 +218,16 @@ export function SupportSettings({ toast, onBack }: Props) {
         <ExternalLink size={14} className="shrink-0 text-[var(--brand-primary)]" />
       </a>
 
-      {/* ── Subscription management ── */}
+      {/* ── App updates ── */}
       <div>
         <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
-          Subscription
+          Updates
         </p>
         <SectionCard>
-          <LinkRow
-            icon={<CreditCard size={15} />}
-            label="Manage My Subscription"
-            description="Update billing, download receipts, or cancel"
-            href={STRIPE_PORTAL_URL}
-          />
-
-          {/* AI Mentor note */}
-          <div className="flex items-start gap-3 px-4 py-3 border-t border-[var(--color-border)] bg-[color-mix(in_srgb,var(--brand-primary)_4%,transparent)]">
-            <span className="shrink-0 mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center bg-violet-100 text-violet-600">
-              <Zap size={12} />
-            </span>
-            <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
-              The <span className="font-semibold text-[var(--color-text)]">AI Mentor</span> is a separate{' '}
-              <span className="font-semibold text-[var(--color-text)]">£19.99/year</span> add-on and is
-              not included in the standard Lifetime Tracker.
-            </p>
-          </div>
-        </SectionCard>
-      </div>
-
-      {/* ── App updates & contact ── */}
-      <div>
-        <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
-          Updates & Contact
-        </p>
-        <SectionCard>
-          {/* What's New — internal nav */}
           <button
             type="button"
             onClick={() => setSub('whats-new')}
-            className="w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-[var(--color-border)] hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
+            className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
           >
             <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
               <Sparkles size={15} />
@@ -270,24 +240,8 @@ export function SupportSettings({ toast, onBack }: Props) {
             </div>
             <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />
           </button>
-
-          {/* Open a ticket */}
-          <LinkRow
-            icon={<MessageSquarePlus size={15} />}
-            label="Contact Support"
-            description="Open a ticket — we reply within one working day"
-            href={FRESHDESK_TICKET_URL}
-          />
         </SectionCard>
       </div>
-
-      {/* ── Version ── */}
-      <SectionCard>
-        <div className="px-4 py-3.5 flex items-center justify-between">
-          <p className="text-[13px] font-semibold text-[var(--color-text-muted)]">App version</p>
-          <p className="text-[13px] font-bold text-[var(--color-text)] tabular-nums">{version}</p>
-        </div>
-      </SectionCard>
 
       {/* ── Legal footer ── */}
       <div>
@@ -309,6 +263,14 @@ export function SupportSettings({ toast, onBack }: Props) {
           />
         </SectionCard>
       </div>
+
+      {/* ── Version ── */}
+      <SectionCard>
+        <div className="px-4 py-3.5 flex items-center justify-between">
+          <p className="text-[13px] font-semibold text-[var(--color-text-muted)]">App version</p>
+          <p className="text-[13px] font-bold text-[var(--color-text)] tabular-nums">{version}</p>
+        </div>
+      </SectionCard>
     </div>
   )
 }

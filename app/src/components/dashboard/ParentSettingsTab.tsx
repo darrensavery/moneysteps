@@ -108,7 +108,7 @@ type TopSection =
 
 type View =
   | { type: 'menu' }
-  | { type: 'section'; section: TopSection }
+  | { type: 'section'; section: TopSection; billingSubView?: 'plan' }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -327,8 +327,8 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
     if (view.section === 'family')     return <ProfileSection><FamilySettings     children={children} appViews={appViews} appViewBusy={appViewBusy} growthSettings={growthSettings} growthBusy={growthBusy} isLead={isLead} hasCoParent={family?.parenting_mode === 'co-parenting'} sharedExpenseThreshold={threshold} sharedExpenseSplitBp={splitBp} savingSharedExpense={savingSettings} toast={toast} onBack={back} onComingSoon={comingSoon} onAddChild={handleAddChild} onAppViewToggle={handleAppViewToggle} onGrowthUpdate={handleGrowthUpdate} onRenameChild={handleRenameChild} onPinResetSuccess={handlePinResetSuccess} onGenerateInvite={handleGenerateInvite} onSharedExpenseThresholdChange={setThreshold} onSharedExpenseSplitChange={setSplitBp} onSaveSharedExpense={handleSaveCoParentSettings} /></ProfileSection>
     if (view.section === 'security')   return <ProfileSection><SecuritySettings   profile={profile} toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
     if (view.section === 'appearance') return <ProfileSection><AppearanceSettings toast={toast} onBack={back} /></ProfileSection>
-    if (view.section === 'billing')    return <ProfileSection><BillingSettings    toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
-    if (view.section === 'data')       return <ProfileSection><DataSettings       isLead={isLead} hasAiMentor={Boolean(trial?.ai_subscription_active)} hasShield={Boolean(trial?.has_shield)} toast={toast} onBack={back} onNavigateToPlan={() => setView({ type: 'section', section: 'billing' })} /></ProfileSection>
+    if (view.section === 'billing')    return <ProfileSection><BillingSettings    toast={toast} onBack={back} onComingSoon={comingSoon} initialView={view.billingSubView} /></ProfileSection>
+    if (view.section === 'data')       return <ProfileSection><DataSettings       isLead={isLead} hasAiMentor={Boolean(trial?.ai_subscription_active)} hasShield={Boolean(trial?.has_shield)} toast={toast} onBack={back} onNavigateToPlan={() => setView({ type: 'section', section: 'billing', billingSubView: 'plan' })} /></ProfileSection>
     if (view.section === 'referrals')  return <ProfileSection><ReferralsSettings  toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
     if (view.section === 'about')      return <ProfileSection><AboutSettings      toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
   }

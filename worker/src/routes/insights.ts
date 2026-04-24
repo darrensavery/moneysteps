@@ -54,6 +54,7 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
     parenting_mode:   'single',
     child_count:      1,
     child_names:      [],
+    child_ids:        [],
     parent_names:     [],
     family_name:      'the family',
     co_parent_active: false,
@@ -257,8 +258,11 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
   `).bind(effectiveChildId, weekKey).first<{ id: number }>();
 
   if (!existingThisWeek) {
+    // INSERT OR IGNORE: the unique index on (child_id, snapshot_date) means a
+    // concurrent request for the same week will silently no-op rather than
+    // producing a duplicate row.
     await env.DB.prepare(`
-      INSERT INTO insight_snapshots
+      INSERT OR IGNORE INTO insight_snapshots
         (child_id, family_id, snapshot_date, consistency_score, responsibility_score,
          planning_horizon, total_earned_pence)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -463,7 +467,16 @@ function buildTrends(
  */
 function getPolishHonorific(name: string): string {
   const lower = name.toLowerCase().trim();
-  const masculineAExceptions = ['kuba', 'barnaba', 'kosma', 'saba', 'bonawentura'];
+  // Common Polish masculine names ending in '-a' that would otherwise be misclassified as feminine.
+  // Covers biblical/archaic (Barnaba, Kosma), hypocoristics (Kuba, Misza, Sasza, Grysza),
+  // and Slavic/international names used in Poland (Luca, Nikita, Mirza, Borja).
+  const masculineAExceptions = [
+    'kuba', 'barnaba', 'kosma', 'saba', 'bonawentura',
+    'misza', 'sasza', 'grysza', 'tosza', 'josza',
+    'nikita', 'luca', 'mirza', 'borja', 'kolya',
+    'attila', 'batissta', 'genowefa',   // genowefa — archaic masc. variant
+    'jarema', 'kudłata',                // regional hypocoristics
+  ];
   if (masculineAExceptions.includes(lower)) return 'Pan';
   if (lower.endsWith('a')) return 'Pani';
   // Names ending in a consonant or non-'a' vowel are typically masculine in Polish

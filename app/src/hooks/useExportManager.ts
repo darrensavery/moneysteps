@@ -69,6 +69,7 @@ export function useExportManager(familyId: string): UseExportManager {
         next.set(key, 'idle')
         return next
       })
+      if (key === 'prune') setPrunedCount(null)
       resetTimers.current.delete(key)
     }, SUCCESS_RESET_MS)
 
@@ -144,12 +145,13 @@ export function useExportManager(familyId: string): UseExportManager {
 
       setPrunedCount(body.pruned ?? 0)
       setState(key, 'success')
+      scheduleReset(key)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Prune failed'
       setState(key, 'error')
       setError(key, message)
     }
-  }, [familyId])
+  }, [familyId, scheduleReset])
 
   return {
     stateOf:      getState,

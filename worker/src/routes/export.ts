@@ -37,7 +37,11 @@ export async function handleExportJson(request: Request, env: Env): Promise<Resp
   if (!family_id) return error('family_id required');
 
   const [family, users, ledger, governance, statusLog, snapshots, labels] = await Promise.all([
-    env.DB.prepare('SELECT * FROM families WHERE id = ?').bind(family_id).first(),
+    env.DB.prepare(`SELECT id, name, currency, verify_mode, created_at, base_currency,
+                          parenting_mode, deleted_at, fast_track_enabled,
+                          shared_expense_threshold, shared_expense_split_bp,
+                          has_shield, home_lat, home_lng
+                   FROM families WHERE id = ?`).bind(family_id).first(),
     env.DB.prepare('SELECT id, display_name, locale FROM users WHERE family_id = ?').bind(family_id).all(),
     env.DB.prepare('SELECT * FROM ledger WHERE family_id = ? ORDER BY id ASC').bind(family_id).all(),
     env.DB.prepare('SELECT * FROM family_governance_log WHERE family_id = ? ORDER BY id ASC').bind(family_id).all(),
@@ -312,37 +316,27 @@ export async function handleExportPrune(
     });
   }
 
-  let archived = 0;
-
-  for (const row of candidates) {
-    // Archive hash proof before scrubbing
-    await env.DB
-      .prepare(`INSERT INTO ledger_prune_archive (ledger_id, record_hash, previous_hash, archived_at) VALUES (?, ?, ?, unixepoch())`)
-      .bind(row.id, row.record_hash, row.previous_hash)
-      .run();
-
-    // Zero PII on ledger row (hash-chain columns untouched)
-    await env.DB
-      .prepare(`UPDATE ledger SET description = '[archived]', ip_address = NULL, receipt_id = NULL, pruned_at = unixepoch() WHERE id = ? AND family_id = ?`)
-      .bind(row.id, family_id)
-      .run();
-
-    // Zero PII on linked completions (EXIF + system verify contain GPS/IP)
-    await env.DB
-      .prepare(`
-        UPDATE completions
-        SET proof_exif = NULL, system_verify = NULL
-        WHERE chore_id IN (
-          SELECT chore_id FROM ledger WHERE id = ? AND family_id = ? AND chore_id IS NOT NULL
-        )
-      `)
-      .bind(row.id, family_id)
-      .run();
-
-    archived++;
+  // Process in chunks of 50 — each batch() call is atomic, so a partial
+  // failure at most leaves one chunk's worth of rows in an inconsistent state
+  // rather than the entire prune run.
+  const CHUNK = 50;
+  for (let i = 0; i < candidates.length; i += CHUNK) {
+    const chunk = candidates.slice(i, i + CHUNK);
+    const statements = chunk.flatMap(row => [
+      env.DB
+        .prepare(`INSERT INTO ledger_prune_archive (ledger_id, record_hash, previous_hash, archived_at) VALUES (?, ?, ?, unixepoch())`)
+        .bind(row.id, row.record_hash, row.previous_hash),
+      env.DB
+        .prepare(`UPDATE ledger SET description = '[archived]', ip_address = NULL, receipt_id = NULL, pruned_at = unixepoch() WHERE id = ? AND family_id = ?`)
+        .bind(row.id, family_id),
+      env.DB
+        .prepare(`UPDATE completions SET proof_exif = NULL, system_verify = NULL WHERE chore_id IN (SELECT chore_id FROM ledger WHERE id = ? AND family_id = ? AND chore_id IS NOT NULL)`)
+        .bind(row.id, family_id),
+    ]);
+    await env.DB.batch(statements);
   }
 
-  return new Response(JSON.stringify({ pruned: candidates.length, archived }), {
+  return new Response(JSON.stringify({ pruned: candidates.length, archived: candidates.length }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

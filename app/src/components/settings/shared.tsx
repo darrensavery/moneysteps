@@ -4,9 +4,42 @@
  * Exported: useToast, Toast, SettingsRow, SectionCard, SectionHeader, ReadOnlyBadge
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronRight, ChevronLeft, Lock } from 'lucide-react'
 import { cn } from '../../lib/utils'
+
+// ── Swipe-back hook ───────────────────────────────────────────────────────────
+// Fires onBack when the user swipes right ≥40px with < 60px vertical drift.
+
+function useSwipeBack(onBack: (() => void) | undefined) {
+  const startX = useRef<number | null>(null)
+  const startY = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!onBack) return
+
+    function onTouchStart(e: TouchEvent) {
+      startX.current = e.touches[0].clientX
+      startY.current = e.touches[0].clientY
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      if (startX.current === null || startY.current === null) return
+      const dx = e.changedTouches[0].clientX - startX.current
+      const dy = Math.abs(e.changedTouches[0].clientY - startY.current)
+      if (dx > 40 && dy < 60) onBack()
+      startX.current = null
+      startY.current = null
+    }
+
+    document.addEventListener('touchstart', onTouchStart, { passive: true })
+    document.addEventListener('touchend', onTouchEnd, { passive: true })
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart)
+      document.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [onBack])
+}
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 
@@ -91,6 +124,7 @@ export function SectionCard({ children }: { children: React.ReactNode }) {
 }
 
 export function SectionHeader({ title, subtitle, onBack }: { title: string; subtitle?: string; onBack?: () => void }) {
+  useSwipeBack(onBack)
   return (
     <div className="flex items-center gap-3 mb-4">
       {onBack && (

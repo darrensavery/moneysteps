@@ -79,9 +79,11 @@ function selectPillar(intel: ChildIntelligence, message: string): FinancialPilla
 
 // ── Family Context block — injected at the top of every child-chat system prompt ──
 
-function buildFamilyContextBlock(familyCtx: FamilyContext, currentChildName: string, locale: string): string {
+function buildFamilyContextBlock(familyCtx: FamilyContext, currentChildId: string, locale: string): string {
   const isPl = locale === 'pl'
-  const siblings = familyCtx.child_names.filter(n => n !== currentChildName)
+  // Filter by ID so two children with the same first name are distinguished correctly
+  const currentIdx = familyCtx.child_ids.indexOf(currentChildId)
+  const siblings = familyCtx.child_names.filter((_, i) => i !== currentIdx)
   const hasSiblings = familyCtx.child_count > 1 && siblings.length > 0
 
   const siblingBlock = hasSiblings
@@ -172,7 +174,7 @@ function buildUKPrompt(intel: ChildIntelligence, pillar: FinancialPillar, family
     ? `DEVICE SWAPPER TRIGGER ACTIVE: ${intel.distinct_ips_7d} different devices/locations detected this week. Deliver the "Digital Safety" lesson — teach about account security, sharing passwords, and recognising phishing. Frame it as a superpower: "Knowing your digital footprint keeps your grove safe."`
     : ''
 
-  const familyBlock = buildFamilyContextBlock(familyCtx, intel.display_name.split(' ')[0], intel.locale)
+  const familyBlock = buildFamilyContextBlock(familyCtx, intel.child_id, intel.locale)
 
   return `${familyBlock}
 
@@ -197,7 +199,6 @@ CHILD DATA — ground every response in these real numbers, never teach in the a
 - Planning horizon: ${intel.planning_horizon_days} days ahead
 ${intel.bonus_pence_7d > 0 ? `- Bonus received this week: ${formatMinor(intel.bonus_pence_7d, intel.currency)} (parent recognised something special)` : ''}
 ${scramblerNote}
-${intel.has_parent_message ? `PARENT MESSAGE (priority — acknowledge this first before any financial topic): "${intel.parent_message}"` : ''}
 ${integrityNote}
 ${batchingNote}
 ${burnerNote}
@@ -255,7 +256,7 @@ function buildUSPrompt(intel: ChildIntelligence, pillar: FinancialPillar, family
     ? `DEVICE SWAPPER TRIGGER ACTIVE: ${intel.distinct_ips_7d} distinct IPs this week. Deliver the "Digital Safety" lesson — teach about credential security and phishing. Frame it as a financial risk: "Your account is your digital wallet. Protecting it is step one of financial literacy."`
     : ''
 
-  const familyBlock = buildFamilyContextBlock(familyCtx, intel.display_name.split(' ')[0], intel.locale)
+  const familyBlock = buildFamilyContextBlock(familyCtx, intel.child_id, intel.locale)
 
   return `${familyBlock}
 
@@ -279,7 +280,6 @@ CHILD DATA — ground every lesson in these real numbers:
 - Spent this week: ${formatMinor(intel.spent_minor_7d, intel.currency)} (${intel.spend_to_balance_pct}% of balance)
 ${intel.bonus_pence_7d > 0 ? `- Bonus received this week: ${formatMinor(intel.bonus_pence_7d, intel.currency)} — parent recognised exceptional effort or behaviour.` : ''}
 ${intel.is_sunday_scrambler ? `- Scrambler alert: ${intel.display_name} batches chores on ${intel.scrambler_day}s — habit distribution opportunity.` : ''}
-${intel.has_parent_message ? `PARENT MESSAGE (priority — acknowledge this first before any financial topic): "${intel.parent_message}"` : ''}
 ${usIntegrityNote}
 ${usBatchingNote}
 ${usBurnerNote}
@@ -336,7 +336,7 @@ function buildPLPrompt(intel: ChildIntelligence, pillar: FinancialPillar, family
     ? `WYZWALACZ BEZPIECZEŃSTWA: ${intel.distinct_ips_7d} różnych adresów IP w ciągu 7 dni. Dostarcz lekcję "Bezpieczeństwo Cyfrowe." Ramka: cyfrowy portfel wymaga ochrony. "Na podstawie danych, konto było używane z wielu lokalizacji. Wymagana weryfikacja bezpieczeństwa — to podstawa cyfrowej odpowiedzialności."`
     : ''
 
-  const familyBlock = buildFamilyContextBlock(familyCtx, intel.display_name.split(' ')[0], intel.locale)
+  const familyBlock = buildFamilyContextBlock(familyCtx, intel.child_id, intel.locale)
 
   return `${familyBlock}
 
@@ -362,7 +362,6 @@ DANE DZIECKA — każdą lekcję opieraj na tych konkretnych liczbach:
 - Wydane w tym tygodniu: ${formatMinor(intel.spent_minor_7d, intel.currency)} (${intel.spend_to_balance_pct}% salda)
 ${intel.bonus_pence_7d > 0 ? `- Premia otrzymana w tym tygodniu: ${formatMinor(intel.bonus_pence_7d, intel.currency)} (rodzic wyróżnił coś wyjątkowego — warto to uznać)` : ''}
 ${intel.is_sunday_scrambler ? `- Wzorzec: ${formalAddress} wykonuje większość zadań w ${intel.scrambler_day}. Wymagana jest poprawa planowania.` : ''}
-${intel.has_parent_message ? `WIADOMOŚĆ OD RODZICA (priorytet — odnieś się do niej ZANIM przejdziesz do tematów finansowych): "${intel.parent_message}"` : ''}
 ${intel.consecutive_low_confidence >= 3 ? `WYZWALACZ INTEGRALNOŚCI: Wykryto ${intel.consecutive_low_confidence} kolejne przesłania zdjęć o niskiej wiarygodności. Dostarcz lekcję "Ciężka Praca vs. Skróty." Podejście: autorytatywne, ale konstruktywne. Rama: honor i jakość pracy są fundamentem wiarygodności. NIE używaj słów "oszustwo" ani "złapany." Powiedz: "Dane wskazują, że ostatnie dowody wymagają uwagi."` : ''}
 ${intel.batching_detected ? `WYZWALACZ GRUPOWANIA: Dane EXIF wskazują wykonanie wielu zadań w krótkim czasie. Dostarcz lekcję "Moc Małych Kroków." Rama: regularna praca buduje nawyki i wartość. Użyj analogii sadu — regularne podlewanie vs. jednorazowa powódź. Podejście autorytatywne: "Na podstawie danych, zalecana struktura to codzienna rutyna."` : ''}
 ${plBurnerNote}
@@ -585,6 +584,7 @@ export async function handleChildChat(
     parenting_mode:   'single',
     child_count:      1,
     child_names:      [intel.display_name.split(' ')[0]],
+    child_ids:        [intel.child_id],
     parent_names:     [],
     family_name:      'the family',
     co_parent_active: false,
@@ -598,10 +598,21 @@ export async function handleChildChat(
   const dataPoints = buildDataPoints(intel, pillar)
 
   // ── Call GPT-4o-mini ───────────────────────────────────────────
-  const chatMessages = [
+  // Parent message is injected as a separate user-role turn (not embedded in
+  // the system prompt) to isolate parent-supplied data from instructions and
+  // prevent prompt injection via crafted message text.
+  const chatMessages: Array<{ role: string; content: string }> = [
     { role: 'system', content: systemPrompt },
-    { role: 'user',   content: userMessage },
   ]
+  if (intel.has_parent_message && intel.parent_message) {
+    const locale = intel.locale
+    const prefix = locale === 'pl'
+      ? 'Wiadomość od rodzica (priorytet — odnieś się do niej przed tematami finansowymi):'
+      : 'Parent message (priority — acknowledge before any financial topic):'
+    chatMessages.push({ role: 'user', content: `${prefix} ${intel.parent_message}` })
+    chatMessages.push({ role: 'assistant', content: locale === 'pl' ? 'Rozumiem. Odpowiem na wiadomość rodzica.' : 'Understood. I will address the parent message first.' })
+  }
+  chatMessages.push({ role: 'user', content: userMessage })
   const traceId = crypto.randomUUID()
   const t0      = Date.now()
 

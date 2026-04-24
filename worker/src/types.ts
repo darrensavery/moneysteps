@@ -54,7 +54,8 @@ export type ParentingMode = 'single' | 'co-parenting';
 export interface FamilyContext {
   parenting_mode:   'single' | 'co-parenting';
   child_count:      number;
-  child_names:      string[];    // first names of all children
+  child_names:      string[];    // first names of all children (parallel array with child_ids)
+  child_ids:        string[];    // user IDs of all children (parallel array with child_names)
   parent_names:     string[];    // first names of lead + all co-parents
   family_name:      string;      // families.name fallback: "the family"
   co_parent_active: boolean;     // both parents approved ≥1 chore in last 30d

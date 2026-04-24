@@ -497,41 +497,43 @@ async function queryBatchingDetected(
 async function queryIsBurner(db: D1Database, childId: string): Promise<boolean> {
   const THIRTY_DAYS = 30 * 86_400
   const cutoff = Math.floor(Date.now() / 1000) - THIRTY_DAYS
-  // Find credits in last 30 days, then check if balance reached 0 within 24h after each
-  const { results: credits } = await db
+  // Single query: for each credit in the last 30 days, compute the running
+  // balance at 24h after that credit. If any window-end balance reaches 0,
+  // the child is spending earnings immediately (burner pattern).
+  const row = await db
     .prepare(`
-      SELECT created_at FROM ledger
-      WHERE child_id = ?
-        AND entry_type = 'credit'
-        AND verification_status IN ('verified_auto','verified_manual')
-        AND created_at >= ?
-      ORDER BY created_at ASC
-    `)
-    .bind(childId, cutoff)
-    .all<{ created_at: number }>()
-
-  for (const credit of credits ?? []) {
-    const window_end = credit.created_at + 86_400
-    // Sum ledger to get running balance at window_end
-    const row = await db
-      .prepare(`
-        SELECT COALESCE(SUM(
-          CASE entry_type
-            WHEN 'credit'  THEN amount
-            WHEN 'payment' THEN -amount
-            ELSE 0
-          END
-        ), 0) AS balance
+      WITH verified AS (
+        SELECT created_at,
+               entry_type,
+               amount
         FROM ledger
         WHERE child_id = ?
           AND verification_status IN ('verified_auto','verified_manual')
-          AND created_at <= ?
-      `)
-      .bind(childId, window_end)
-      .first<{ balance: number }>()
-    if ((row?.balance ?? 1) <= 0) return true
-  }
-  return false
+      ),
+      credits AS (
+        SELECT created_at AS credit_at
+        FROM verified
+        WHERE entry_type = 'credit'
+          AND created_at >= ?
+      )
+      SELECT 1 AS is_burner
+      FROM credits c
+      WHERE (
+        SELECT COALESCE(SUM(
+          CASE v.entry_type
+            WHEN 'credit'  THEN v.amount
+            WHEN 'payment' THEN -v.amount
+            ELSE 0
+          END
+        ), 0)
+        FROM verified v
+        WHERE v.created_at <= c.credit_at + 86400
+      ) <= 0
+      LIMIT 1
+    `)
+    .bind(childId, cutoff)
+    .first<{ is_burner: number }>()
+  return row != null
 }
 
 // Stagnant Earner: 0 completions in last 14 days, but had >2 completions in the
@@ -717,15 +719,15 @@ export async function getFamilyContext(
       .bind(familyId)
       .all<{ display_name: string }>(),
 
-    // 3. Child names
+    // 3. Child names + IDs
     db
       .prepare(`
-        SELECT display_name FROM users
+        SELECT id, display_name FROM users
         WHERE  family_id = ? AND role = 'child'
         ORDER  BY created_at ASC
       `)
       .bind(familyId)
-      .all<{ display_name: string }>(),
+      .all<{ id: string; display_name: string }>(),
 
     // 4. Approval counts per parent in last 30d (for skew + active detection)
     db
@@ -751,9 +753,12 @@ export async function getFamilyContext(
     .map(r => r.display_name.split(' ')[0] || '')
     .filter(Boolean)
 
-  const child_names = (childRows.results ?? [])
-    .map(r => r.display_name.split(' ')[0] || '')
-    .filter(Boolean)
+  const childEntries = (childRows.results ?? [])
+    .map(r => ({ id: r.id, name: r.display_name.split(' ')[0] || '' }))
+    .filter(r => r.name)
+
+  const child_names = childEntries.map(r => r.name)
+  const child_ids   = childEntries.map(r => r.id)
 
   const child_count = Math.max(1, child_names.length)
 
@@ -775,6 +780,7 @@ export async function getFamilyContext(
     parenting_mode,
     child_count,
     child_names,
+    child_ids,
     parent_names,
     family_name,
     co_parent_active,
