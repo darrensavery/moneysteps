@@ -101,15 +101,19 @@ export function RegistrationShell({ onComplete }: Props) {
       if (step === 2) {
         // Create account only once — skip if already done (user went back)
         if (!merged.family_id) {
+          const referredByCode = localStorage.getItem('morechard_referral_code') ?? undefined
           const familyResult = await createFamily({
-            display_name:    merged.display_name!,
-            email:           merged.email!,
-            password:        merged.password!,
-            locale:          merged.locale ?? detectLocale(),
-            parenting_mode:  merged.parenting_mode!,
-            governance_mode: merged.governance_mode ?? 'amicable',
-            base_currency:   merged.base_currency ?? 'GBP',
+            display_name:      merged.display_name!,
+            email:             merged.email!,
+            password:          merged.password!,
+            locale:            merged.locale ?? detectLocale(),
+            parenting_mode:    merged.parenting_mode!,
+            governance_mode:   merged.governance_mode ?? 'amicable',
+            base_currency:     merged.base_currency ?? 'GBP',
+            ...(referredByCode ? { referred_by_code: referredByCode } : {}),
           })
+          // Clear referral code after successful family creation
+          localStorage.removeItem('morechard_referral_code')
 
           merged.family_id = familyResult.family_id
           merged.user_id   = familyResult.user_id

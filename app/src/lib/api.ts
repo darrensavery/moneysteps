@@ -101,6 +101,7 @@ export interface CreateFamilyResult { family_id: string; user_id: string; email:
 export async function createFamily(body: {
   display_name: string; email: string; password?: string;
   governance_mode?: string; base_currency?: string; parenting_mode?: string; locale?: string;
+  referred_by_code?: string;
 }): Promise<CreateFamilyResult> {
   return request('/auth/create-family', { method: 'POST', body: JSON.stringify(body) });
 }
