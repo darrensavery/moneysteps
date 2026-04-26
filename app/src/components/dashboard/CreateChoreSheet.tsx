@@ -251,32 +251,39 @@ export function CreateChoreSheet({
     setError(null)
     try {
       const isRecurring = form.frequency !== 'as_needed'
-      const base = {
-        family_id:      familyId,
-        title:          form.title.trim(),
-        reward_amount:  Math.round(parseFloat(form.reward_amount) * 100),
+      const fields = {
+        family_id:    familyId,
+        title:        form.title.trim(),
+        reward_amount: Math.round(parseFloat(form.reward_amount) * 100),
         currency,
-        frequency:      form.frequency,
-        description:    form.description.trim() || undefined,
-        due_date:       isRecurring ? null : (form.due_date || null),
-        proof_required: form.proof_required ? 1 : 0,
-        auto_approve:   form.auto_approve ? 1 : 0,
+        frequency:    form.frequency,
+        description:  form.description.trim() || undefined,
+        due_date:     isRecurring ? null : (form.due_date || null),
       }
 
       if (isEditMode) {
-        await updateChore(editChore!.id, base)
-      } else if (assignMode === 'anyone') {
-        await createChore({ ...base, assigned_to: 'anyone' } as Parameters<typeof createChore>[0])
-      } else if (assignMode === 'everyone') {
-        // Fan out — one record per child
-        await Promise.all(
-          children.map(c => createChore({ ...base, assigned_to: c.id } as Parameters<typeof createChore>[0]))
-        )
+        await updateChore(editChore!.id, {
+          ...fields,
+          proof_required: form.proof_required ? 1 : 0,
+          auto_approve:   form.auto_approve ? 1 : 0,
+        })
       } else {
-        // Named — one record per selected child
-        await Promise.all(
-          [...selectedIds].map(id => createChore({ ...base, assigned_to: id } as Parameters<typeof createChore>[0]))
-        )
+        const base = {
+          ...fields,
+          proof_required: form.proof_required,
+          auto_approve:   form.auto_approve,
+        }
+        if (assignMode === 'anyone') {
+          await createChore({ ...base, assigned_to: 'anyone' } as Parameters<typeof createChore>[0])
+        } else if (assignMode === 'everyone') {
+          await Promise.all(
+            children.map(c => createChore({ ...base, assigned_to: c.id } as Parameters<typeof createChore>[0]))
+          )
+        } else {
+          await Promise.all(
+            [...selectedIds].map(id => createChore({ ...base, assigned_to: id } as Parameters<typeof createChore>[0]))
+          )
+        }
       }
 
       onCreated()
