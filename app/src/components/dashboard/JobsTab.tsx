@@ -399,7 +399,8 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onTogglePlan }
   onArchive: () => void
   onTogglePlan: (dayIndex: number) => void
 }) {
-  const isOverdue = chore.due_date && new Date(chore.due_date) < new Date()
+  const dueDateObj = chore.due_date && /^\d{4}-\d{2}-\d{2}$/.test(chore.due_date) ? new Date(chore.due_date) : null
+  const isOverdue = dueDateObj && dueDateObj < new Date()
   const plannedDays = plans.map(p => p.day_of_week - 1)
 
   const borderClass = chore.is_flash
@@ -449,6 +450,11 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onTogglePlan }
             <span className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-0.5">
               <RecurringIcon />
               {FREQUENCY_OPTIONS.find(o => o.value === chore.frequency)?.label ?? chore.frequency}
+            </span>
+          )}
+          {dueDateObj && (
+            <span className={`text-[10px] font-semibold flex items-center gap-0.5 ${isOverdue ? 'text-red-500' : 'text-[var(--color-text-muted)]'}`}>
+              Due {dueDateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
             </span>
           )}
           {/* Chevron */}

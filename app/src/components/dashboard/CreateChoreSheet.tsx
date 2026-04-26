@@ -234,7 +234,7 @@ export function CreateChoreSheet({
     setSaving(true)
     setError(null)
     try {
-      const weeklyDay = form.frequency === 'weekly' ? String(form.weekly_day) : undefined
+      const isRecurring = form.frequency !== 'as_needed'
       const base = {
         family_id:      familyId,
         title:          form.title.trim(),
@@ -242,7 +242,7 @@ export function CreateChoreSheet({
         currency,
         frequency:      form.frequency,
         description:    form.description.trim() || undefined,
-        due_date:       weeklyDay ?? (form.due_date || undefined),
+        due_date:       isRecurring ? undefined : (form.due_date || undefined),
         proof_required: form.proof_required,
         auto_approve:   form.auto_approve,
       }
