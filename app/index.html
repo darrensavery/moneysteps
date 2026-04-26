@@ -53,7 +53,9 @@
           host: "https://eagereverest.freshdesk.com",
           widgetId: "01KPY3BHVH5WKGH346XNTT7EV9"
         });
-        window.fdWidget.hide();
+        window.fdWidget.on('load', function() {
+          window.fdWidget.hide();
+        });
       }
       function initialize(i,t){var e;i.getElementById(t)?initFreshdesk():((e=i.createElement("script")).id=t,e.async=!0,e.src="https://eagereverest.freshdesk.com/webchat/js/widget.js",e.onload=initFreshdesk,i.head.appendChild(e))}
       function initiateCall(){initialize(document,"Freshdesk-js-sdk")}
