@@ -160,6 +160,7 @@ import {
   handleReferralStats,
   handleReferralClick,
 } from './routes/referrals.js';
+import { nanoid } from './lib/nanoid.js';
 import { json, error } from './lib/response.js';
 import { JwtPayload } from './lib/jwt.js';
 import {
@@ -299,12 +300,7 @@ async function runPaydaySweep(env: Env, nowEpoch: number): Promise<void> {
 
     const previousHash = prevRow?.record_hash ?? GENESIS_HASH;
 
-    const maxRow = await env.DB
-      .prepare('SELECT COALESCE(MAX(id), 0) AS max_id FROM ledger WHERE family_id = ?')
-      .bind(child.family_id)
-      .first<{ max_id: number }>();
-
-    const newId = (maxRow?.max_id ?? 0) + 1;
+    const newId = nanoid();
     const verificationStatus = child.verify_mode === 'amicable' ? 'verified_auto' : 'verified_manual';
 
     const recordHash = await computeRecordHash(
