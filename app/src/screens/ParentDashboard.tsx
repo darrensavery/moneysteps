@@ -40,7 +40,7 @@ export function ParentDashboard() {
   const familyId   = getDeviceIdentity()?.family_id ?? ''
 
   const [tab,        setTab]        = useState<Tab>(() => {
-    const saved = sessionStorage.getItem('mc_parent_tab')
+    const saved = localStorage.getItem('mc_parent_tab')
     const valid: Tab[] = ['chores', 'activity', 'pool', 'insights', 'goals']
     return valid.includes(saved as Tab) ? (saved as Tab) : 'chores'
   })
@@ -50,7 +50,7 @@ export function ParentDashboard() {
 
   function handleTabChange(t: Tab) {
     setTab(t)
-    sessionStorage.setItem('mc_parent_tab', t)
+    localStorage.setItem('mc_parent_tab', t)
   }
   const [children,   setChildren]   = useState<ChildRecord[]>([])
   const [activeChild, setActiveChild] = useState<ChildRecord | null>(null)

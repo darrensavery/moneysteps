@@ -529,7 +529,7 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose 
               onClick={() => {
                 if (!window.confirm(pl ? 'Wylogować się? Dane rodziny są bezpieczne.' : "Log out? Your family's data stays safe.")) return
                 clearDeviceIdentity()
-                sessionStorage.removeItem('mc_parent_tab')
+                localStorage.removeItem('mc_parent_tab')
                 localStorage.removeItem('mc_parent_avatar')
                 window.location.replace('/')
               }}

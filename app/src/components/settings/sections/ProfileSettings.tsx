@@ -108,7 +108,7 @@ export function ProfileSettings({
 
   function wipeLsAndRedirect() {
     clearDeviceIdentity()
-    sessionStorage.removeItem('mc_parent_tab')
+    localStorage.removeItem('mc_parent_tab')
     localStorage.removeItem('mc_parent_avatar')
     clearToken()
     window.location.replace('/')
