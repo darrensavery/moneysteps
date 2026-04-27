@@ -88,6 +88,12 @@ async function request<T>(path: string, options: RequestInit = {}, _retries = 2)
     throw new Error('Unexpected response from server. Please try again.');
   }
 
+  // Trial expired — worker sends 402 with { redirect: '/paywall' }
+  if (res.status === 402) {
+    window.location.href = '/paywall';
+    throw new Error('Trial expired');
+  }
+
   if (!res.ok) {
     throw new Error((data as Record<string, unknown>).error as string ?? `HTTP ${res.status}`);
   }
