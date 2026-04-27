@@ -378,7 +378,7 @@ function PlanView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
                           'Unlimited children',
                           'Rate Guide benchmarking',
                           'Payment bridge (Monzo, Revolut, PayPal)',
-                          'AI Mentor + Learning Lab add-on available (£29.99)',
+                          'AI Mentor + Learning Lab available — just £20 more with Core AI (£64.99)',
                         ].map(item => (
                           <li key={item} className="flex items-start gap-2">
                             <Check size={12} className="shrink-0 text-teal-500 mt-0.5" />
@@ -402,7 +402,7 @@ function PlanView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
 
                 {/* Complete AI — shown when no base yet, or when base exists but no AI */}
                 {!hasAi && (
-                  <div className="rounded-2xl border-2 border-violet-300 overflow-hidden bg-[color-mix(in_srgb,#7c3aed_4%,var(--color-surface))]">
+                  <div className="rounded-2xl border-2 border-violet-300 overflow-hidden bg-[color-mix(in_srgb,#7c3aed_4%,var(--color-surface))] relative">
                     {!hasBase && (
                       <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
                         <Star size={9} />
