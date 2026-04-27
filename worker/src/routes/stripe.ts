@@ -190,8 +190,9 @@ export async function handleStripeWebhook(
     try {
       await handleCheckoutCompleted(event.data.object, env);
     } catch (err) {
-      console.error('handleCheckoutCompleted threw:', err);
-      return error('Internal server error', 500);
+      console.error('handleCheckoutCompleted threw:', String(err), err instanceof Error ? err.stack : '');
+      // Return 200 so Stripe stops retrying — we log the error for diagnosis
+      return json({ received: true, error: String(err) });
     }
   }
 
@@ -203,11 +204,15 @@ export async function handleStripeWebhook(
 // License grant logic — provider-neutral
 // ----------------------------------------------------------------
 async function handleCheckoutCompleted(session: StripeSession, env: Env): Promise<void> {
+  console.log('Webhook session object keys:', Object.keys(session).join(', '));
+  console.log('Webhook session.metadata:', JSON.stringify(session.metadata));
+  console.log('Webhook session.id:', session.id);
+
   const { family_id, payment_type: rawType } = session.metadata ?? {};
 
   const KNOWN: string[] = [...PURCHASABLE, 'LIFETIME', 'AI_ANNUAL', 'SHIELD'];
   if (!family_id || !KNOWN.includes(rawType)) {
-    console.error('Webhook: missing or invalid metadata', session.metadata);
+    console.error('Webhook: missing or invalid metadata', JSON.stringify(session.metadata));
     return;
   }
 
