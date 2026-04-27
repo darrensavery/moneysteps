@@ -187,7 +187,12 @@ export async function handleStripeWebhook(
   }
 
   if (event.type === 'checkout.session.completed') {
-    await handleCheckoutCompleted(event.data.object, env);
+    try {
+      await handleCheckoutCompleted(event.data.object, env);
+    } catch (err) {
+      console.error('handleCheckoutCompleted threw:', err);
+      return error('Internal server error', 500);
+    }
   }
 
   // Always 200 — Stripe retries on non-2xx
