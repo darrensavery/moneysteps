@@ -545,8 +545,8 @@ function PlanView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
               </div>
             )}
 
-            {/* Cooling-off cancellation — only shown when a paid plan is active within 14 days */}
-            {(hasBase || hasAi || hasShield) && withinCoolingOff && coolingOffDeadline && (
+            {/* Cooling-off cancellation — only shown when paid plan active, within 14 days, and trial not already expired */}
+            {(hasBase || hasAi || hasShield) && withinCoolingOff && coolingOffDeadline && !(trial?.is_expired) && (
               <SectionCard>
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2">

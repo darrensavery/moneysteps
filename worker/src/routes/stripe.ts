@@ -361,6 +361,23 @@ export async function handleCancelPlan(
     return error('The 14-day cooling-off period has expired', 403);
   }
 
+  // Refuse if the family's trial had already expired before they purchased —
+  // revoking the licence would leave them with no access at all.
+  const family = await env.DB
+    .prepare('SELECT trial_start_date, is_activated FROM families WHERE id = ?')
+    .bind(auth.family_id)
+    .first<{ trial_start_date: string | null; is_activated: number }>();
+
+  if (family?.is_activated && family.trial_start_date) {
+    const trialExpiry = new Date(family.trial_start_date).getTime() + 14 * 24 * 60 * 60 * 1000;
+    if (Date.now() > trialExpiry) {
+      return error(
+        'Your free trial has already ended. Cancelling would leave you without access — please contact support for a manual refund.',
+        403,
+      );
+    }
+  }
+
   // Fetch the Stripe session to get the payment_intent
   const sessionRes = await fetch(
     `https://api.stripe.com/v1/checkout/sessions/${purchase.stripe_session_id}`,
