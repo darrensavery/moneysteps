@@ -42,34 +42,43 @@ New table, `dsar_requests`:
 | `matched_user_id` | the `users.id` this email resolved to (a parent on the target family) — null until matched |
 | `verification_token_hash` | reuses the existing magic-link token hashing pattern |
 | `verified_at` | nullable |
-| `status` | `pending_verification` \| `verified` \| `processing` \| `completed` \| `expired` |
+| `status` | `pending_verification` \| `processing` \| `completed` \| `expired` \| `needs_clarification` |
+| `target_child_name_raw` | free-text child name as typed by the requester, only set when `scope = child` |
 | `created_at`, `executed_at` | |
 
 ## Request flow
 
 **`POST /api/dsar/request`** (public, no auth)
-Body: `{ email, request_type, scope, child_id? }`.
-- Look up whether `email` matches an existing parent `users.email`. If `scope = child`, additionally confirm that child belongs to a family the matched parent belongs to.
+Body: `{ email, request_type, scope, child_name? }`. Note: `child_name` is **free text**, not an ID — an unauthenticated requester has no way to look up a child's internal ID, and exposing one before verification would let a stranger enumerate a family's children. Store it verbatim in `target_child_name_raw`; it's resolved to an actual child row at execution time (below), not at submission time.
+- Look up whether `email` matches an existing parent `users.email`.
 - If matched: create a `dsar_requests` row (`pending_verification`), send a verification email via the existing Resend/magic-link email infrastructure.
 - If not matched: **do not create a row, do not send an email** — return the same generic "if that email is on an account, you'll receive a link" response either way, to avoid account enumeration.
 
 **`GET /api/dsar/verify?token=...`** (public, no auth)
-- Validate token against `verification_token_hash`, check not expired (reuse existing magic-link expiry window).
-- Mark `verified_at`, `status = processing`.
-- Execute inline (both erasure and access are already fast, synchronous operations in the existing code):
-  - **Erasure**: call the shared execution function (see below). Sets the same `deleted_at`/anonymization state the existing Uproot flow sets; the existing daily cron in `familyPurge.ts` picks it up for the T+30 hard purge — no new cron needed for the family-scope case.
-  - **Access**: generate the export using the existing `GET /api/export/json` logic, store the result in R2, mint an R2 presigned URL with a **native 48-hour expiry** (not cron-cleaned — use R2's presigned URL TTL directly), email the link.
+- **Atomic claim first**, before anything else, to prevent double-click / email-prefetch races from running execution twice:
+  ```sql
+  UPDATE dsar_requests
+  SET status = 'processing', verified_at = unixepoch()
+  WHERE token_hash = ? AND status = 'pending_verification'
+  ```
+  If 0 rows affected (already claimed, expired, or unknown token), return a generic "this link has already been used or has expired" page and stop — do not execute anything.
+- Only the instance that wins the claim proceeds to execute:
+  - **Erasure, `scope = family`**: call the shared execution function (see below). Sets the same `deleted_at`/anonymization state the existing Uproot flow sets; the existing daily cron in `familyPurge.ts` picks it up for the T+30 hard purge — no new cron needed here.
+  - **Erasure, `scope = child`**: resolve `target_child_name_raw` against children on the matched parent's family — case-insensitive, trimmed match, scoped to `target_family_id`. If exactly one child matches, proceed. If zero or more than one match (typo, duplicate names, blended-family edge case), set `status = needs_clarification` and email the requester asking them to resubmit with the exact in-app display name or contact support — **do not silently expire**, and do not touch any data.
+  - **Access**: generate the export using the existing `GET /api/export/json` logic, store the result in R2, mint an R2 presigned URL with a **1-hour expiry** (short-lived by design — see Error handling), email the link with a note that the link expires quickly and a new request must be submitted if missed.
 - Mark `status = completed`, `executed_at = now`.
 
 ## Erasure execution — shared logic, not a fork
 
 Extract the anonymization logic currently inline in `handleDeleteFamily` (auth.ts:1116) and the co-parent-leave routes into `worker/src/lib/dsarExecution.ts`, callable from both the existing authenticated routes and the new DSAR flow, so behavior never drifts between the two entry points.
 
-- **Family scope, requester is sole parent or non-lead co-parent**: same as today's Uproot/leave behavior.
-- **Family scope, requester is lead and a co-parent remains**: **new** path.
-  1. Inside a single transaction: update `family_roles` (or `families.lead_user_id`, whichever holds the flag) to promote the remaining co-parent to lead **before** touching the departing lead's PII — do the role swap first, then null `display_name`/`email`/`email_pending`/`password_hash`/`pin_hash` on the departing lead's row, then revoke their sessions. Doing the swap first avoids a window where the row being anonymized still holds the lead flag (which would orphan the family or lose track of who to promote).
-  2. Family, ledger, and children are otherwise untouched.
-- **Child scope** (new): anonymize that child's `display_name`, `chat_history` rows, and progress tables (`unlocked_modules`, `lesson_completions`, `module_act_progress`, `chat_rate_limits`, `child_badges`, `child_streaks`, `child_nudges`) at execution time; ledger rows referencing that child are pseudonymized in place (identifying link stripped, hash-chain preserved) — same pattern already used for whole-family ledger retention (LIA-3). Family and siblings untouched. Extend `familyPurge.ts`'s daily sweep to also hard-purge child-scoped anonymized rows at T+30, alongside the existing family-scoped sweep.
+**Transaction boundary**: D1/Workers transactions have statement-count and wall-clock limits — a child or family can have thousands of `chat_history`/ledger rows, so the transaction must cover only small, fixed-size **identity-state** writes, never a bulk table sweep. The pattern below already matches how `familyPurge.ts` works today (immediate identity anonymization, deferred bulk purge via cron) — this design extends that same split to the new cases rather than introducing a new one.
+
+- **Family scope, requester is sole parent or non-lead co-parent**: same as today's Uproot/leave behavior — one small transaction against the `users`/`sessions` rows for that person.
+- **Family scope, requester is lead and a co-parent remains**: **new** path. One transaction: update `family_roles` (or `families.lead_user_id`, whichever holds the flag) to promote the remaining co-parent to lead **before** touching the departing lead's PII — role swap first, then null `display_name`/`email`/`email_pending`/`password_hash`/`pin_hash` on the departing lead's row, then revoke their sessions. Doing the swap first avoids a window where the row being anonymized still holds the lead flag (which would orphan the family or lose track of who to promote). Family, ledger, and children are otherwise untouched — no bulk tables involved, so no cron follow-up needed here beyond what the existing T+30 family purge already does.
+- **Child scope** (new): one small transaction nulls that child's `users.display_name` and sets a `purge_pending_at` marker (reusing the same tombstone pattern `families.deleted_at` already uses) — this is the only synchronous write. All bulk cleanup — `chat_history` rows, progress tables (`unlocked_modules`, `lesson_completions`, `module_act_progress`, `chat_rate_limits`, `child_badges`, `child_streaks`, `child_nudges`) — is deferred to `familyPurge.ts`'s existing daily cron, extended to also sweep child-scoped `purge_pending_at` markers, batched to stay under D1 limits the same way the existing family sweep already must.
+
+**Ledger integrity — do not mutate historical ledger rows.** The ledger is a cryptographic hash chain (each row's hash covers the previous row plus its own fields); changing any field on a historical row — including nulling or replacing a `child_id` — breaks every subsequent hash in the chain. So ledger rows are **never touched** by any erasure path, family or child scope. `ledger.child_id` (or equivalent FK) keeps pointing at the same immutable `users.id` forever; anonymization happens exactly once, on the `users` row itself (nulling `display_name` etc.), so the same ID simply stops resolving to a real name. This is already how the existing family-scope Uproot flow behaves (`docs/governance/lia/lia.md` LIA-3) — the child-scope path here follows the identical rule, and the earlier "pseudonymized in place" wording in this spec was inaccurate and is corrected here.
 
 ## Frontend + privacy policy
 
@@ -80,12 +89,14 @@ Link added to `marketing/src/privacy-policy.html` (the currently-served policy),
 ## Error handling
 
 - Unmatched email → generic response, no row created (anti-enumeration).
-- Expired/already-used verification token → generic "this link has expired, submit a new request" page.
-- Child-name match failure at execution time (requester typo, child already removed) → request marked `status = expired` with no data touched; no automatic retry, requester must resubmit.
-- Transaction failure mid-execution (e.g. the lead-swap case) → whole execution wrapped in a D1 transaction; any failure leaves `dsar_requests.status = verified` (not `completed`), nothing partially anonymized, safe to retry via the same token until it expires.
+- Verification token already claimed/expired → the atomic `UPDATE ... WHERE status = 'pending_verification'` claim returns 0 rows; generic "this link has already been used or has expired" page, nothing executes. This also covers concurrent double-click / email-prefetch races — only the instance that wins the claim runs.
+- Child-name match failure at execution time (0 or >1 matches — typo, duplicate names, blended-family edge case) → `status = needs_clarification`, requester emailed to resubmit with the exact in-app display name; no data touched, no silent expiry.
+- Identity-state transaction failure (e.g. the lead-swap case) → the transaction covers only the small identity write, so failure is all-or-nothing and cheap to retry; since the claim already flipped status to `processing`, a failed execution needs an explicit retry path (re-run execution against `processing` rows) rather than relying on the requester re-clicking an already-consumed token.
+- R2 presigned download link expires after 1 hour (not cron-cleaned — enforced natively by R2's presigned URL TTL); delivery email states this explicitly and tells the requester to submit a new request if missed.
 
 ## Testing
 
-- Unit tests for `dsarExecution.ts` covering: family/sole-parent, family/lead-with-coparent (the swap-then-anonymize ordering), child-scope.
-- Route tests for `/api/dsar/request` (matched/unmatched email, anti-enumeration response shape) and `/api/dsar/verify` (valid/expired/reused token).
+- Unit tests for `dsarExecution.ts` covering: family/sole-parent, family/lead-with-coparent (the swap-then-anonymize ordering, verifying `family_roles` is updated before PII is nulled), child-scope (verifying the identity-write is small/synchronous and no ledger row is ever mutated).
+- Unit test proving ledger rows are byte-for-byte unchanged (and hash-chain still validates) after both a family-scope and a child-scope erasure.
+- Route tests for `/api/dsar/request` (matched/unmatched email, anti-enumeration response shape) and `/api/dsar/verify` (valid claim, already-claimed/expired token returns 0-row no-op, concurrent double-request race, ambiguous/zero child-name match → `needs_clarification`).
 - Manual verification against `morechard-dev` (never production) for the full request → email → verify → execute path before this ships.
