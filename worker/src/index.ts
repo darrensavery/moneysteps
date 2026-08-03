@@ -307,10 +307,21 @@ export default Sentry.withSentry<Env, IncidentQueueMessage>(
           .bind(now).run();
 
         // ── 2. Weekly allowance payday sweep ───────────────────────
-        // Runs every Saturday. For each child with allowance_amount > 0,
-        // check if they have already been paid this week (payday_log UNIQUE
-        // constraint is the idempotency key — safe on cron retry).
-        await runPaydaySweep(env, now);
+        // For each child with allowance_amount > 0, check if they have
+        // already been paid this week (payday_log UNIQUE constraint is the
+        // idempotency key — safe on cron retry). Gated to the Saturday
+        // 08:00 UTC tick ("0 8 * * 6" in wrangler.toml) — the function has
+        // no internal day gate, so leaving this ungated meant a full
+        // all-families child scan ran on every 5-minute tick (288x/day
+        // instead of once a week), occasionally blowing the Sentry
+        // "worker-scheduled-heartbeat" monitor's 5-minute maxRuntime as
+        // family count grew and causing intermittent missed check-ins.
+        {
+          const d = new Date(now * 1000);
+          if (d.getUTCDay() === 6 && d.getUTCHours() === 8) {
+            await runPaydaySweep(env, now);
+          }
+        }
 
         // ── 3. Clean up expired SLT tokens and unblocked IP attempts ──
         await env.DB.prepare('DELETE FROM slt_tokens WHERE expires_at < ?').bind(now).run();
