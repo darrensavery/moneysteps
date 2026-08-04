@@ -6,9 +6,9 @@
 
 ## Why
 
-Real feedback from teenagers using Morechard indicates they'd value being able to talk through money decisions with the AI Mentor directly, not just receive one-way nudges/briefings. The original chat endpoint was killed because it shipped with no moderation layer, no crisis-escalation path, no confirmed minor-consent basis, and no legal sign-off — not because chat itself is unbuildable. This spec satisfies the four conditions the governance doc set for ever reconsidering it:
+Real feedback from teenagers using Morechard indicates they'd value being able to talk through money decisions with the AI Mentor directly, not just receive one-way nudges/briefings. The original chat endpoint was killed because it shipped with no moderation layer, no crisis-escalation path, no confirmed minor-consent basis, and no legal sign-off — not because chat itself is unbuildable. This spec addresses the four conditions the governance doc set for ever reconsidering it — but note condition 1 is a design proposal, not a resolved legal question (see Consent flow, below):
 
-1. Legal-shaped consent basis for minor free-text (teen-only, fully parent-visible — see below)
+1. A design for a consent basis specific to minor free-text (teen-only, fully parent-visible) — **status: unresolved, requires legal review before build**, not satisfied by this spec
 2. A co-parenting-aware design that keeps chat out of the court-submissible ledger/Shield AI export
 3. A real human escalation path for self-harm/abuse-adjacent content
 4. This spec itself, as the audit trail the original launch lacked
@@ -31,8 +31,8 @@ Every teen message passes through three layers before a response reaches the chi
 2. **Topic-lock system prompt.** The mentor model is instructed to discuss money, chores, and financial literacy only, in the tone described above, and to never make decisions on the teen's behalf.
 3. **Post-check + crisis classifier.** A second pass on the input (informed by the moderation score) and the model's own output routes to one of three outcomes:
    - **Off-topic** → model redirects gracefully in-chat ("that's outside what I can help with — want to talk to a parent about it?"). No escalation, no logging beyond the normal message record.
-   - **Distress / self-harm signal** → in-chat crisis resources shown immediately to the teen, AND a real-time alert fires to both parents. No moderation queue or delay — there is no 24/7 human moderator, so the alert must reach a human who knows the child directly and immediately.
-   - **Abuse-pattern signal (parent potentially implicated)** → in-chat child-protection resources (NSPCC/Childline-style reporting routes) shown to the teen. **Parents are explicitly NOT notified** on this branch, since a parent may be the source of risk. This requires the classifier to distinguish "I'm struggling" from "a parent is hurting me" — both categories need explicit test coverage (see Testing).
+   - **Distress / self-harm signal** → the mentor does **not** attempt to counsel, discuss, or engage on the substance of what was disclosed — it is a financial-literacy tool, not a mental-health support system, and has no training, supervision, or liability coverage to act as one. Response is a brief, warm acknowledgment, immediate in-chat crisis resources, and a clear statement that a parent has been notified — then the mentor declines to continue on that topic (redirects back to finance, or ends the turn). A real-time alert fires to both parents in parallel. No moderation queue or delay — there is no 24/7 human moderator, so the alert must reach a human who knows the child directly and immediately.
+   - **Abuse-pattern signal (parent potentially implicated)** → same non-engagement principle: brief acknowledgment, no attempt to counsel or investigate further. In-chat child-protection resources (NSPCC/Childline-style reporting routes) shown to the teen. **Parents are explicitly NOT notified** on this branch, since a parent may be the source of risk. This requires the classifier to distinguish "I'm struggling" from "a parent is hurting me" — both categories need explicit test coverage (see Testing).
 
 ### Data model
 
@@ -48,13 +48,19 @@ New tables (do not reuse or resurrect the deleted `chat_history` / `chat_rate_li
 
 **Retention & export boundary:** chat messages are excluded from the hash-chained ledger and the Shield AI forensic PDF export by construction — a separate table never joined into the export query, not a filter flag that could be forgotten or bypassed. Subject to the same account-deletion purge as the rest of family data (`worker/src/jobs/familyPurge.ts`).
 
-### Consent flow
+### Consent flow — UNRESOLVED, blocking
 
-Because this is teen-only and fully parent-visible (both parents in co-parenting families, same as the rest of Morechard's data model), there's no private-from-parent data collection to justify separately — it rides on the parental consent already collected at registration. One new explicit screen is required before first use, shown once to the teen:
+**This is not a solved problem. Do not start implementation until it is.**
+
+The design below (parent-visible, teen-only, one-time acknowledgment screen) is a proposal, not a legal basis. Registration-time consent was collected for a chore/ledger product; this feature is a materially different processing activity — a generative AI system capable of eliciting and storing disclosures about self-harm, distress, or parental abuse from a minor. Under UK GDPR and the ICO Children's Code, the applicable basis (consent or otherwise, under Article 6/8) generally needs to be specific to the processing purpose it's being relied on for, not inherited from an unrelated prior consent screen. Darren is a solo founder without in-house legal — nothing about this design has been reviewed by counsel, and this document does not constitute legal advice.
+
+**Proposed design, pending legal review:**
+
+Because this is teen-only and fully parent-visible (both parents in co-parenting families, same as the rest of Morechard's data model), the intent is that there's minimal private-from-parent data collection to separately justify. One new explicit screen would be shown once to the teen before first use:
 
 > "Your AI Mentor chats are visible to your parent(s). If something you write suggests you're in danger, we'll show you help resources — and in some cases, alert your parent(s) too."
 
-Acknowledgement is stored as a timestamped consent record, following the existing consent-flag pattern elsewhere in the schema.
+Acknowledgement would be stored as a timestamped consent record, following the existing consent-flag pattern elsewhere in the schema — but **this mechanism itself, and whether it constitutes an adequate basis for this specific processing activity, must be confirmed by a data-protection/AI-law specialist before build starts.** This is a hard gate on the implementation plan, not a task inside it.
 
 ### Parent-facing UI
 
@@ -81,6 +87,10 @@ Bundled into the existing AI Mentor tier (the same tier already delivering Orcha
   4. Rate limit enforcement at the hourly/daily boundary.
   5. Age gate: a sub-13 account cannot reach the chat route even via direct API call, not just hidden in the UI.
 - `docs/governance/ai-inventory.md` gets a new "AI System 3: Teen Mentor Chat" entry documenting this design, provider, data flow, and human-oversight mechanism — written and committed as part of this feature, not retrofitted after the fact.
+
+## Blocking prerequisite
+
+**Legal review of the consent basis (see Consent flow, above) must be completed before implementation begins.** Everything else in this spec can be planned and built in parallel with that review, but the feature cannot ship — and arguably should not be implemented against production data flows — until this is resolved. Track this as a gate at the start of the implementation plan, not a follow-up task.
 
 ## Open items for implementation planning
 
