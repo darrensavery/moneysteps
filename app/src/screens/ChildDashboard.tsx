@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { updateDeviceIdentity } from '../lib/deviceIdentity'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 import {
   getChores, submitChore, uploadProof, getBalance, getGoals,
   getCompletions, getSettings, updateSettings, getMyLockStatus, getFamilyId, getUserId,
@@ -132,6 +133,16 @@ export function ChildDashboard() {
   )
   const [activeCelebration, setActiveCelebration] = useState<MilestoneEvent | null>(null)
   const [showSettings,     setShowSettings]     = useState(false)
+  const settingsPanelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(settingsPanelRef, showSettings)
+  useEffect(() => {
+    if (!showSettings) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowSettings(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showSettings])
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const [avatarId,         setAvatarId]         = useState<string>('bottts:spark')
   const [savingAvatar,     setSavingAvatar]      = useState(false)
@@ -462,7 +473,14 @@ export function ChildDashboard() {
             onClick={() => setShowSettings(false)}
           />
           {/* Sheet */}
-          <div className="relative bg-[var(--color-surface)] rounded-t-2xl shadow-xl max-w-[560px] w-full mx-auto px-4 pt-4 pb-10 space-y-5">
+          <div
+            ref={settingsPanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings"
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-t-2xl shadow-xl max-w-[560px] w-full mx-auto px-4 pt-4 pb-10 space-y-5"
+          >
             <div className="flex items-center justify-between">
               <p className="text-[16px] font-extrabold text-[var(--color-text)]">Settings</p>
               <button

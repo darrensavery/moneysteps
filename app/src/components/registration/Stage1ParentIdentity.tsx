@@ -4,7 +4,7 @@
  * password strength meter, teal active states, haptic feedback on CTA.
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Users, User, Eye, EyeOff, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CONSENT_VERSIONS, CURRENT_CONSENT_VERSION } from '@/lib/consent-versions'
@@ -61,6 +61,11 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(data.analytics_consent ?? null)
   const [touched, setTouch] = useState<Record<string, boolean>>({})
   const [submitted, setSubmitted] = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [])
 
   const strength = getStrength(password)
 
@@ -114,7 +119,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
             Secure account creation
           </span>
         </div>
-        <h2 className="text-[26px] font-extrabold tracking-tight text-gray-900 leading-tight">
+        <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-gray-900 leading-tight outline-none">
           Your Identity
         </h2>
         <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">
@@ -167,6 +172,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
           onBlur={() => blur('displayName')}
           autoComplete="name"
           error={showError('displayName') || ''}
+          required
         />
 
         {/* Email */}
@@ -180,6 +186,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
           autoComplete="email"
           error={showError('email') || ''}
           hint="Used for secure identity verification and audit trails"
+          required
           trailingIcon={
             touched.email && email
               ? isValidEmail(email)
@@ -200,6 +207,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
             onBlur={() => blur('password')}
             autoComplete="new-password"
             error={showError('password') || ''}
+            required
             trailingIcon={
               <button
                 type="button"
@@ -244,7 +252,10 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
       </div>
 
       {/* ── Marketing consent ────────────────────────────────────── */}
-      <fieldset>
+      <fieldset
+        role="radiogroup"
+        aria-describedby={submitted && errors.marketingConsent ? 'marketing-consent-error' : undefined}
+      >
         <legend className={cn(
           'text-sm font-semibold mb-3',
           (submitted && errors.marketingConsent) ? 'text-red-500' : 'text-gray-700',
@@ -271,6 +282,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
                 value={String(value)}
                 checked={marketingConsent === value}
                 onChange={() => setMarketingConsent(value)}
+                aria-describedby={submitted && errors.marketingConsent ? 'marketing-consent-error' : undefined}
                 className="accent-teal-600 w-4 h-4 shrink-0"
               />
               <span className={cn(
@@ -283,14 +295,17 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
           ))}
         </div>
         {submitted && errors.marketingConsent && (
-          <p className="text-xs text-red-500 font-medium pl-1 mt-1.5">
+          <p id="marketing-consent-error" role="alert" className="text-xs text-red-500 font-medium pl-1 mt-1.5">
             {errors.marketingConsent}
           </p>
         )}
       </fieldset>
 
       {/* ── Analytics consent (required, no default) ─────────────────── */}
-      <fieldset>
+      <fieldset
+        role="radiogroup"
+        aria-describedby={submitted && errors.analyticsConsent ? 'analytics-consent-error' : undefined}
+      >
         <legend className={cn(
           'text-sm font-semibold mb-1.5',
           (submitted && errors.analyticsConsent) ? 'text-red-500' : 'text-gray-700',
@@ -321,6 +336,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
                 value={String(value)}
                 checked={analyticsConsent === value}
                 onChange={() => setAnalyticsConsent(value)}
+                aria-describedby={submitted && errors.analyticsConsent ? 'analytics-consent-error' : undefined}
                 className="accent-teal-600 w-4 h-4 shrink-0"
               />
               <span className={cn(
@@ -333,7 +349,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
           ))}
         </div>
         {submitted && errors.analyticsConsent && (
-          <p className="text-xs text-red-500 font-medium pl-1 mt-1.5">
+          <p id="analytics-consent-error" role="alert" className="text-xs text-red-500 font-medium pl-1 mt-1.5">
             {errors.analyticsConsent}
           </p>
         )}
@@ -406,14 +422,16 @@ interface FloatingFieldProps {
   error?: string
   hint?: string
   trailingIcon?: React.ReactNode
+  required?: boolean
 }
 
 function FloatingField({
   id, label, value, onChange, onBlur, type = 'text',
-  autoComplete, error, hint, trailingIcon,
+  autoComplete, error, hint, trailingIcon, required,
 }: FloatingFieldProps) {
   const [focused, setFocused] = useState(false)
   const floated = focused || value.length > 0
+  const errorId = `${id}-error`
 
   return (
     <div className="space-y-1">
@@ -443,6 +461,10 @@ function FloatingField({
           type={type}
           value={value}
           autoComplete={autoComplete}
+          required={required}
+          aria-required={required ? 'true' : undefined}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => { setFocused(false); onBlur?.() }}
@@ -468,7 +490,7 @@ function FloatingField({
 
       {/* Error or hint */}
       {error
-        ? <p className="text-xs text-red-500 font-medium pl-1">{error}</p>
+        ? <p id={errorId} role="alert" className="text-xs text-red-500 font-medium pl-1">{error}</p>
         : hint
         ? <p className="text-xs text-gray-400 pl-1">{hint}</p>
         : null

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { requestPublicReview, recordOutcome, submitFeedback, trackReviewPrompt } from '../../lib/reviewPrompt'
 import { BaseSheet } from '../ui/BaseSheet'
 import { tick } from '../../lib/haptics'
@@ -14,6 +14,11 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
   const [step,        setStep]        = useState<Step>('question')
   const [feedbackMsg, setFeedbackMsg] = useState('')
   const [submitting,  setSubmitting]  = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [step])
 
   if (!open) return null
 
@@ -56,10 +61,15 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
   }
 
   return (
-    <BaseSheet onClose={handleDismiss} panelClassName="w-full max-w-md mx-auto rounded-t-2xl bg-[var(--surface-card,#1a2a1f)] p-6 pb-8 shadow-2xl">
+    <BaseSheet
+      onClose={handleDismiss}
+      label={step === 'question' ? 'Are you enjoying Morechard?' : step === 'feedback' ? 'Thanks for telling us' : "We'll look into it"}
+      panelClassName="w-full max-w-md mx-auto rounded-t-2xl bg-[var(--surface-card,#1a2a1f)] p-6 pb-8 shadow-2xl"
+    >
+      <div aria-live="polite">
       {step === 'question' && (
         <>
-          <h2 className="mb-2 text-center text-lg font-semibold text-white">
+          <h2 ref={headingRef} tabIndex={-1} className="mb-2 text-center text-lg font-semibold text-white outline-none">
             Are you enjoying Morechard?
           </h2>
           <p className="mb-6 text-center text-sm text-white/60">
@@ -90,7 +100,7 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
 
       {step === 'feedback' && (
         <>
-          <h2 className="mb-2 text-center text-lg font-semibold text-white">
+          <h2 ref={headingRef} tabIndex={-1} className="mb-2 text-center text-lg font-semibold text-white outline-none">
             Thanks for telling us
           </h2>
           <p className="mb-4 text-center text-sm text-white/60">
@@ -116,7 +126,7 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
 
       {step === 'thanks' && (
         <>
-          <h2 className="mb-2 text-center text-lg font-semibold text-white">
+          <h2 ref={headingRef} tabIndex={-1} className="mb-2 text-center text-lg font-semibold text-white outline-none">
             We'll look into it
           </h2>
           <p className="mb-6 text-center text-sm text-white/60">
@@ -130,6 +140,7 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
           </button>
         </>
       )}
+      </div>
     </BaseSheet>
   )
 }

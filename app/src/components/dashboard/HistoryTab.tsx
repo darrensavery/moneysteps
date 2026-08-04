@@ -39,13 +39,29 @@ const STATUS_STYLES: Record<string, { label: string; bg: string; text: string }>
 
 function MiniSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   const { sheetRef, handleProps } = useDragToClose(onClose)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center"
       style={{ background: 'rgba(0,0,0,0.45)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div ref={sheetRef} className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl transition-transform duration-300 pb-safe">
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Details"
+        tabIndex={-1}
+        className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl transition-transform duration-300 pb-safe"
+      >
         <div {...handleProps}>
           <div className="w-10 h-1 rounded-full bg-[var(--color-border)]" />
         </div>
@@ -71,6 +87,14 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
   const [approveBusy,         setApproveBusy]         = useState<string | null>(null)
   const [approveAllBusy,      setApproveAllBusy]      = useState(false)
   const [showApproveAllModal, setShowApproveAllModal] = useState(false)
+  useEffect(() => {
+    if (!showApproveAllModal) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowApproveAllModal(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showApproveAllModal])
 
   const [history, setHistory]   = useState<Completion[]>([])
   const [payouts, setPayouts]   = useState<PayoutRecord[]>([])
@@ -335,7 +359,13 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
       {showApproveAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowApproveAllModal(false)} />
-          <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirm payment"
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4"
+          >
             <div>
               <p className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight">Confirm payment</p>
               <p className="text-[13px] text-[var(--color-text-muted)] mt-1 leading-relaxed">
@@ -685,6 +715,14 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
       .catch(() => setProofState('error'))
   }, [c.id, c.proof_url])
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   const dateStr = new Date(c.submitted_at * 1000).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
@@ -700,7 +738,14 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
       <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} aria-label="Close" />
-      <div ref={sheetRef} className="relative mt-auto w-full max-h-[90dvh] bg-[var(--color-surface)] rounded-t-2xl flex flex-col overflow-hidden shadow-2xl transition-transform duration-300">
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={c.chore_title}
+        tabIndex={-1}
+        className="relative mt-auto w-full max-h-[90dvh] bg-[var(--color-surface)] rounded-t-2xl flex flex-col overflow-hidden shadow-2xl transition-transform duration-300"
+      >
 
         {/* Drag handle */}
         <div {...handleProps}>

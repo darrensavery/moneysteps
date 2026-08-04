@@ -8,7 +8,7 @@
  * - If skipped, the co-parent invite code is still shown as fallback
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Mail, Copy, Check, MessageCircle, Share2, ChevronRight, ShieldCheck, Scale } from 'lucide-react'
 import { Button }                       from '@/components/ui/button'
 import { Input }                        from '@/components/ui/input'
@@ -36,6 +36,11 @@ export function Stage4CoParentBridge({ data, onNext, onBack }: Props) {
   const [loading,     setLoading]     = useState(false)
   const [error,       setError]       = useState('')
   const [copied,      setCopied]      = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [])
 
   const isStandard = data.governance_mode === 'standard'
 
@@ -122,7 +127,7 @@ export function Stage4CoParentBridge({ data, onNext, onBack }: Props) {
     <div className="space-y-7">
       {/* Header */}
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">Co-Parent Bridge</h2>
+        <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold tracking-tight outline-none">Co-Parent Bridge</h2>
         <p className="text-muted-foreground text-sm leading-relaxed">
           Invite your co-parent to join as a Verified Orchard Lead. This step is optional
           — you can invite them later from Settings.
@@ -170,7 +175,7 @@ export function Stage4CoParentBridge({ data, onNext, onBack }: Props) {
         </div>
       )}
 
-      {error && <p className="text-xs text-destructive font-medium">{error}</p>}
+      {error && <p id="coparent-invite-error" role="alert" className="text-xs text-destructive font-medium">{error}</p>}
 
       {/* Code generated — show options */}
       {code && (
@@ -216,6 +221,10 @@ export function Stage4CoParentBridge({ data, onNext, onBack }: Props) {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSendEmail()}
+                    required
+                    aria-required="true"
+                    aria-invalid={!!error}
+                    aria-describedby={error ? 'coparent-invite-error' : undefined}
                     className="flex-1"
                   />
                   <Button onClick={handleSendEmail} disabled={loading} className="shrink-0">

@@ -14,6 +14,7 @@ interface Props {
 export function MicroToast({ event, onDismiss }: Props) {
   const config = CONFIGS[event.type]
   const [visible, setVisible] = useState(false)
+  const [paused, setPaused] = useState(false)
 
   function close() {
     setVisible(false)
@@ -22,12 +23,14 @@ export function MicroToast({ event, onDismiss }: Props) {
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
-    const t = setTimeout(() => {
-      close()
-    }, 3000)
+  }, [])
+
+  useEffect(() => {
+    if (paused) return
+    const t = setTimeout(() => close(), 3000)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onDismiss])
+  }, [paused, onDismiss])
 
   if (!config) return null
 
@@ -38,6 +41,11 @@ export function MicroToast({ event, onDismiss }: Props) {
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90]">
       <SwipeDismissCard onDismiss={close}>
         <div
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+          role="status"
           className={cn(
             'flex items-center gap-3 px-4 py-3 rounded-2xl',
             'bg-[#1b2d2e] border border-white/10 shadow-xl',

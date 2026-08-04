@@ -6,7 +6,7 @@
  *   whats-new — changelog / release notes feed
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Search, Sparkles,
   FileText, ShieldCheck, ChevronRight, ExternalLink,
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Toast, SectionCard, SectionHeader } from '../shared'
 import { apiUrl, authHeaders } from '../../../lib/api'
+import { useFocusTrap } from '../../../hooks/useFocusTrap'
 
 declare const __APP_VERSION__: string | undefined
 
@@ -190,6 +191,18 @@ export function SupportSettings({ toast, onBack }: Props) {
   const [contactError, setContactError] = useState<string | null>(null)
   const [contactSent, setContactSent] = useState(false)
 
+  const contactModalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(contactModalRef, showContactModal)
+
+  useEffect(() => {
+    if (!showContactModal) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { setShowContactModal(false); setContactText('') }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showContactModal])
+
   async function submitContactRequest() {
     const description = contactText.trim()
     if (!description) return
@@ -313,7 +326,14 @@ export function SupportSettings({ toast, onBack }: Props) {
       {/* Contact Support Modal */}
       {showContactModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4">
+          <div
+            ref={contactModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Contact support"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4"
+          >
             <div className="flex items-center justify-between">
               <p className="text-[15px] font-bold text-[var(--color-text)]">Contact Support</p>
               <button
@@ -330,15 +350,21 @@ export function SupportSettings({ toast, onBack }: Props) {
               </p>
             ) : (
               <>
+                <label htmlFor="support-contact-message" className="sr-only">What's going on?</label>
                 <textarea
+                  id="support-contact-message"
                   value={contactText}
                   onChange={(e) => setContactText(e.target.value)}
                   placeholder="What's going on?"
                   rows={4}
+                  required
+                  aria-required="true"
+                  aria-invalid={!!contactError}
+                  aria-describedby={contactError ? 'support-contact-error' : undefined}
                   className="w-full rounded-xl border border-[var(--color-border)] px-3 py-2 text-[13px] text-[var(--color-text)] bg-[var(--color-surface)]"
                 />
                 {contactError && (
-                  <p className="text-[12px] text-red-600">{contactError}</p>
+                  <p id="support-contact-error" role="alert" className="text-[12px] text-red-600">{contactError}</p>
                 )}
                 <button
                   type="button"

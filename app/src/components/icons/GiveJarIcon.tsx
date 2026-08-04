@@ -2,9 +2,11 @@ interface IconProps {
   colour?: string;
   size?: number;
   className?: string;
+  /** Set when adjacent visible text already conveys "Give", to avoid double-announcing. */
+  decorative?: boolean;
 }
 
-export function GiveJarIcon({ colour, size = 40, className }: IconProps) {
+export function GiveJarIcon({ colour, size = 40, className, decorative }: IconProps) {
   const gold = colour ?? '#d97706';
   const teal = '#0d9488';
 
@@ -16,7 +18,9 @@ export function GiveJarIcon({ colour, size = 40, className }: IconProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="Give"
+      role={decorative ? undefined : 'img'}
+      aria-label={decorative ? undefined : 'Give'}
+      aria-hidden={decorative ? 'true' : undefined}
     >
       {/* Left arm / wrist */}
       <path

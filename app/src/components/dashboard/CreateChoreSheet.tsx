@@ -195,6 +195,15 @@ export function CreateChoreSheet({
     return () => clearTimeout(t)
   }, [conflictMsg])
 
+  // Escape closes the sheet
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   const triggerSpark = useCallback(() => {
     if (sparkTimerRef.current) clearTimeout(sparkTimerRef.current)
     setSparkActive(true)
@@ -301,7 +310,13 @@ export function CreateChoreSheet({
   )
 
   return (<>
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 flex flex-col justify-end"
+      role="dialog"
+      aria-modal="true"
+      aria-label={isEditMode ? 'Edit chore' : 'New chore'}
+      tabIndex={-1}
+    >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       <div ref={sheetRef} className="relative bg-[var(--color-surface)] rounded-t-3xl shadow-2xl max-w-[560px] w-full mx-auto flex flex-col max-h-[92svh] transition-transform duration-300">
@@ -644,7 +659,13 @@ export function CreateChoreSheet({
                     tabIndex={0}
                     aria-label="About Skip Approval"
                     onClick={e => { e.stopPropagation(); setShowTooltip(v => !v) }}
-                    onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); setShowTooltip(v => !v) } }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setShowTooltip(v => !v)
+                      }
+                    }}
                     className="absolute top-1.5 right-2 w-4 h-4 rounded-full border border-current flex items-center justify-center text-[9px] font-bold opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     i

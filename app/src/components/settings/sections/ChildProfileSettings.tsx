@@ -556,16 +556,22 @@ export function ChildProfileSettings({
             />
             {editingName && (
               <form onSubmit={handleSaveName} className="px-4 py-3 border-t border-[var(--color-border)] space-y-2">
+                <label htmlFor="child-profile-name-input" className="sr-only">Child's name</label>
                 <input
+                  id="child-profile-name-input"
                   type="text"
                   value={nameInput}
                   onChange={e => setNameInput(e.target.value)}
                   maxLength={40}
                   autoFocus
+                  required
+                  aria-required="true"
+                  aria-invalid={!!nameError}
+                  aria-describedby={nameError ? 'child-profile-name-error' : undefined}
                   placeholder="Child's name"
                   className="w-full px-3 py-2 text-[14px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
-                {nameError && <p className="text-[12px] text-red-500">{nameError}</p>}
+                {nameError && <p id="child-profile-name-error" role="alert" className="text-[12px] text-red-500">{nameError}</p>}
                 <div className="flex gap-2">
                   <button
                     type="submit"
@@ -712,10 +718,11 @@ export function ChildProfileSettings({
                   {(growth?.earnings_mode ?? 'HYBRID') !== 'CHORES' && (
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                        <label htmlFor="child-growth-allowance-amount" className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                           Amount ({currencySymbol})
                         </label>
                         <input
+                          id="child-growth-allowance-amount"
                           type="number" min={0} step={1}
                           defaultValue={Math.round((growth?.allowance_amount ?? 0) / minorDivisor)}
                           onBlur={e => {
@@ -727,8 +734,9 @@ export function ChildProfileSettings({
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Frequency</label>
+                        <label htmlFor="child-growth-allowance-frequency" className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Frequency</label>
                         <select
+                          id="child-growth-allowance-frequency"
                           value={growth?.allowance_frequency ?? 'WEEKLY'}
                           onChange={e => onGrowthUpdate(child.id, { allowance_frequency: e.target.value as 'WEEKLY' | 'BI_WEEKLY' | 'MONTHLY' })}
                           className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer"

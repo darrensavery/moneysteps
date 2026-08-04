@@ -87,12 +87,13 @@ export function JarOnboardingWizard({
 
       {/* Spend input */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-        <SpendJarIcon size={32} />
+        <SpendJarIcon size={32} decorative />
         <div style={{ flex: 1 }}>
-          <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, textTransform: 'capitalize', marginBottom: 4 }}>
+          <label htmlFor="jar-onboarding-spend" style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 13, textTransform: 'capitalize', marginBottom: 4 }}>
             Spend
-          </div>
+          </label>
           <input
+            id="jar-onboarding-spend"
             type="number"
             min="0"
             step="1"
@@ -109,12 +110,13 @@ export function JarOnboardingWizard({
 
       {/* Save input */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-        <SaveJarIcon size={32} />
+        <SaveJarIcon size={32} decorative />
         <div style={{ flex: 1 }}>
-          <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, textTransform: 'capitalize', marginBottom: 4 }}>
+          <label htmlFor="jar-onboarding-save" style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 13, textTransform: 'capitalize', marginBottom: 4 }}>
             Save
-          </div>
+          </label>
           <input
+            id="jar-onboarding-save"
             type="number"
             min="0"
             step="1"
@@ -131,7 +133,7 @@ export function JarOnboardingWizard({
 
       {/* Give — read-only remainder */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-        <GiveJarIcon size={32} />
+        <GiveJarIcon size={32} decorative />
         <div style={{ flex: 1 }}>
           <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, textTransform: 'capitalize', marginBottom: 4 }}>
             Give

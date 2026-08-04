@@ -389,7 +389,7 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
   const avatarEl = (() => {
     const avatarId = localStorage.getItem('mc_parent_avatar')
     if (identity?.google_picture) {
-      return <img src={identity.google_picture} alt={identity.display_name} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--brand-primary)]" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+      return <img src={identity.google_picture} alt={`${identity.display_name}'s profile photo`} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--brand-primary)]" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
     }
     return avatarId ? (
       <div className="w-12 h-12 rounded-full overflow-hidden border border-[var(--color-border)]"><AvatarSVG id={avatarId} size={48} /></div>

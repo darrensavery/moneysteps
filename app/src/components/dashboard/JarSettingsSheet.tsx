@@ -56,6 +56,7 @@ export function JarSettingsSheet({ config, familyId, childId, onClose, onSaved, 
     <BaseSheet
       onClose={onClose}
       zIndex={200}
+      label="Jar settings"
       panelStyle={{ background: '#1a2e22', borderRadius: '20px 20px 0 0', padding: '8px 20px 40px', fontFamily: 'Manrope' }}
     >
       {/* Header */}
@@ -63,6 +64,7 @@ export function JarSettingsSheet({ config, familyId, childId, onClose, onSaved, 
         <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>Jar settings</span>
         <button
           onClick={() => { void tick(); onClose(); }}
+          aria-label="Close"
           className="tap-target-44"
           style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 20, cursor: 'pointer' }}
         >
@@ -72,9 +74,12 @@ export function JarSettingsSheet({ config, familyId, childId, onClose, onSaved, 
 
       {/* Enable toggle */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 15 }}>Split my earnings automatically</span>
+        <span id="jar-split-toggle-label" style={{ color: 'rgba(255,255,255,0.8)', fontSize: 15 }}>Split my earnings automatically</span>
         <button
           onClick={() => { void tick(); setEnabled(!enabled) }}
+          role="switch"
+          aria-checked={enabled}
+          aria-labelledby="jar-split-toggle-label"
           style={{
             width: 48, height: 28, borderRadius: 14,
             background: enabled ? '#0d9488' : 'rgba(255,255,255,0.12)',
@@ -96,11 +101,11 @@ export function JarSettingsSheet({ config, familyId, childId, onClose, onSaved, 
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15 }}>{label}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <button onClick={() => setter(Math.max(0, val - 5))} style={stepBtn}>−</button>
+                <button onClick={() => setter(Math.max(0, val - 5))} aria-label={`Decrease ${label} percentage`} style={stepBtn}>−</button>
                 <span style={{ color: '#fff', fontSize: 16, fontWeight: 700, width: 36, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
                   {val}%
                 </span>
-                <button onClick={() => setter(Math.min(100, val + 5))} style={stepBtn}>+</button>
+                <button onClick={() => setter(Math.min(100, val + 5))} aria-label={`Increase ${label} percentage`} style={stepBtn}>+</button>
               </div>
             </div>
           ))}
@@ -124,7 +129,7 @@ export function JarSettingsSheet({ config, familyId, childId, onClose, onSaved, 
         </>
       )}
 
-      {err && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{err}</div>}
+      {err && <div role="alert" style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{err}</div>}
 
       <button
         onClick={handleSave}

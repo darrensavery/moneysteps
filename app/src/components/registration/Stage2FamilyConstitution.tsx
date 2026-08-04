@@ -10,7 +10,7 @@
  * but the user must tap to confirm. No selection = Continue is disabled.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Info, Scale, Zap, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { detectLocale, type AppLocale } from '@/lib/locale'
@@ -57,6 +57,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
   )
   const [showGovInfo, setShowGovInfo] = useState(false)
   const [attempted,   setAttempted]   = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
 
   const isCoParenting = data.parenting_mode === 'co-parenting'
 
@@ -66,6 +67,10 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
     const detectedCurrency = detectCurrency()
     if (detectedCurrency) setSugCurrency(detectedCurrency)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [])
 
   function handleNext() {
     setAttempted(true)
@@ -85,7 +90,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
 
       {/* Header */}
       <div className="space-y-1.5">
-        <h2 className="text-2xl font-bold tracking-tight">Family Setup</h2>
+        <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold tracking-tight outline-none">Family Setup</h2>
         <p className="text-[#6b6a66] text-sm leading-relaxed">
           Confirm your language and currency. Tap a card to lock in your choice.
         </p>

@@ -11,7 +11,7 @@ const JAR_LABELS: Record<JarType, string> = {
   give:  'Give',
 };
 
-const JAR_ICONS: Record<JarType, React.ComponentType<{ size?: number; className?: string }>> = {
+const JAR_ICONS: Record<JarType, React.ComponentType<{ size?: number; className?: string; decorative?: boolean }>> = {
   spend: SpendJarIcon,
   save:  SaveJarIcon,
   give:  GiveJarIcon,
@@ -40,7 +40,7 @@ export function JarCard({ jar, balances, currency, onClick }: JarCardProps) {
       onClick={() => onClick(jar)}
       className="flex-1 flex flex-col items-center gap-2 px-3 py-4 bg-[#1a2e25] border border-white/10 rounded-xl cursor-pointer transition-colors hover:bg-[#1f3a2e] active:bg-[#172a21] min-w-0"
     >
-      <Icon size={36} />
+      <Icon size={36} decorative />
       <span className="text-[11px] font-semibold text-white/50 uppercase tracking-widest">
         {label}
       </span>

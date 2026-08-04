@@ -7,7 +7,7 @@
  * screen (falls through to LandingGate) rather than hardcoding it here.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { markOnboardingSeen } from '@/lib/onboarding'
@@ -70,9 +70,23 @@ export function OnboardingCarousel() {
     }
   }
 
+  function goPrevious() {
+    setActiveIndex(i => Math.max(0, i - 1))
+  }
+
   function goToSlide(index: number) {
     setActiveIndex(index)
   }
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'ArrowRight') goNext()
+      else if (e.key === 'ArrowLeft') goPrevious()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex])
 
   return (
     <div className="h-svh bg-[var(--color-bg)] flex flex-col overflow-hidden">
@@ -121,10 +135,12 @@ export function OnboardingCarousel() {
           </AnimatePresence>
         </div>
 
-        <div className="flex items-center justify-center gap-2 py-4">
+        <div className="flex items-center justify-center gap-2 py-4" role="tablist" aria-label="Onboarding slides">
           {SLIDES.map((_, i) => (
             <button
               key={i}
+              role="tab"
+              aria-selected={i === activeIndex}
               aria-label={`Go to slide ${i + 1}`}
               onClick={() => goToSlide(i)}
               className={`h-2 rounded-full transition-all duration-200 ${
@@ -136,11 +152,26 @@ export function OnboardingCarousel() {
           ))}
         </div>
 
-        <div className="w-full pb-6">
+        <div className="w-full pb-6 flex gap-3">
+          {activeIndex > 0 && (
+            <button
+              onClick={goPrevious}
+              aria-label="Previous slide"
+              className="
+                h-14 px-6 rounded-2xl border-2 border-[var(--color-border)] text-[var(--color-text)]
+                font-semibold text-[15px] tracking-tight
+                hover:bg-[var(--color-surface-alt)] active:scale-[0.98]
+                transition-all duration-150
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2
+              "
+            >
+              Back
+            </button>
+          )}
           <button
             onClick={goNext}
             className="
-              w-full h-14 rounded-2xl bg-[var(--brand-primary)] text-white
+              flex-1 h-14 rounded-2xl bg-[var(--brand-primary)] text-white
               font-semibold text-[15px] tracking-tight
               flex items-center justify-center gap-2.5
               hover:opacity-90 active:scale-[0.98]

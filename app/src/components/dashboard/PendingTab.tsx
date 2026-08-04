@@ -40,6 +40,14 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
   const [approveAllBusy, setApproveAllBusy] = useState(false)
   const [showApproveAllModal, setShowApproveAllModal] = useState(false)
   useAndroidBack(showApproveAllModal, () => setShowApproveAllModal(false))
+  useEffect(() => {
+    if (!showApproveAllModal) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowApproveAllModal(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showApproveAllModal])
   useAndroidBack(!!reviseId, () => { setReviseId(null); setReviseNote('') })
   const { toast, showToast } = useToast()
   const [bridgeCtx, setBridgeCtx] = useState<null | {
@@ -199,7 +207,13 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
       {showApproveAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowApproveAllModal(false)} />
-          <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirm payment"
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4"
+          >
             {/* Header */}
             <div>
               <p className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight">

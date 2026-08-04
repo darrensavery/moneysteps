@@ -119,9 +119,13 @@ export default function LoginScreen() {
                 <input
                   type="email"
                   placeholder="Email address"
+                  aria-label="Email address"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
+                  aria-required="true"
+                  aria-invalid={!!magicError}
+                  aria-describedby={magicError ? 'magic-link-error' : undefined}
                   className="
                     w-full h-14 rounded-2xl px-4 text-[15px]
                     bg-[var(--color-surface)] text-[var(--color-text)]
@@ -132,7 +136,7 @@ export default function LoginScreen() {
                   "
                 />
                 {magicError && (
-                  <p className="text-[12px] text-red-500 px-1">{magicError}</p>
+                  <p id="magic-link-error" role="alert" className="text-[12px] text-red-500 px-1">{magicError}</p>
                 )}
                 <TurnstileWidget onVerify={setTurnstileToken} />
                 <button

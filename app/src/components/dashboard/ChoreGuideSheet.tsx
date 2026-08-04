@@ -139,6 +139,24 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
   const closeEditRate = () => { void tick(); setEditRate(null); setEditError(null); }
   const { sheetRef: editRateSheetRef, handleProps: editRateHandleProps } = useDragToClose(closeEditRate)
 
+  useEffect(() => {
+    if (!newChoreOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeNewChore();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [newChoreOpen]);
+
+  useEffect(() => {
+    if (!editRate) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeEditRate();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editRate]);
+
   async function handleNewChoreSuggest() {
     if (!familyId) return;
     const title = newChore.title.trim();
@@ -443,7 +461,14 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
       {newChoreOpen && (
         <div className="absolute inset-0 z-20 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={closeNewChore} />
-          <div ref={newChoreSheetRef} className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 max-h-[88vh] overflow-y-auto overscroll-contain">
+          <div
+            ref={newChoreSheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Suggest a new chore"
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 max-h-[88vh] overflow-y-auto overscroll-contain"
+          >
             {/* Drag handle */}
             <div {...newChoreHandleProps}>
               <div className="w-10 h-1 rounded-full bg-[var(--color-border)]" />
@@ -532,7 +557,14 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
       {editRate && (
         <div className="absolute inset-0 z-10 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={closeEditRate} />
-          <div ref={editRateSheetRef} className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 space-y-4">
+          <div
+            ref={editRateSheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Suggest this chore — ${editRate.canonical_name}`}
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 space-y-4"
+          >
             {/* Drag handle */}
             <div {...editRateHandleProps}>
               <div className="w-10 h-1 rounded-full bg-[var(--color-border)]" />

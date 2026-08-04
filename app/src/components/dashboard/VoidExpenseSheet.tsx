@@ -34,10 +34,10 @@ export function VoidExpenseSheet({ expenseId, description, onClose, onVoided }: 
   }
 
   return (
-    <BaseSheet onClose={onClose} panelClassName="w-full max-w-[560px] mx-auto bg-[var(--color-surface)] rounded-t-2xl p-6 pb-10 flex flex-col gap-4">
+    <BaseSheet onClose={onClose} label="Void expense" panelClassName="w-full max-w-[560px] mx-auto bg-[var(--color-surface)] rounded-t-2xl p-6 pb-10 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">Void expense</h2>
-        <button onClick={() => { void tick(); onClose(); }} className="tap-target-44 text-[var(--color-text-muted)] text-2xl leading-none">&times;</button>
+        <button onClick={() => { void tick(); onClose(); }} aria-label="Close" className="tap-target-44 text-[var(--color-text-muted)] text-2xl leading-none">&times;</button>
       </div>
 
       <p className="text-sm text-[var(--color-text-muted)]">
@@ -46,19 +46,24 @@ export function VoidExpenseSheet({ expenseId, description, onClose, onVoided }: 
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <label htmlFor="void-expense-reason" className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             Reason *
           </label>
           <textarea
+            id="void-expense-reason"
             value={reason}
             onChange={e => setReason(e.target.value)}
             placeholder="e.g. Entered incorrect amount, duplicate entry…"
             rows={3}
+            required
+            aria-required="true"
+            aria-invalid={!!error}
+            aria-describedby={error ? 'void-expense-error' : undefined}
             className="mt-1 w-full border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm bg-[var(--color-surface-raised)] resize-none"
           />
         </div>
 
-        <ErrorBox message={error} />
+        <ErrorBox id="void-expense-error" message={error} />
 
         <button
           type="submit"

@@ -28,6 +28,16 @@ interface Props {
 export function ChildBottomNav({ activeTab, onTabChange, badges = {}, disabled = false }: Props) {
   const activeIndex = TABS.findIndex(t => t.id === activeTab)
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    e.preventDefault()
+    const nextIndex = e.key === 'ArrowRight'
+      ? (index + 1) % TABS.length
+      : (index - 1 + TABS.length) % TABS.length
+    const nextButton = e.currentTarget.parentElement?.querySelectorAll('button')[nextIndex] as HTMLButtonElement | undefined
+    nextButton?.focus()
+  }
+
   return (
     <>
       <style>{`
@@ -62,7 +72,7 @@ export function ChildBottomNav({ activeTab, onTabChange, badges = {}, disabled =
               aria-hidden="true"
             />
 
-            {TABS.map(({ id, label, Icon }) => {
+            {TABS.map(({ id, label, Icon }, index) => {
               const badge = badges[id]
               const isActive = activeTab === id
 
@@ -70,6 +80,7 @@ export function ChildBottomNav({ activeTab, onTabChange, badges = {}, disabled =
                 <button
                   key={id}
                   onClick={() => { void tick(); onTabChange(id) }}
+                  onKeyDown={e => handleKeyDown(e, index)}
                   aria-label={label}
                   aria-current={isActive ? 'page' : undefined}
                   className="relative z-10 flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 cursor-pointer select-none transition-transform duration-75 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--brand-primary)]"

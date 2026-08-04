@@ -1,5 +1,5 @@
 // app/src/components/dashboard/RateGuideSheet.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
@@ -98,6 +98,15 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
 
   useAndroidBack(open, onClose);
 
+  useEffect(() => {
+    if (!open) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
   const filtered: MarketRate[] = useMemo(() => {
     const base = rates.filter(r => {
       const matchesCategory = category === 'All' || r.category === category;
@@ -115,6 +124,10 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div
         ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Rate Guide"
+        tabIndex={-1}
         className="relative bg-[var(--color-bg)] rounded-t-3xl shadow-2xl w-full max-w-[560px] flex flex-col h-[92svh] transition-transform duration-300"
       >
 

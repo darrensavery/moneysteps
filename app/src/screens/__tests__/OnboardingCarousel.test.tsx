@@ -58,7 +58,7 @@ describe('OnboardingCarousel', () => {
 
   it('shows 4 pagination dots', () => {
     renderCarousel()
-    expect(screen.getAllByRole('button', { name: /go to slide/i })).toHaveLength(4)
+    expect(screen.getAllByRole('tab', { name: /go to slide/i })).toHaveLength(4)
   })
 
   it('advances to the next slide when Next is tapped', () => {
@@ -78,7 +78,7 @@ describe('OnboardingCarousel', () => {
 
   it('jumps directly to a slide when its dot is tapped', () => {
     renderCarousel()
-    fireEvent.click(screen.getByRole('button', { name: 'Go to slide 3' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Go to slide 3' }))
     expect(screen.getByText('You approve everything')).toBeInTheDocument()
   })
 

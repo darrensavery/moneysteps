@@ -38,6 +38,13 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
 
   const enterRefs   = useRef<(HTMLInputElement | null)[]>([])
   const confirmRefs = useRef<(HTMLInputElement | null)[]>([])
+  const headingRef  = useRef<HTMLHeadingElement>(null)
+
+  // Move focus to this screen's heading whenever the visible screen changes,
+  // so screen reader users get a clear signal a new step loaded.
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [screen])
 
   // On mount: check availability, then immediately prompt
   useEffect(() => {
@@ -136,7 +143,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
           <span className="text-5xl">✓</span>
         </div>
         <div>
-          <h2 className="text-[22px] font-extrabold text-[#1C1C1A] tracking-tight">Face ID enabled</h2>
+          <h2 ref={headingRef} tabIndex={-1} className="text-[22px] font-extrabold text-[#1C1C1A] tracking-tight outline-none">Face ID enabled</h2>
           <p className="text-sm text-[#6b6a66] mt-1.5">Your app is now protected. Taking you to your dashboard…</p>
         </div>
       </div>
@@ -153,7 +160,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
             </div>
             <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
           </div>
-          <h2 className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight">
+          <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight outline-none">
             Secure your App
           </h2>
           <p className="text-sm text-[#6b6a66] leading-relaxed">
@@ -212,7 +219,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
           </div>
           <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
         </div>
-        <h2 className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight">
+        <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight outline-none">
           Set a PIN
         </h2>
         <p className="text-sm text-[#6b6a66] leading-relaxed">
@@ -259,6 +266,8 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
                 onChange={e => pinStage === 'confirm' && handlePinInput(i, e.target.value)}
                 onKeyDown={e => pinStage === 'confirm' && handlePinKeyDown(i, confirmPin, setConfirmPin, confirmRefs, e)}
                 aria-label={`Confirm PIN digit ${i + 1}`}
+                aria-invalid={!!error}
+                aria-describedby={error ? 'pin-mismatch-error' : undefined}
                 className={cn(
                   'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-[#1C1C1A]',
                   'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
@@ -268,7 +277,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
               />
             ))}
           </div>
-          {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
+          {error && <p id="pin-mismatch-error" role="alert" className="text-xs font-semibold text-red-600">{error}</p>}
         </div>
       </div>
 

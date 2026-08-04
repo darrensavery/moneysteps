@@ -44,6 +44,7 @@ export function GiveRequestSheet({ giveBalance, currency, familyId, childId, onC
     <BaseSheet
       onClose={onClose}
       zIndex={200}
+      label={done ? 'Gift request sent' : 'Make a gift'}
       panelStyle={{ background: '#1a2e22', borderRadius: '20px 20px 0 0', padding: '8px 20px 40px', fontFamily: 'Manrope' }}
     >
       {done ? (
@@ -60,22 +61,26 @@ export function GiveRequestSheet({ giveBalance, currency, familyId, childId, onC
             Give jar: {fmt(giveBalance, currency)} available
           </div>
 
-          <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 6 }}>What is it for?</label>
+          <label htmlFor="give-request-cause" style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 6 }}>What is it for?</label>
           <input
+            id="give-request-cause"
             type="text" maxLength={60} placeholder="e.g. Cancer Research, school fundraiser…"
             value={cause} onChange={e => setCause(e.target.value)}
+            required aria-required="true" aria-invalid={!!err} aria-describedby={err ? 'give-request-error' : undefined}
             style={{ width: '100%', padding: '12px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 15, marginBottom: 4, boxSizing: 'border-box' }}
           />
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 20, textAlign: 'right' }}>{cause.length}/60</div>
 
-          <label style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 6 }}>Amount</label>
+          <label htmlFor="give-request-amount" style={{ display: 'block', color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 6 }}>Amount</label>
           <input
+            id="give-request-amount"
             type="number" min="0.01" max={giveBalance / 100} step="0.01" placeholder="0.00"
             value={amt} onChange={e => setAmt(e.target.value)}
+            required aria-required="true" aria-invalid={!!err} aria-describedby={err ? 'give-request-error' : undefined}
             style={{ width: '100%', padding: '12px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 15, marginBottom: 20, boxSizing: 'border-box' }}
           />
 
-          {err && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{err}</div>}
+          {err && <div id="give-request-error" role="alert" style={{ color: '#f87171', fontSize: 13, marginBottom: 12 }}>{err}</div>}
 
           <button onClick={() => { void tick(); handleSubmit(); }} disabled={saving}
             style={{ width: '100%', padding: 14, borderRadius: 12, background: '#d97706', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginBottom: 10 }}>

@@ -7,7 +7,7 @@
  * - Multiple children can be added; at least one is required to proceed
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { UserPlus, Copy, Check, ShieldCheck, ChevronRight, Baby } from 'lucide-react'
 import { Button }                              from '@/components/ui/button'
 import { Input }                               from '@/components/ui/input'
@@ -31,6 +31,11 @@ export function Stage3ChildOnboarding({ data, onNext, onBack }: Props) {
   const [error,        setError]        = useState('')
   const [justAdded,    setJustAdded]    = useState<ChildRecord | null>(null)
   const [copiedCode,   setCopiedCode]   = useState<string | null>(null)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [])
 
   async function handleAddChild() {
     const name = nickname.trim()
@@ -73,7 +78,7 @@ export function Stage3ChildOnboarding({ data, onNext, onBack }: Props) {
     <div className="space-y-7">
       {/* Header */}
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">Child Onboarding</h2>
+        <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold tracking-tight outline-none">Child Onboarding</h2>
         <p className="text-muted-foreground text-sm leading-relaxed">
           Add each child to your family record. They join on their own device using
           the secure code you generate here.
@@ -100,6 +105,10 @@ export function Stage3ChildOnboarding({ data, onNext, onBack }: Props) {
             value={nickname}
             onChange={e => setNickname(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAddChild()}
+            required
+            aria-required="true"
+            aria-invalid={!!error}
+            aria-describedby={error ? 'nickname-error' : undefined}
             className="flex-1"
           />
           <Button
@@ -115,7 +124,7 @@ export function Stage3ChildOnboarding({ data, onNext, onBack }: Props) {
             Add
           </Button>
         </div>
-        {error && <p className="text-xs text-destructive font-medium">{error}</p>}
+        {error && <p id="nickname-error" role="alert" className="text-xs text-destructive font-medium">{error}</p>}
       </div>
 
       {/* Freshly-generated code display */}

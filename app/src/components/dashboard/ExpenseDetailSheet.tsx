@@ -38,6 +38,14 @@ export function ExpenseDetailSheet({ expense: e, currentUserId, isCoParenting, o
   const hasReceipt = Boolean(e.receipt_r2_key);
 
   useEffect(() => {
+    function handleKeyDown(ev: KeyboardEvent) {
+      if (ev.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
     if (!hasReceipt) return;
     setReceiptState('loading');
     getReceiptUrl(e.id)
@@ -79,7 +87,14 @@ export function ExpenseDetailSheet({ expense: e, currentUserId, isCoParenting, o
       />
 
       {/* Sheet */}
-      <div ref={sheetRef} className="relative mt-auto w-full max-h-[90dvh] bg-[var(--color-surface)] rounded-t-2xl flex flex-col overflow-hidden shadow-2xl transition-transform duration-300">
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={e.description}
+        tabIndex={-1}
+        className="relative mt-auto w-full max-h-[90dvh] bg-[var(--color-surface)] rounded-t-2xl flex flex-col overflow-hidden shadow-2xl transition-transform duration-300"
+      >
 
         {/* Drag handle */}
         <div {...handleProps}>

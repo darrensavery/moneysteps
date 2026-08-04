@@ -80,6 +80,8 @@ export function JoinFamilyScreen() {
   const [pinError,     setPinError]     = useState('')
   const enterRefs   = useRef<(HTMLInputElement | null)[]>([])
   const confirmRefs = useRef<(HTMLInputElement | null)[]>([])
+  const detailsHeadingRef = useRef<HTMLHeadingElement>(null)
+  const secureHeadingRef  = useRef<HTMLHeadingElement>(null)
 
   // ── Auto-focus code input on mount ─────────────────────────────────────────
   useEffect(() => {
@@ -87,6 +89,17 @@ export function JoinFamilyScreen() {
       setTimeout(() => codeRef.current?.focus(), 80)
     }
   }, [step])
+
+  // ── Focus the step heading whenever the step changes, so screen reader
+  //    users get a clear signal a new step loaded (code step focuses its
+  //    input directly above, so only details/securing need a heading focus).
+  useEffect(() => {
+    if (step === 'details') detailsHeadingRef.current?.focus()
+  }, [step])
+
+  useEffect(() => {
+    secureHeadingRef.current?.focus()
+  }, [secureScreen])
 
   // ── Step 1: code input ─────────────────────────────────────────────────────
 
@@ -353,6 +366,10 @@ export function JoinFamilyScreen() {
                 placeholder="A3F7K2"
                 maxLength={6}
                 disabled={checking}
+                required
+                aria-required="true"
+                aria-invalid={!!codeError}
+                aria-describedby={codeError ? 'join-code-error' : undefined}
                 className={cn(
                   'w-full h-16 rounded-xl border-2 px-4 text-center text-[26px] font-extrabold tracking-[0.25em]',
                   'bg-white outline-none transition-all duration-150',
@@ -365,7 +382,7 @@ export function JoinFamilyScreen() {
               />
 
               {codeError && (
-                <p className="text-[13px] font-semibold text-red-600 text-center">{codeError}</p>
+                <p id="join-code-error" role="alert" className="text-[13px] font-semibold text-red-600 text-center">{codeError}</p>
               )}
 
               {checking && (
@@ -399,7 +416,7 @@ export function JoinFamilyScreen() {
         {step === 'details' && (
           <div className="w-full space-y-6">
             <div className="text-center">
-              <h1 className="text-[26px] font-extrabold text-[#1C1C1A] tracking-tight mb-2">
+              <h1 ref={detailsHeadingRef} tabIndex={-1} className="text-[26px] font-extrabold text-[#1C1C1A] tracking-tight mb-2 outline-none">
                 {inviteRole === 'child' ? 'What\'s your name?' : 'Create your account'}
               </h1>
               <p className="text-[14px] text-[#6b6a66] leading-relaxed">
@@ -416,6 +433,10 @@ export function JoinFamilyScreen() {
                 placeholder={inviteRole === 'child' ? 'Your nickname or first name' : 'Your name'}
                 value={displayName}
                 onChange={e => { setDisplayName(e.target.value); setDetailError('') }}
+                required
+                aria-required="true"
+                aria-invalid={!!detailError}
+                aria-describedby={detailError ? 'join-detail-error' : undefined}
                 className="
                   w-full h-14 rounded-xl border-2 border-[#D3D1C7] px-4 text-[16px]
                   text-[#1C1C1A] bg-white outline-none focus:border-teal-500 transition-colors
@@ -429,6 +450,10 @@ export function JoinFamilyScreen() {
                     placeholder="Email address"
                     value={email}
                     onChange={e => { setEmail(e.target.value); setDetailError('') }}
+                    required
+                    aria-required="true"
+                    aria-invalid={!!detailError}
+                    aria-describedby={detailError ? 'join-detail-error' : undefined}
                     className="
                       w-full h-14 rounded-xl border-2 border-[#D3D1C7] px-4 text-[16px]
                       text-[#1C1C1A] bg-white outline-none focus:border-teal-500 transition-colors
@@ -439,6 +464,10 @@ export function JoinFamilyScreen() {
                     placeholder="Password (min 8 characters)"
                     value={password}
                     onChange={e => { setPassword(e.target.value); setDetailError('') }}
+                    required
+                    aria-required="true"
+                    aria-invalid={!!detailError}
+                    aria-describedby={detailError ? 'join-detail-error' : undefined}
                     className="
                       w-full h-14 rounded-xl border-2 border-[#D3D1C7] px-4 text-[16px]
                       text-[#1C1C1A] bg-white outline-none focus:border-teal-500 transition-colors
@@ -448,7 +477,7 @@ export function JoinFamilyScreen() {
               )}
 
               {detailError && (
-                <p className="text-[13px] font-semibold text-red-600 text-center">{detailError}</p>
+                <p id="join-detail-error" role="alert" className="text-[13px] font-semibold text-red-600 text-center">{detailError}</p>
               )}
 
               <TurnstileWidget onVerify={setTurnstileToken} />
@@ -494,7 +523,7 @@ export function JoinFamilyScreen() {
                   <span className="text-5xl">✓</span>
                 </div>
                 <div>
-                  <h2 className="text-[22px] font-extrabold text-[#1C1C1A] tracking-tight">Face ID enabled</h2>
+                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[22px] font-extrabold text-[#1C1C1A] tracking-tight outline-none">Face ID enabled</h2>
                   <p className="text-sm text-[#6b6a66] mt-1.5">Your app is now protected. Taking you in…</p>
                 </div>
               </div>
@@ -509,7 +538,7 @@ export function JoinFamilyScreen() {
                     </div>
                     <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
                   </div>
-                  <h2 className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight">
+                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight outline-none">
                     Secure your App
                   </h2>
                   <p className="text-sm text-[#6b6a66] leading-relaxed">
@@ -555,7 +584,7 @@ export function JoinFamilyScreen() {
                     </div>
                     <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
                   </div>
-                  <h2 className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight">Set a PIN</h2>
+                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight outline-none">Set a PIN</h2>
                   <p className="text-sm text-[#6b6a66] leading-relaxed">
                     Choose a 4-digit PIN. You'll use this to open the app when your phone is locked.
                   </p>
@@ -597,6 +626,8 @@ export function JoinFamilyScreen() {
                           onChange={e => pinStage === 'confirm' && handlePinInput(i, e.target.value)}
                           onKeyDown={e => pinStage === 'confirm' && handlePinKeyDown(i, confirmPin, setConfirmPin, confirmRefs, e)}
                           aria-label={`Confirm PIN digit ${i + 1}`}
+                          aria-invalid={!!pinError}
+                          aria-describedby={pinError ? 'join-pin-mismatch-error' : undefined}
                           className={cn(
                             'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-[#1C1C1A]',
                             'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
@@ -606,7 +637,7 @@ export function JoinFamilyScreen() {
                         />
                       ))}
                     </div>
-                    {pinError && <p className="text-xs font-semibold text-red-600">{pinError}</p>}
+                    {pinError && <p id="join-pin-mismatch-error" role="alert" className="text-xs font-semibold text-red-600">{pinError}</p>}
                   </div>
                 </div>
 

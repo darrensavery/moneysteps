@@ -4,7 +4,7 @@
 // synonyms, so "maccies" finds McDonald's), taps one, enters the actual amount
 // they paid, then saves to /api/spending. The category is persisted with every
 // entry so families can track what children spend on over time.
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { logSpend, logImpulseOutcome } from '../../lib/api'
 import { shouldTriggerImpulseSpeedBump } from '../../lib/impulseSpeedBump'
@@ -183,6 +183,18 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
 
   useAndroidBack(open && !entry, onClose)
   useAndroidBack(!!entry,        closeEntry)
+
+  useEffect(() => {
+    if (!entry) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      if (cooldown) handleCooldownWait()
+      else closeEntry()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry, cooldown])
 
   // Catalogue grouped by category, after search + filter. Only groups with at
   // least one match are kept, so headings never sit above an empty list.
@@ -424,7 +436,13 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
       {entry && cooldown && (
         <div className="absolute inset-0 z-10 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={handleCooldownWait} />
-          <div className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 space-y-4 max-h-[88%] overflow-y-auto">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Just checking"
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 space-y-4 max-h-[88%] overflow-y-auto"
+          >
             <div className="flex justify-center pt-3 pb-0">
               <div className="w-10 h-1 rounded-full bg-[var(--color-border)]" />
             </div>
@@ -458,7 +476,14 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
       {entry && !cooldown && (
         <div className="absolute inset-0 z-10 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={closeEntry} />
-          <div ref={entrySheetRef} className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 space-y-4 max-h-[88%] overflow-y-auto">
+          <div
+            ref={entrySheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Log a spend"
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-t-2xl px-5 pt-2 pb-8 space-y-4 max-h-[88%] overflow-y-auto"
+          >
 
             {/* Drag handle */}
             <div {...entryHandleProps}>

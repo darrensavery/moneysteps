@@ -48,15 +48,26 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
 
   const containerRef     = useRef<HTMLDivElement>(null)
   const flashRef         = useRef<HTMLDivElement>(null)
+  const buttonRef        = useRef<HTMLButtonElement>(null)
   const confettiSpawned  = useRef(false)
   const onCompleteRef    = useRef(onComplete)
   const buttonTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
 
   useEffect(() => { onCompleteRef.current = onComplete })
 
   const triggerPayoff = useCallback(() => {
     if (!confettiSpawned.current && containerRef.current && hasPayoff) {
       confettiSpawned.current = true
+      if (reducedMotion) return
       if (flashRef.current) {
         flashRef.current.style.animation = 'none'
         void flashRef.current.offsetWidth
@@ -64,7 +75,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
       }
       spawnConfetti(containerRef.current)
     }
-  }, [hasPayoff])
+  }, [hasPayoff, reducedMotion])
 
   // Reset button visibility on each new stage
   useEffect(() => {
@@ -98,6 +109,12 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
     }
   }, [stageIdx, config, triggerPayoff, event.appView])
 
+  // Move focus onto the Continue button as soon as it's interactive, so
+  // keyboard users always have a focused, actionable control on each stage.
+  useEffect(() => {
+    if (btnReady) buttonRef.current?.focus()
+  }, [btnReady])
+
   const advance = useCallback(() => {
     if (stageIdx < stages.length - 1) {
       setPhase('transition')
@@ -111,6 +128,20 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
       setTimeout(() => onCompleteRef.current(), 500)
     }
   }, [stageIdx, stages.length])
+
+  const dismiss = useCallback(() => {
+    setPhase('exit')
+    setVisible(false)
+    setTimeout(() => onCompleteRef.current(), 200)
+  }, [])
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') dismiss()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [dismiss])
 
   if (!config) return null
 
@@ -154,6 +185,9 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
 
       <div
         ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={current.heading}
         className={cn(
           'fixed inset-0 z-[100] flex items-center justify-center overflow-hidden',
           'transition-opacity duration-500',
@@ -169,18 +203,22 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
         }} />
 
         {/* Floating ambient orbs */}
-        <div style={{
-          position: 'absolute', width: 220, height: 220, borderRadius: '50%',
-          top: '8%', left: '-12%', pointerEvents: 'none',
-          background: 'radial-gradient(circle, rgba(0,149,156,0.14) 0%, transparent 70%)',
-          animation: 'mc-orb-drift 7s ease-in-out infinite',
-        }} />
-        <div style={{
-          position: 'absolute', width: 180, height: 180, borderRadius: '50%',
-          bottom: '10%', right: '-8%', pointerEvents: 'none',
-          background: 'radial-gradient(circle, rgba(230,178,34,0.12) 0%, transparent 70%)',
-          animation: 'mc-orb-drift 9s ease-in-out infinite 1.5s',
-        }} />
+        {!reducedMotion && (
+          <>
+            <div style={{
+              position: 'absolute', width: 220, height: 220, borderRadius: '50%',
+              top: '8%', left: '-12%', pointerEvents: 'none',
+              background: 'radial-gradient(circle, rgba(0,149,156,0.14) 0%, transparent 70%)',
+              animation: 'mc-orb-drift 7s ease-in-out infinite',
+            }} />
+            <div style={{
+              position: 'absolute', width: 180, height: 180, borderRadius: '50%',
+              bottom: '10%', right: '-8%', pointerEvents: 'none',
+              background: 'radial-gradient(circle, rgba(230,178,34,0.12) 0%, transparent 70%)',
+              animation: 'mc-orb-drift 9s ease-in-out infinite 1.5s',
+            }} />
+          </>
+        )}
 
         <div
           ref={flashRef}
@@ -223,7 +261,9 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
                 width: 96, height: 96, borderRadius: '50%',
                 background: 'radial-gradient(circle at 45% 40%, rgba(255,255,255,0.10) 0%, rgba(0,149,156,0.08) 60%, transparent 100%)',
                 border: '1.5px solid rgba(255,255,255,0.10)',
-                animation: 'mc-fade-up .55s cubic-bezier(.2,1,.4,1) .1s both, mc-icon-glow 3s ease-in-out infinite 0.8s',
+                animation: reducedMotion
+                  ? 'none'
+                  : 'mc-fade-up .55s cubic-bezier(.2,1,.4,1) .1s both, mc-icon-glow 3s ease-in-out infinite 0.8s',
               }}
             >
               {current.icon}
@@ -260,6 +300,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
             pointerEvents: showButton ? 'auto' : 'none',
           }}>
             <button
+              ref={buttonRef}
               onClick={e => { e.stopPropagation(); advance() }}
               style={{
                 background: 'linear-gradient(135deg, #00959c 0%, #1d8f6f 100%)',
@@ -272,7 +313,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
                 letterSpacing: '.01em',
                 cursor: 'pointer',
                 minWidth: 180,
-                animation: 'mc-btn-pulse 2.2s ease-in-out infinite .5s',
+                animation: reducedMotion ? 'none' : 'mc-btn-pulse 2.2s ease-in-out infinite .5s',
               }}
             >
               {btnLabel}

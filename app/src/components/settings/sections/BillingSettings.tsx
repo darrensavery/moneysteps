@@ -15,6 +15,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { CreditCard, Clock, Receipt, Zap, Shield, Star, X, Check, Mail, AlertTriangle } from 'lucide-react'
 import { Toast, SettingsRow, SectionCard, SectionHeader } from '../shared'
+import { useFocusTrap } from '../../../hooks/useFocusTrap'
 import {
   getTrialStatus, getBillingHistory, createCheckoutSession, cancelPlan, getShieldUpgradePrice,
   type TrialStatus, type PaymentRecord, type ShieldUpgradePrice,
@@ -79,12 +80,28 @@ const COMPARE_ROWS: {
 ]
 
 function ComparePlansModal({ onClose }: { onClose: () => void }) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(panelRef, true)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Compare plans"
+        tabIndex={-1}
         className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl pb-safe overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
         style={{ maxHeight: '85vh' }}
@@ -97,9 +114,10 @@ function ComparePlansModal({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close"
             className="tap-target-44 w-8 h-8 rounded-full flex items-center justify-center bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           >
-            <X size={15} />
+            <X size={15} aria-hidden="true" />
           </button>
         </div>
 

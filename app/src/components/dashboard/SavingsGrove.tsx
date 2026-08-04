@@ -9,7 +9,7 @@
  * On submit: calls createGoal API and calls onCreated() callback.
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { Chore, Goal } from '../../lib/api'
 import { createGoal, formatCurrency } from '../../lib/api'
 import { currencySymbol } from '../../lib/locale'
@@ -52,6 +52,14 @@ export function SavingsGrove({
 
   useAndroidBack(true, onClose)
   const { sheetRef, handleProps } = useDragToClose(onClose)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
 
   const targetPence = useMemo(() => {
     const n = parseFloat(amountStr)
@@ -128,6 +136,8 @@ export function SavingsGrove({
       className="fixed inset-0 z-50 flex flex-col justify-end"
       role="dialog"
       aria-modal="true"
+      aria-label={appView === 'CLEAN' ? 'Add a Goal' : 'Add a Goal — Savings Grove'}
+      tabIndex={-1}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />

@@ -260,16 +260,22 @@ export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5 space-y-4">
             <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">{heading}</p>
+            <label htmlFor="pin-mgmt-password-input" className="sr-only">Account password</label>
             <input
+              id="pin-mgmt-password-input"
               type="password"
               value={password}
               onChange={e => { setPassword(e.target.value); setPwError('') }}
               placeholder="Account password"
               autoComplete="current-password"
               autoFocus
+              required
+              aria-required="true"
+              aria-invalid={!!pwError}
+              aria-describedby={pwError ? 'pin-mgmt-password-error' : undefined}
               className={`w-full px-3 py-2.5 text-[14px] rounded-xl border bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] ${pwError ? 'border-red-400' : 'border-[var(--color-border)]'}`}
             />
-            {pwError && <p className="text-[12px] text-red-500">{pwError}</p>}
+            {pwError && <p id="pin-mgmt-password-error" role="alert" className="text-[12px] text-red-500">{pwError}</p>}
             <button
               type="submit"
               disabled={!password.trim()}

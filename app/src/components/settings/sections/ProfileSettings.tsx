@@ -6,7 +6,7 @@
  * Callbacks: onSaveName(newName), onSaveEmail(newEmail), onSetAvatar(id).
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { User, Shield, AlertTriangle, X, LogOut } from 'lucide-react'
 import { AvatarSVG, DefaultAvatar, AVATAR_CATEGORIES, avatarsForCategory, type AvatarCategory } from '../../../lib/avatars'
 import type { MeResult } from '../../../lib/api'
@@ -14,6 +14,7 @@ import { leaveFamily, deleteFamily, logout } from '../../../lib/api'
 import { clearDeviceIdentity, getDeviceIdentity, verifyPinHash } from '../../../lib/deviceIdentity'
 import { cn } from '../../../lib/utils'
 import { Toast, SettingsRow, SectionCard, SectionHeader } from '../shared'
+import { useFocusTrap } from '../../../hooks/useFocusTrap'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -70,6 +71,41 @@ export function ProfileSettings({
   const [pinInput,      setPinInput]      = useState('')
   const [pinError,      setPinError]      = useState<string | null>(null)
   const [pinVerified,   setPinVerified]   = useState<'email' | 'leave' | 'uproot' | null>(null)
+
+  // Focus traps for the three confirmation overlays
+  const leaveModalRef  = useRef<HTMLDivElement>(null)
+  const uprootModalRef = useRef<HTMLDivElement>(null)
+  const pinGateModalRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(leaveModalRef, showLeaveModal)
+  useFocusTrap(uprootModalRef, showUprootModal)
+  useFocusTrap(pinGateModalRef, pinGate !== null)
+
+  useEffect(() => {
+    if (!showLeaveModal) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { setShowLeaveModal(false); setDangerError(null) }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showLeaveModal])
+
+  useEffect(() => {
+    if (!showUprootModal) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { setShowUprootModal(false); setUprootInput(''); setDangerError(null) }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showUprootModal])
+
+  useEffect(() => {
+    if (!pinGate) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { setPinGate(null); setPinInput(''); setPinError(null) }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [pinGate])
 
   async function verifyPin(action: 'email' | 'leave' | 'uproot') {
     const storedHash = identity?.pin_hash
@@ -182,7 +218,7 @@ export function ProfileSettings({
           {identity?.google_picture ? (
             <img
               src={identity.google_picture}
-              alt={identity.display_name}
+              alt={`${identity.display_name}'s profile photo`}
               className="w-[52px] h-[52px] rounded-full object-cover border-2 border-[var(--brand-primary)] shrink-0"
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
@@ -263,16 +299,22 @@ export function ProfileSettings({
         />
         {editingName && (
           <form onSubmit={handleSaveName} className="px-4 py-3 border-t border-[var(--color-border)] space-y-2">
+            <label htmlFor="profile-name-input" className="sr-only">Your name</label>
             <input
+              id="profile-name-input"
               type="text"
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               maxLength={40}
               autoFocus
+              required
+              aria-required="true"
+              aria-invalid={!!nameError}
+              aria-describedby={nameError ? 'profile-name-error' : undefined}
               placeholder="Your name"
               className="w-full px-3 py-2 text-[14px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             />
-            {nameError && <p className="text-[12px] text-red-500">{nameError}</p>}
+            {nameError && <p id="profile-name-error" role="alert" className="text-[12px] text-red-500">{nameError}</p>}
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -322,15 +364,21 @@ export function ProfileSettings({
 
         {editingEmail && (
           <form onSubmit={handleSaveEmail} className="px-4 py-3 border-t border-[var(--color-border)] space-y-2">
+            <label htmlFor="profile-email-input" className="sr-only">Email address</label>
             <input
+              id="profile-email-input"
               type="email"
               value={emailInput}
               onChange={e => setEmailInput(e.target.value)}
               autoFocus
+              required
+              aria-required="true"
+              aria-invalid={!!emailError}
+              aria-describedby={emailError ? 'profile-email-error' : undefined}
               placeholder="your@email.com"
               className="w-full px-3 py-2 text-[14px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             />
-            {emailError && <p className="text-[12px] text-red-500">{emailError}</p>}
+            {emailError && <p id="profile-email-error" role="alert" className="text-[12px] text-red-500">{emailError}</p>}
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -378,7 +426,14 @@ export function ProfileSettings({
       {/* Leave Modal */}
       {showLeaveModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-8">
-          <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl">
+          <div
+            ref={leaveModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Leave family"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl"
+          >
             <div className="flex items-center justify-between">
               <p className="text-[16px] font-bold text-[var(--color-text)]">Leave Family?</p>
               <button onClick={() => { setShowLeaveModal(false); setDangerError(null) }} className="tap-target-44 text-[var(--color-text-muted)] cursor-pointer">
@@ -393,7 +448,7 @@ export function ProfileSettings({
                 A co-parent will be promoted to Lead to ensure the family can still be managed.
               </p>
             )}
-            {dangerError && <p className="text-[12px] text-red-500">{dangerError}</p>}
+            {dangerError && <p role="alert" className="text-[12px] text-red-500">{dangerError}</p>}
             <button
               onClick={handleLeave}
               disabled={dangerBusy}
@@ -408,7 +463,14 @@ export function ProfileSettings({
       {/* Uproot Modal */}
       {showUprootModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-8">
-          <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl">
+          <div
+            ref={uprootModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Delete everything"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl"
+          >
             <div className="flex items-center justify-between">
               <p className="text-[16px] font-bold text-red-600">Delete Everything?</p>
               <button onClick={() => { setShowUprootModal(false); setUprootInput(''); setDangerError(null) }} className="tap-target-44 text-[var(--color-text-muted)] cursor-pointer">
@@ -418,14 +480,20 @@ export function ProfileSettings({
             <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
               This will permanently uproot your orchard. All family data, chores, and goals will be deleted. The ledger is anonymised immediately, but pseudonymised transaction records are retained for up to 7 years to preserve the hash chain's integrity (see our Privacy Policy, Section 6), then permanently deleted.
             </p>
+            <label htmlFor="uproot-confirm-input" className="sr-only">Type UPROOT to confirm</label>
             <input
+              id="uproot-confirm-input"
               type="text"
               value={uprootInput}
               onChange={e => setUprootInput(e.target.value)}
+              required
+              aria-required="true"
+              aria-invalid={!!dangerError}
+              aria-describedby={dangerError ? 'uproot-error' : undefined}
               placeholder="Type UPROOT to confirm"
               className="w-full px-3 py-2 text-[14px] rounded-xl border border-red-300 bg-red-50 text-red-800 placeholder-red-300 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
-            {dangerError && <p className="text-[12px] text-red-500">{dangerError}</p>}
+            {dangerError && <p id="uproot-error" role="alert" className="text-[12px] text-red-500">{dangerError}</p>}
             <button
               onClick={handleUproot}
               disabled={dangerBusy || uprootInput !== 'UPROOT'}
@@ -440,7 +508,14 @@ export function ProfileSettings({
       {/* PIN re-auth gate */}
       {pinGate && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 px-4 pb-8">
-          <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl">
+          <div
+            ref={pinGateModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirm your PIN"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl"
+          >
             <div className="flex items-center justify-between">
               <p className="text-[16px] font-bold text-[var(--color-text)]">Confirm your PIN</p>
               <button onClick={() => { setPinGate(null); setPinInput(''); setPinError(null) }} className="tap-target-44 text-[var(--color-text-muted)] cursor-pointer">
@@ -450,17 +525,23 @@ export function ProfileSettings({
             <p className="text-[13px] text-[var(--color-text-muted)]">
               Enter your PIN to continue with this sensitive action.
             </p>
+            <label htmlFor="profile-pin-confirm-input" className="sr-only">PIN</label>
             <input
+              id="profile-pin-confirm-input"
               type="password"
               inputMode="numeric"
               maxLength={4}
               value={pinInput}
               onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null) }}
               placeholder="••••"
+              required
+              aria-required="true"
+              aria-invalid={!!pinError}
+              aria-describedby={pinError ? 'profile-pin-confirm-error' : undefined}
               className="w-full text-center text-[24px] tracking-[0.5em] border-2 border-[var(--color-border)] rounded-xl px-3 py-3 bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:border-[var(--brand-primary)]"
               autoFocus
             />
-            {pinError && <p className="text-[12px] font-semibold text-red-600">{pinError}</p>}
+            {pinError && <p id="profile-pin-confirm-error" role="alert" className="text-[12px] font-semibold text-red-600">{pinError}</p>}
             <button
               onClick={() => void verifyPin(pinGate)}
               disabled={pinInput.length < 4}

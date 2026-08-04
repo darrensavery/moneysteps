@@ -10,7 +10,7 @@
  * This avoids any "add child" API calls before the account fully exists.
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FullLogo } from '../ui/Logo'
 import { Stage1ParentIdentity }     from './Stage1ParentIdentity'
 import { Stage2FamilyConstitution } from './Stage2FamilyConstitution'
@@ -223,7 +223,10 @@ export function RegistrationShell({ onComplete }: Props) {
     <RegistrationLayout step={step} totalSteps={totalSteps} progress={progress}>
       {error && (
         <div className="fixed top-[72px] left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-          <div className="w-full max-w-md rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-lg pointer-events-auto">
+          <div
+            role="alert"
+            className="w-full max-w-md rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-lg pointer-events-auto"
+          >
             {error}
           </div>
         </div>
@@ -274,6 +277,11 @@ export function RegistrationShell({ onComplete }: Props) {
 function CheckEmailScreen({ email, onResend }: { email: string; onResend: () => Promise<void> }) {
   const [resent,    setResent]    = useState(false)
   const [resending, setResending] = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [])
 
   async function handleResend() {
     setResending(true)
@@ -295,7 +303,7 @@ function CheckEmailScreen({ email, onResend }: { email: string; onResend: () => 
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Check your email</h2>
+          <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold tracking-tight text-gray-900 outline-none">Check your email</h2>
           <p className="text-gray-500 text-sm mt-1 leading-relaxed max-w-xs mx-auto">
             We've sent a magic link to <strong className="text-gray-900">{email}</strong>.
             Click the link to verify your account and continue setup.
@@ -347,7 +355,7 @@ function RegistrationLayout({ step, totalSteps, progress, children }: {
               <FullLogo iconSize={26} />
             </div>
             {step !== null && (
-              <div className="text-right">
+              <div className="text-right" aria-live="polite">
                 <span className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
                   Step {step} of {totalSteps}
                 </span>
@@ -357,7 +365,13 @@ function RegistrationLayout({ step, totalSteps, progress, children }: {
               </div>
             )}
           </div>
-          <div className="relative h-2 w-full rounded-full bg-[var(--color-surface-alt)] overflow-hidden">
+          <div
+            className="relative h-2 w-full rounded-full bg-[var(--color-surface-alt)] overflow-hidden"
+            role="progressbar"
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
             <div
               className="absolute inset-y-0 left-0 rounded-full bg-teal-500 transition-all duration-500 ease-in-out"
               style={{ width: `${progress}%` }}

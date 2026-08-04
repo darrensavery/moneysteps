@@ -85,6 +85,14 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
       .catch(() => {})
   }, [familyId, childId])
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   const amountPence = Math.round(parseFloat(amountStr || '0') * 100)
   const canSubmit   = title.trim().length > 0 && amountPence > 0
 
@@ -120,6 +128,10 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" onClick={onClose}>
       <div
         ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Log a spend"
+        tabIndex={-1}
         className="relative bg-[var(--color-surface)] rounded-t-3xl shadow-2xl w-full max-w-[560px] flex flex-col max-h-[92dvh] transition-transform duration-300"
         onClick={e => e.stopPropagation()}
       >

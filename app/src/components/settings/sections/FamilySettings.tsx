@@ -255,6 +255,7 @@ export function FamilySettings({
                 type="checkbox"
                 checked={localEnabled}
                 onChange={e => setLocalEnabled(e.target.checked)}
+                aria-label="Allow Overdraft"
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-[var(--color-border)] peer-checked:bg-[var(--brand-primary)] rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
@@ -270,11 +271,15 @@ export function FamilySettings({
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-[14px] text-[var(--color-text-muted)]">£</span>
+                <label htmlFor="overdraft-limit-input" className="sr-only">Overdraft limit</label>
                 <input
+                  id="overdraft-limit-input"
                   type="number"
                   inputMode="decimal"
                   step="1"
                   min="0"
+                  required
+                  aria-required="true"
                   value={(localLimitPence / 100).toFixed(0)}
                   onChange={e => setLocalLimitPence(Math.round(parseFloat(e.target.value || '0') * 100))}
                   className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[14px] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
@@ -310,11 +315,15 @@ export function FamilySettings({
             </p>
             <div className="flex items-center gap-2">
               <span className="text-[14px] text-[var(--color-text-muted)]">£</span>
+              <label htmlFor="shared-expense-threshold-input" className="sr-only">Approval threshold</label>
               <input
+                id="shared-expense-threshold-input"
                 type="number"
                 inputMode="decimal"
                 step="1"
                 min="0"
+                required
+                aria-required="true"
                 value={(sharedExpenseThreshold / 100).toFixed(0)}
                 onChange={e => onSharedExpenseThresholdChange(Math.round(parseFloat(e.target.value || '0') * 100))}
                 className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[14px] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
@@ -324,13 +333,14 @@ export function FamilySettings({
 
           {/* Default split */}
           <div className="px-4 py-3.5">
-            <p className="text-[13px] font-semibold text-[var(--color-text)] mb-0.5">
+            <label htmlFor="shared-expense-split-input" className="text-[13px] font-semibold text-[var(--color-text)] mb-0.5 block">
               Default Split — {(sharedExpenseSplitBp / 100).toFixed(0)}% / {(100 - sharedExpenseSplitBp / 100).toFixed(0)}%
-            </p>
+            </label>
             <p className="text-[12px] text-[var(--color-text-muted)] mb-2.5">
               Your share vs. the co-parent's share for new shared expenses.
             </p>
             <input
+              id="shared-expense-split-input"
               type="range"
               min={0}
               max={10000}
@@ -484,8 +494,11 @@ export function FamilySettings({
                   <p className="text-[20px] font-extrabold text-[var(--brand-primary)] tracking-widest mt-1">{addChildResult.invite_code}</p>
                 </div>
               )}
+              <label htmlFor="family-add-child-name" className="sr-only">Child's name</label>
               <input
+                id="family-add-child-name"
                 required
+                aria-required="true"
                 className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 placeholder="Child's name"
                 value={newChildName}

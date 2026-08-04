@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ChildRecord } from '../lib/api'
 import { getChildren, getCompletions, clearToken, getUnpaidSummary, getFamily, getTrialStatus, authHeaders, apiUrl, type UnpaidSummaryRow, type TrialStatus } from '../lib/api'
 import { getDeviceIdentity } from '../lib/deviceIdentity'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 import { StreakChip } from '../components/dashboard/StreakChip'
 import { useLocale, isPolish } from '../lib/locale'
 import { AvatarSVG } from '../lib/avatars'
@@ -50,6 +51,16 @@ export function ParentDashboard() {
     return valid.includes(saved as Tab) ? (saved as Tab) : 'chores'
   })
   const [showSettings, setShowSettings] = useState(false)
+  const settingsPanelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(settingsPanelRef, showSettings)
+  useEffect(() => {
+    if (!showSettings) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowSettings(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [showSettings])
   const [showAddExpense,  setShowAddExpense]  = useState(false)
   const [showSettlement,  setShowSettlement]  = useState(false)
   const [poolRefreshKey, setPoolRefreshKey] = useState(0)
@@ -365,10 +376,12 @@ export function ParentDashboard() {
       />
       {/* Drawer panel */}
       <div
+        ref={settingsPanelRef}
         className={`fixed top-0 right-0 bottom-0 z-50 w-[min(360px,100vw)] bg-[var(--color-bg)] flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${showSettings ? 'translate-x-0' : 'translate-x-full'}`}
         aria-modal="true"
         role="dialog"
         aria-label="Settings"
+        tabIndex={-1}
       >
         <ParentSettingsTab
           familyId={familyId}

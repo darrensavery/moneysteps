@@ -21,7 +21,7 @@ const KIND_LABELS: Record<string, string> = {
   goal_purchase:   'Goal bought',
 };
 
-const ICONS: Record<JarType, React.ComponentType<{ size?: number }>> = {
+const ICONS: Record<JarType, React.ComponentType<{ size?: number; decorative?: boolean }>> = {
   spend: SpendJarIcon,
   save:  SaveJarIcon,
   give:  GiveJarIcon,
@@ -101,6 +101,7 @@ export function JarDetailSheet({
     <BaseSheet
       onClose={onClose}
       zIndex={200}
+      label={`${jar} jar details`}
       panelStyle={{
         background: '#1a2e22',
         borderRadius: '20px 20px 0 0',
@@ -112,7 +113,7 @@ export function JarDetailSheet({
     >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <Icon size={32} />
+          <Icon size={32} decorative />
           <div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', textTransform: 'capitalize' }}>
               {jar}

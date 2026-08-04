@@ -1,5 +1,5 @@
 // app/src/components/dashboard/AddExpenseSheet.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createSharedExpense, uploadReceipt } from '../../lib/api';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { ErrorBox } from '../ui/ErrorBox';
@@ -87,6 +87,14 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
   useAndroidBack(true, onClose);
   const { sheetRef, handleProps } = useDragToClose(onClose);
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const regionPresets = getPresetsForRegion(region);
   const searchResults = searchQuery.trim()
     ? regionPresets.filter(p => fuzzyMatchPreset(p, searchQuery)).slice(0, 6)
@@ -150,7 +158,15 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={onClose}>
-      <div ref={sheetRef} className="relative bg-[var(--color-surface)] rounded-t-3xl shadow-2xl w-full max-w-[560px] flex flex-col max-h-[92dvh] transition-transform duration-300" onClick={e => e.stopPropagation()}>
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Log shared expense"
+        tabIndex={-1}
+        className="relative bg-[var(--color-surface)] rounded-t-3xl shadow-2xl w-full max-w-[560px] flex flex-col max-h-[92dvh] transition-transform duration-300"
+        onClick={e => e.stopPropagation()}
+      >
 
         {/* Drag handle */}
         <div {...handleProps}>
