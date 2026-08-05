@@ -108,6 +108,7 @@ import {
   handleChildGrowthGet, handleChildGrowthUpdate,
   handleChildRename, handleChildLoginHistory,
 } from './routes/settings.js';
+import { handleSetChildBirthDate } from './routes/childSettings.js';
 import { handleLedgerPost, handleLedgerGet, handleLedgerDispute } from './routes/ledger.js';
 import { handlePublicLedgerVerify } from './routes/ledger-verify-public.js';
 import { handleLedgerVerify } from './routes/verify.js';
@@ -724,6 +725,9 @@ async function route(request: Request, env: Env, method: string, path: string): 
 
   const childHandlesMatch = path.match(/^\/api\/child\/([^/]+)\/payment-handles$/);
   if (childHandlesMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleSetPaymentHandles(req, e, childHandlesMatch[1]));
+
+  const birthDateMatch = path.match(/^\/api\/children\/([^/]+)\/birth-date$/);
+  if (birthDateMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleSetChildBirthDate(req, e, birthDateMatch[1]));
 
   // Chores — children can list & submit
   if (path === '/api/chores' && method === 'GET')     return withAuth(request, auth, env, handleChoreList);

@@ -232,6 +232,7 @@ export interface ChildIntelligence {
   child_id: string;
   display_name: string;
   locale: Locale;
+  birth_date?: string | null;
   currency: Currency;
   app_view: 'ORCHARD' | 'CLEAN';
   earnings_mode: 'ALLOWANCE' | 'CHORES' | 'HYBRID';
