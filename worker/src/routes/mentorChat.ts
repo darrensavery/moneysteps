@@ -20,6 +20,15 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
   if (env.MENTOR_CHAT_ENABLED !== 'true') return error('Not available', 403);
 
   const auth = (request as AuthedRequest).auth;
+
+  const family = await env.DB
+    .prepare('SELECT has_ai_mentor, has_shield FROM families WHERE id = ?')
+    .bind(auth.family_id)
+    .first<{ has_ai_mentor: number; has_shield: number }>();
+  if (!family?.has_ai_mentor && !family?.has_shield) {
+    return error('AI Mentor required', 403);
+  }
+
   if (auth.role !== 'child') return error('Forbidden', 403);
 
   const body = await parseBody(request);

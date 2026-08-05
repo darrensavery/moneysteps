@@ -4,8 +4,11 @@ import * as moderation from '../lib/mentorChat/moderation.js';
 import * as classifier from '../lib/mentorChat/classifier.js';
 import * as alerts from '../lib/mentorChat/alerts.js';
 
-function makeEnv(overrides: { childRow?: unknown; rateCount?: number; consentRow?: unknown } = {}) {
+function makeEnv(overrides: { childRow?: unknown; rateCount?: number; consentRow?: unknown; familyRow?: unknown } = {}) {
   const first = vi.fn((sql: string) => {
+    if (sql.includes('has_ai_mentor')) {
+      return Promise.resolve(overrides.familyRow ?? { has_ai_mentor: 1, has_shield: 0 });
+    }
     if (sql.includes('FROM users')) {
       return Promise.resolve(overrides.childRow ?? { family_id: 'fam_1', birth_date: '2013-01-01', locale: 'en', display_name: 'Robin' });
     }
@@ -184,6 +187,33 @@ describe('handlePostMentorChatMessage', () => {
     const body = await res.json();
     expect(body.reply).toContain("outside what I can help with");
     expect(body.branch).toBe('on_topic');
+  });
+
+  it('rejects a family without AI Mentor tier', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: 'child_1', message: 'hi' }),
+    });
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+
+    const first = vi.fn((sql: string) => {
+      if (sql.includes('has_ai_mentor')) return Promise.resolve({ has_ai_mentor: 0, has_shield: 0 });
+      // Satisfy the FROM users lookup too, so a missing tier check doesn't
+      // coincidentally 403 via the "child not found" path instead.
+      if (sql.includes('FROM users')) {
+        return Promise.resolve({ family_id: 'fam_1', birth_date: '2013-01-01', locale: 'en', display_name: 'Robin' });
+      }
+      if (sql.includes('mentor_chat_consents')) return Promise.resolve({ consented: 1 });
+      if (sql.includes('COUNT(*)')) return Promise.resolve({ n: 0 });
+      return Promise.resolve(null);
+    });
+    const prepare = vi.fn((sql: string) => ({
+      bind: (..._args: unknown[]) => ({ first: () => first(sql) }),
+    }));
+    const env = { DB: { prepare }, MENTOR_CHAT_ENABLED: 'true' } as any;
+
+    const res = await handlePostMentorChatMessage(req, env);
+    expect(res.status).toBe(403);
   });
 });
 
