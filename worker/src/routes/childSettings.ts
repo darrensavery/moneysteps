@@ -22,9 +22,13 @@ export async function handleSetChildBirthDate(request: Request, env: Env, childI
     return error('birth_date must be a plausible ISO date (YYYY-MM-DD)', 400);
   }
 
-  const child = await env.DB.prepare('SELECT family_id FROM users WHERE id = ?')
-    .bind(childId).first<{ family_id: string }>();
-  if (!child || child.family_id !== auth.family_id) return error('Forbidden', 403);
+  const child = await env.DB
+    .prepare(`SELECT u.id FROM users u
+              JOIN family_roles fr ON fr.user_id = u.id
+              WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
+    .bind(childId, auth.family_id)
+    .first<{ id: string }>();
+  if (!child) return error('Forbidden', 403);
 
   await env.DB.prepare('UPDATE users SET birth_date = ? WHERE id = ?')
     .bind(birthDate, childId).run();
