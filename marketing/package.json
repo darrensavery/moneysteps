@@ -6,6 +6,6 @@
     "build": "node build.js"
   },
   "dependencies": {
-    "markdown-it": "^14.1.0"
+    "markdown-it": "^15.0.0"
   }
 }
