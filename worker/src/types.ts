@@ -29,6 +29,9 @@ export interface Env {
   // Optional — Cloudflare Turnstile bot-challenge. Unset until a Turnstile
   // site is created in the dashboard (see docs/security/audits/2026-07-15-production-security-audit.md).
   TURNSTILE_SECRET_KEY?: string;
+  // Optional — feature flag for Teen Mentor Chat. Unset/anything other than
+  // 'true' keeps the route returning 403 until Track 2's consent UI ships.
+  MENTOR_CHAT_ENABLED?: string;
   // ── Autonomous Support Agent (Phase 0) ──────────────────────────────────
   ANTHROPIC_API_KEY: string;
   ZOHO_CLIENT_ID: string;
