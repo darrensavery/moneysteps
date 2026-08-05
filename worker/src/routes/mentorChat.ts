@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/cloudflare';
 import { error, json, parseBody } from '../lib/response.js';
 import { isTeenAccount } from '../lib/ageGate.js';
 import { moderateText } from '../lib/mentorChat/moderation.js';
@@ -39,11 +40,18 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
   }
   if (childId !== auth.sub) return error('Forbidden', 403);
 
+  // childId === auth.sub and auth.role === 'child' are already enforced above, but we
+  // still resolve the child through the family_roles join (matching childSettings.ts's
+  // Task 1 fix and every other family-membership check in this codebase) rather than
+  // a raw users.family_id comparison, so this stays consistent if that convention ever
+  // changes and doesn't silently trust a stale/forged family_id claim in the JWT.
   const child = await env.DB
-    .prepare('SELECT family_id, birth_date, locale, display_name FROM users WHERE id = ?')
-    .bind(childId)
-    .first<{ family_id: string; birth_date: string | null; locale: 'en' | 'pl'; display_name: string }>();
-  if (!child || child.family_id !== auth.family_id) return error('Forbidden', 403);
+    .prepare(`SELECT u.birth_date, u.locale, u.display_name FROM users u
+              JOIN family_roles fr ON fr.user_id = u.id
+              WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
+    .bind(childId, auth.family_id)
+    .first<{ birth_date: string | null; locale: 'en' | 'pl'; display_name: string }>();
+  if (!child) return error('Forbidden', 403);
   if (!isTeenAccount(child.birth_date)) return error('Not available for this account', 403);
 
   const consent = await env.DB
@@ -65,6 +73,20 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
     .first<{ n: number }>();
   if ((dailyCount?.n ?? 0) >= DAILY_LIMIT) return error('Rate limit exceeded', 429);
 
+  // Write the child's message row BEFORE calling out to moderation/classification, so
+  // every attempt — successful or not — advances the rate-limit counter above (which
+  // counts existing 'child' rows). Previously the row was only written after both calls
+  // succeeded, so a client retrying a failing (503) request never tripped the rate
+  // limit even though each attempt still cost a real OpenAI moderation + classification
+  // call. moderation_flags starts NULL (already a valid state — assistant rows are
+  // always NULL) and is filled in via UPDATE once moderation actually completes.
+  const childMessageId = nanoid();
+  await env.DB
+    .prepare(`INSERT INTO mentor_chat_messages (id, family_id, child_id, role, content, moderation_flags, created_at)
+              VALUES (?, ?, ?, 'child', ?, NULL, unixepoch())`)
+    .bind(childMessageId, auth.family_id, childId, message)
+    .run();
+
   let moderationResult;
   let classification;
   try {
@@ -75,14 +97,14 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
     // on), and classifyChildMessage's own fail-closed path re-throwing when moderation
     // found nothing (see classifier.ts) — in both cases this was an infra failure on
     // an otherwise-ordinary message, not a crisis, so surface a plain service error.
+    // The child message row above already exists (with moderation_flags left NULL),
+    // so this attempt still counts against the rate limit on the next request.
     return error('Mentor is unavailable right now, try again shortly', 503);
   }
 
-  const childMessageId = nanoid();
   await env.DB
-    .prepare(`INSERT INTO mentor_chat_messages (id, family_id, child_id, role, content, moderation_flags, created_at)
-              VALUES (?, ?, ?, 'child', ?, ?, unixepoch())`)
-    .bind(childMessageId, child.family_id, childId, message, JSON.stringify(moderationResult))
+    .prepare(`UPDATE mentor_chat_messages SET moderation_flags = ? WHERE id = ?`)
+    .bind(JSON.stringify(moderationResult), childMessageId)
     .run();
 
   let reply: string;
@@ -93,21 +115,40 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
     const resources = getCrisisResources(child.locale, classification.branch);
     reply = `${resources.title}. ${resources.body}`;
 
+    // Resolve the actual send outcome BEFORE writing the escalation row, so
+    // `parents_notified` always reflects whether the email really went out — not
+    // merely whether the code attempted it. notifyParentsOfDistress sends real email
+    // via EmailService and can reject (network failure, provider 5xx, malformed parent
+    // email); if it does, the child must still get their crisis-resource reply and a
+    // normal 200 — a failed notification must never surface as a 500 to a distressed
+    // teen and suppress the resources they were just shown.
+    const shouldNotifyParents = classification.branch === 'distress';
+    let parentsNotified = false;
+    if (shouldNotifyParents) {
+      try {
+        await notifyParentsOfDistress(env, {
+          familyId: auth.family_id,
+          childDisplayName: child.display_name,
+          locale: child.locale,
+        });
+        parentsNotified = true;
+      } catch (err) {
+        // Dedicated fingerprint so a Sentry alert rule can watch this specifically,
+        // same pattern as 'webauthn-clone-detected' in routes/webauthn.ts.
+        Sentry.captureException(err, {
+          level: 'error',
+          fingerprint: ['mentor-chat-parent-notify-failed'],
+          extra: { family_id: auth.family_id, child_id: childId, escalation_type: classification.branch },
+        });
+      }
+    }
+
     const escalationId = nanoid();
-    const parentsNotified = classification.branch === 'distress';
     await env.DB
       .prepare(`INSERT INTO mentor_chat_escalations (id, message_id, escalation_type, parents_notified, created_at)
                 VALUES (?, ?, ?, ?, unixepoch())`)
       .bind(escalationId, childMessageId, classification.branch, parentsNotified ? 1 : 0)
       .run();
-
-    if (parentsNotified) {
-      await notifyParentsOfDistress(env, {
-        familyId: child.family_id,
-        childDisplayName: child.display_name,
-        locale: child.locale,
-      });
-    }
   } else {
     const systemPrompt = buildSystemPrompt(child.locale);
     const chatRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -153,7 +194,7 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
   await env.DB
     .prepare(`INSERT INTO mentor_chat_messages (id, family_id, child_id, role, content, moderation_flags, created_at)
               VALUES (?, ?, ?, 'assistant', ?, NULL, unixepoch())`)
-    .bind(nanoid(), child.family_id, childId, reply)
+    .bind(nanoid(), auth.family_id, childId, reply)
     .run();
 
   return json({ reply, branch: classification.branch });
@@ -176,12 +217,24 @@ export async function handleGetMentorChatHistory(request: Request, env: Env): Pr
   const childId = url.searchParams.get('child_id');
   if (!childId) return error('child_id required', 400);
 
+  // Same family_roles-join convention as the POST handler and childSettings.ts: proves
+  // the target is actually a child in this family (not e.g. a co-parent whose
+  // users.family_id happens to match), and also gives us birth_date in the same query
+  // so a sub-13 account is rejected here too, matching POST's isTeenAccount gate below.
   if (auth.role === 'child') {
     if (childId !== auth.sub) return error('Forbidden', 403);
+    const self = await env.DB.prepare('SELECT birth_date FROM users WHERE id = ?')
+      .bind(childId).first<{ birth_date: string | null }>();
+    if (!isTeenAccount(self?.birth_date ?? null)) return error('Not available for this account', 403);
   } else {
-    const child = await env.DB.prepare('SELECT family_id FROM users WHERE id = ?')
-      .bind(childId).first<{ family_id: string }>();
-    if (!child || child.family_id !== auth.family_id) return error('Forbidden', 403);
+    const child = await env.DB
+      .prepare(`SELECT u.birth_date FROM users u
+                JOIN family_roles fr ON fr.user_id = u.id
+                WHERE u.id = ? AND fr.family_id = ? AND fr.role = 'child'`)
+      .bind(childId, auth.family_id)
+      .first<{ birth_date: string | null }>();
+    if (!child) return error('Forbidden', 403);
+    if (!isTeenAccount(child.birth_date)) return error('Not available for this account', 403);
   }
 
   const rows = await env.DB

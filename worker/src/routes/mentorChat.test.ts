@@ -1,16 +1,44 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+
+vi.mock('@sentry/cloudflare', () => ({
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+}));
+
 import { handlePostMentorChatMessage, handleGetMentorChatHistory } from './mentorChat.js';
 import * as moderation from '../lib/mentorChat/moderation.js';
 import * as classifier from '../lib/mentorChat/classifier.js';
 import * as alerts from '../lib/mentorChat/alerts.js';
+import * as Sentry from '@sentry/cloudflare';
 
-function makeEnv(overrides: { childRow?: unknown; rateCount?: number; consentRow?: unknown; familyRow?: unknown } = {}) {
-  const first = vi.fn((sql: string) => {
+/**
+ * `members` mirrors the real family_roles-backed users table (same technique as
+ * childSettings.test.ts): the family_roles-joined child-resolution query only
+ * resolves when the bound (childId, familyId) pair matches a family member whose
+ * role is 'child'. This lets tests distinguish "target is a child in this family"
+ * from "target is a parent/co-parent" or "target is in a different family" — a
+ * plain object mock can't, since it ignores the SQL/params.
+ */
+function makeEnv(overrides: {
+  childRow?: unknown;
+  rateCount?: number;
+  consentRow?: unknown;
+  familyRow?: unknown;
+  members?: Array<{ id: string; family_id: string; role: 'child' | 'parent' }>;
+} = {}) {
+  const first = vi.fn((sql: string, args: unknown[]) => {
     if (sql.includes('has_ai_mentor')) {
       return Promise.resolve(overrides.familyRow ?? { has_ai_mentor: 1, has_shield: 0 });
     }
     if (sql.includes('FROM users')) {
-      return Promise.resolve(overrides.childRow ?? { family_id: 'fam_1', birth_date: '2013-01-01', locale: 'en', display_name: 'Robin' });
+      if (overrides.members) {
+        const [childId, familyId] = args as [string, string];
+        const match = overrides.members.find(
+          (m) => m.id === childId && m.family_id === familyId && m.role === 'child',
+        );
+        return Promise.resolve(match ? { birth_date: '2013-01-01', locale: 'en', display_name: 'Robin' } : null);
+      }
+      return Promise.resolve(overrides.childRow ?? { birth_date: '2013-01-01', locale: 'en', display_name: 'Robin' });
     }
     if (sql.includes('mentor_chat_consents')) {
       return Promise.resolve(overrides.consentRow ?? { consented: 1 });
@@ -21,17 +49,14 @@ function makeEnv(overrides: { childRow?: unknown; rateCount?: number; consentRow
     return Promise.resolve(null);
   });
   const run = vi.fn().mockResolvedValue({ success: true });
-  const bind = vi.fn().mockReturnValue({ first, run });
-  const prepare = vi.fn((sql: string) => ({ bind: () => bind(sql) }));
-  // simpler: make prepare capture sql and bind return object using closures keyed by sql
-  const realPrepare = vi.fn((sql: string) => ({
-    bind: (..._args: unknown[]) => ({
-      first: () => first(sql),
+  const prepare = vi.fn((sql: string) => ({
+    bind: (...args: unknown[]) => ({
+      first: () => first(sql, args),
       run,
     }),
   }));
   return {
-    DB: { prepare: realPrepare },
+    DB: { prepare },
     OPENAI_API_KEY: 'test-key',
     MENTOR_CHAT_ENABLED: 'true',
   } as any;
@@ -115,6 +140,43 @@ describe('handlePostMentorChatMessage', () => {
     expect(notifySpy).toHaveBeenCalledTimes(1);
   });
 
+  it('still returns 200 with crisis resources when the parent-notification email fails, and records parents_notified=0', async () => {
+    vi.spyOn(moderation, 'moderateText').mockResolvedValue({ flagged: true, categories: {}, category_scores: {} });
+    vi.spyOn(classifier, 'classifyChildMessage').mockResolvedValue({ branch: 'distress', rawFlags: {} });
+    vi.spyOn(alerts, 'notifyParentsOfDistress').mockRejectedValue(new Error('email provider 500'));
+    const captureSpy = vi.spyOn(Sentry, 'captureException').mockReturnValue('evt_1' as any);
+
+    const escalationBinds: unknown[][] = [];
+    const env = makeEnv();
+    const originalPrepare = env.DB.prepare;
+    env.DB.prepare = (sql: string) => {
+      const stmt = originalPrepare(sql);
+      return {
+        bind: (...args: unknown[]) => {
+          if (sql.includes('mentor_chat_escalations')) escalationBinds.push(args);
+          return stmt.bind(...args);
+        },
+      };
+    };
+
+    const req = new Request('https://x/api/mentor-chat/messages', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: 'child_1', message: 'nothing matters anymore' }),
+    });
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+
+    const res = await handlePostMentorChatMessage(req, env);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.branch).toBe('distress');
+    expect(body.reply).toContain('Childline');
+    expect(captureSpy).toHaveBeenCalledOnce();
+    // mentor_chat_escalations columns are (id, message_id, escalation_type, parents_notified, created_at
+    // via unixepoch()) — parents_notified is bound arg index 3, and must be 0 since the send failed.
+    expect(escalationBinds).toHaveLength(1);
+    expect(escalationBinds[0][3]).toBe(0);
+  });
+
   it('does not notify parents on abuse_pattern branch', async () => {
     vi.spyOn(moderation, 'moderateText').mockResolvedValue({ flagged: false, categories: {}, category_scores: {} });
     vi.spyOn(classifier, 'classifyChildMessage').mockResolvedValue({ branch: 'abuse_pattern', rawFlags: {} });
@@ -137,9 +199,63 @@ describe('handlePostMentorChatMessage', () => {
       body: JSON.stringify({ child_id: 'child_1', message: 'hi' }),
     });
     (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
-    const env = makeEnv({ childRow: { family_id: 'fam_1', birth_date: '2018-01-01', locale: 'en', display_name: 'Robin' } });
+    const env = makeEnv({ childRow: { birth_date: '2018-01-01', locale: 'en', display_name: 'Robin' } });
     const res = await handlePostMentorChatMessage(req, env);
     expect(res.status).toBe(403);
+  });
+
+  it('rejects when the family_roles join finds no matching child row (e.g. family_id mismatch), via the family_roles-join predicate shared with childSettings.ts', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: 'child_1', message: 'hi' }),
+    });
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    // The JWT claims fam_1, but the family_roles table (the actual source of truth for
+    // family membership) has this user attached to fam_2 — the family_roles join must
+    // catch this even though the JWT's own family_id field looks fine.
+    const env = makeEnv({ members: [{ id: 'child_1', family_id: 'fam_2', role: 'child' }] });
+    const res = await handlePostMentorChatMessage(req, env);
+    expect(res.status).toBe(403);
+  });
+
+  it('still inserts the child message row (advancing the rate-limit counter) when moderation/classification fails', async () => {
+    vi.spyOn(moderation, 'moderateText').mockResolvedValue({ flagged: false, categories: {}, category_scores: {} });
+    vi.spyOn(classifier, 'classifyChildMessage').mockRejectedValue(new Error('network error'));
+
+    const insertedChildRows: unknown[][] = [];
+    const env = makeEnv();
+    const originalPrepare = env.DB.prepare;
+    env.DB.prepare = (sql: string) => {
+      const stmt = originalPrepare(sql);
+      return {
+        bind: (...args: unknown[]) => {
+          const bound = stmt.bind(...args);
+          return {
+            ...bound,
+            run: () => {
+              if (sql.includes('INSERT INTO mentor_chat_messages') && sql.includes("'child'")) {
+                insertedChildRows.push(args);
+              }
+              return bound.run();
+            },
+          };
+        },
+      };
+    };
+
+    const req = new Request('https://x/api/mentor-chat/messages', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: 'child_1', message: 'hi' }),
+    });
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+
+    const res = await handlePostMentorChatMessage(req, env);
+    expect(res.status).toBe(503);
+    // The child message row must exist BEFORE moderation/classification is attempted, so a
+    // retried request after this 503 sees one more row counted against the rate limit —
+    // otherwise a client could retry indefinitely against OpenAI moderation/classification
+    // for free.
+    expect(insertedChildRows).toHaveLength(1);
   });
 
   it('rejects when the hourly rate limit is exceeded', async () => {
@@ -218,20 +334,40 @@ describe('handlePostMentorChatMessage', () => {
 });
 
 describe('handleGetMentorChatHistory', () => {
-  function makeHistoryEnv(rows: unknown[], overrides: { childFamilyId?: string; mentorChatEnabled?: string; familyRow?: unknown } = {}) {
+  function makeHistoryEnv(rows: unknown[], overrides: {
+    childFamilyId?: string;
+    mentorChatEnabled?: string;
+    familyRow?: unknown;
+    members?: Array<{ id: string; family_id: string; role: 'child' | 'parent' }>;
+    birthDate?: string | null;
+  } = {}) {
     const all = vi.fn().mockResolvedValue({ results: rows });
-    const first = vi.fn((sql: string) => {
+    const first = vi.fn((sql: string, args: unknown[]) => {
       if (sql.includes('has_ai_mentor')) {
         return Promise.resolve(overrides.familyRow ?? { has_ai_mentor: 1, has_shield: 0 });
       }
+      if (sql.includes('family_roles')) {
+        // Parent branch: family_roles-joined child lookup, keyed by (childId, familyId).
+        if (overrides.members) {
+          const [childId, familyId] = args as [string, string];
+          const match = overrides.members.find(
+            (m) => m.id === childId && m.family_id === familyId && m.role === 'child',
+          );
+          return Promise.resolve(match ? { birth_date: overrides.birthDate ?? '2013-01-01' } : null);
+        }
+        const [, familyId] = args as [string, string];
+        const targetFamilyId = overrides.childFamilyId ?? 'fam_1';
+        return Promise.resolve(familyId === targetFamilyId ? { birth_date: overrides.birthDate ?? '2013-01-01' } : null);
+      }
       if (sql.includes('FROM users')) {
-        return Promise.resolve({ family_id: overrides.childFamilyId ?? 'fam_1' });
+        // Child-self branch: plain birth_date lookup (JWT already proves role+identity).
+        return Promise.resolve({ birth_date: overrides.birthDate ?? '2013-01-01' });
       }
       return Promise.resolve(null);
     });
     const prepare = vi.fn((sql: string) => ({
-      bind: (..._args: unknown[]) => ({
-        first: () => first(sql),
+      bind: (...args: unknown[]) => ({
+        first: () => first(sql, args),
         all,
       }),
     }));
@@ -265,6 +401,28 @@ describe('handleGetMentorChatHistory', () => {
     const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
     (req as any).auth = { sub: 'parent_2', family_id: 'fam_2', role: 'parent' };
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { childFamilyId: 'fam_1' }));
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects a parent-shaped child_id target that is not actually a child in the family (co-parent)', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=parent_2');
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const env = makeHistoryEnv([], { members: [{ id: 'parent_2', family_id: 'fam_1', role: 'parent' }] });
+    const res = await handleGetMentorChatHistory(req, env);
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects a sub-13 account reading its own history', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { birthDate: '2018-01-01' }));
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects a parent reading a sub-13 child\'s history', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { birthDate: '2018-01-01' }));
     expect(res.status).toBe(403);
   });
 
