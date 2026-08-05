@@ -149,3 +149,29 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
 
   return json({ reply, branch: classification.branch });
 }
+
+export async function handleGetMentorChatHistory(request: Request, env: Env): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
+  const url = new URL(request.url);
+  const childId = url.searchParams.get('child_id');
+  if (!childId) return error('child_id required', 400);
+
+  if (auth.role === 'child') {
+    if (childId !== auth.sub) return error('Forbidden', 403);
+  } else {
+    const child = await env.DB.prepare('SELECT family_id FROM users WHERE id = ?')
+      .bind(childId).first<{ family_id: string }>();
+    if (!child || child.family_id !== auth.family_id) return error('Forbidden', 403);
+  }
+
+  const rows = await env.DB
+    .prepare(`SELECT m.id, m.role, m.content, m.created_at, e.escalation_type
+              FROM mentor_chat_messages m
+              LEFT JOIN mentor_chat_escalations e ON e.message_id = m.id
+              WHERE m.child_id = ?
+              ORDER BY m.created_at ASC`)
+    .bind(childId)
+    .all<{ id: string; role: string; content: string; created_at: number; escalation_type: string | null }>();
+
+  return json({ messages: rows.results });
+}

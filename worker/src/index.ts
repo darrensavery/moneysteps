@@ -221,7 +221,7 @@ import {
   handleFeedbackDigest,
 } from './routes/reviewPrompt.js'
 import { handleDevRequest } from './routes/dev.js';
-import { handlePostMentorChatMessage } from './routes/mentorChat.js';
+import { handlePostMentorChatMessage, handleGetMentorChatHistory } from './routes/mentorChat.js';
 import {
   handleSentryWebhook,
   handleSupportAgentRequest, handleSupportAgentStripeWebhook,
@@ -733,6 +733,9 @@ async function route(request: Request, env: Env, method: string, path: string): 
   // Teen Mentor Chat — gated by MENTOR_CHAT_ENABLED until the consent UI ships (Track 2 final task)
   if (path === '/api/mentor-chat/messages' && method === 'POST') {
     return withAuth(request, auth, env, handlePostMentorChatMessage);
+  }
+  if (path === '/api/mentor-chat/messages' && method === 'GET') {
+    return withAuth(request, auth, env, handleGetMentorChatHistory);
   }
 
   // Chores — children can list & submit

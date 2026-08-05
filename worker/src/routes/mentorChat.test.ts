@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { handlePostMentorChatMessage } from './mentorChat.js';
+import { handlePostMentorChatMessage, handleGetMentorChatHistory } from './mentorChat.js';
 import * as moderation from '../lib/mentorChat/moderation.js';
 import * as classifier from '../lib/mentorChat/classifier.js';
 import * as alerts from '../lib/mentorChat/alerts.js';
@@ -184,5 +184,38 @@ describe('handlePostMentorChatMessage', () => {
     const body = await res.json();
     expect(body.reply).toContain("outside what I can help with");
     expect(body.branch).toBe('on_topic');
+  });
+});
+
+describe('handleGetMentorChatHistory', () => {
+  function makeHistoryEnv(rows: unknown[]) {
+    const all = vi.fn().mockResolvedValue({ results: rows });
+    const first = vi.fn().mockResolvedValue({ family_id: 'fam_1' });
+    const bind = vi.fn().mockReturnValue({ all, first });
+    const prepare = vi.fn().mockReturnValue({ bind });
+    return { DB: { prepare } } as any;
+  }
+
+  it('lets a child read their own history', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([
+      { id: 'm1', role: 'child', content: 'hi', created_at: 1000, escalation_type: null },
+    ]));
+    expect(res.status).toBe(200);
+  });
+
+  it('blocks a child reading another child\'s history', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_2');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([]));
+    expect(res.status).toBe(403);
+  });
+
+  it('lets a parent read a child in their family', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([]));
+    expect(res.status).toBe(200);
   });
 });
