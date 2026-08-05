@@ -129,6 +129,7 @@ export async function runSoftDeletePurge(env: Env, nowEpoch: number): Promise<vo
         'upgrade_interest',
         'slt_tokens',
         'slt_attempts',
+        'mentor_chat_consents',
       ];
       for (const table of userKeyedTables) {
         batch.push(
