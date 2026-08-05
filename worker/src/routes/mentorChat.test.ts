@@ -432,6 +432,37 @@ describe('handleGetMentorChatHistory', () => {
     return { DB: { prepare }, MENTOR_CHAT_ENABLED: overrides.mentorChatEnabled ?? 'true' } as any;
   }
 
+  it('uses the correct join predicate (er.assistant_message_id = m.id) to identify the crisis-reply row, not er.message_id = m.id (which would instead flag the CHILD\'s triggering message)', async () => {
+    // The GET tests elsewhere in this describe block hand-supply `crisis_reply_escalation_id`
+    // directly on mock row fixtures via `all`, which is opaque to the actual SQL — those
+    // tests would pass identically even if the join predicate below were inverted. This test
+    // instead wraps `env.DB.prepare` (the same technique used by the POST-side FK-link test
+    // above) to capture the REAL SQL text the handler sends, so an inverted/wrong join
+    // predicate is caught here even though it can't be caught by asserting on returned rows
+    // (the `all` mock ignores SQL and just returns whatever fixture rows it's given).
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+
+    let capturedSql = '';
+    const env = makeHistoryEnv([]);
+    const originalPrepare = env.DB.prepare;
+    env.DB.prepare = (sql: string) => {
+      if (sql.includes('FROM mentor_chat_messages m')) capturedSql = sql;
+      return originalPrepare(sql);
+    };
+
+    const res = await handleGetMentorChatHistory(req, env);
+    expect(res.status).toBe(200);
+    expect(capturedSql).not.toBe('');
+    // Correct: `er` identifies the row that IS an escalation's linked assistant reply.
+    expect(capturedSql).toContain('LEFT JOIN mentor_chat_escalations er ON er.assistant_message_id = m.id');
+    // Explicitly guard against the inverted bug class: `er.message_id = m.id` would instead
+    // match on the CHILD's triggering message (mentor_chat_escalations.message_id references
+    // the child message, not the assistant reply — see the `e` alias join two lines above),
+    // redacting the wrong party's content for parents.
+    expect(capturedSql).not.toContain('er.message_id = m.id');
+  });
+
   it('lets a child read their own history', async () => {
     const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
     (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
