@@ -28,7 +28,7 @@ function makeEnv(overrides: {
 } = {}) {
   const first = vi.fn((sql: string, args: unknown[]) => {
     if (sql.includes('has_ai_mentor')) {
-      return Promise.resolve(overrides.familyRow ?? { has_ai_mentor: 1, has_shield: 0 });
+      return Promise.resolve(overrides.familyRow ?? { has_ai_mentor: 1, has_shield: 0, currency: 'GBP' });
     }
     if (sql.includes('FROM users')) {
       if (overrides.members) {
@@ -138,6 +138,25 @@ describe('handlePostMentorChatMessage', () => {
     expect(body.branch).toBe('distress');
     expect(body.reply).toContain('Childline');
     expect(notifySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns US crisis resources for a USD-currency family on the distress branch', async () => {
+    vi.spyOn(moderation, 'moderateText').mockResolvedValue({ flagged: true, categories: {}, category_scores: {} });
+    vi.spyOn(classifier, 'classifyChildMessage').mockResolvedValue({ branch: 'distress', rawFlags: {} });
+    vi.spyOn(alerts, 'notifyParentsOfDistress').mockResolvedValue(undefined);
+
+    const req = new Request('https://x/api/mentor-chat/messages', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: 'child_1', message: 'nothing matters anymore' }),
+    });
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+
+    const env = makeEnv({ familyRow: { has_ai_mentor: 1, has_shield: 0, currency: 'USD' } });
+    const res = await handlePostMentorChatMessage(req, env);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.branch).toBe('distress');
+    expect(body.reply).toContain('988');
   });
 
   it('still returns 200 with crisis resources when the parent-notification email fails, and records parents_notified=0', async () => {
@@ -438,5 +457,35 @@ describe('handleGetMentorChatHistory', () => {
     (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { familyRow: { has_ai_mentor: 0, has_shield: 0 } }));
     expect(res.status).toBe(403);
+  });
+
+  it("maps both distress and abuse_pattern escalation_type to the generic 'flagged' for a parent, collapsing what were previously distinct values", async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const rows = [
+      { id: 'm1', role: 'child', content: 'a', created_at: 1000, escalation_type: 'distress' },
+      { id: 'm2', role: 'child', content: 'b', created_at: 1001, escalation_type: 'abuse_pattern' },
+      { id: 'm3', role: 'assistant', content: 'c', created_at: 1002, escalation_type: null },
+    ];
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.messages[0].escalation_type).toBe('flagged');
+    expect(body.messages[1].escalation_type).toBe('flagged');
+    expect(body.messages[2].escalation_type).toBeNull();
+  });
+
+  it('leaves the real, distinct escalation_type values intact for a child reading their own history', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    const rows = [
+      { id: 'm1', role: 'child', content: 'a', created_at: 1000, escalation_type: 'distress' },
+      { id: 'm2', role: 'child', content: 'b', created_at: 1001, escalation_type: 'abuse_pattern' },
+    ];
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.messages[0].escalation_type).toBe('distress');
+    expect(body.messages[1].escalation_type).toBe('abuse_pattern');
   });
 });

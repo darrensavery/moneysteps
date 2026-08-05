@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/cloudflare';
 import { error, json, parseBody } from '../lib/response.js';
 import { isTeenAccount } from '../lib/ageGate.js';
 import { moderateText } from '../lib/mentorChat/moderation.js';
-import { buildSystemPrompt, getCrisisResources } from '../lib/mentorChat/prompts.js';
+import { buildSystemPrompt, getCrisisResources, resolveCrisisRegion } from '../lib/mentorChat/prompts.js';
 import { classifyChildMessage, classifyAssistantOutput } from '../lib/mentorChat/classifier.js';
 import { notifyParentsOfDistress } from '../lib/mentorChat/alerts.js';
 import { nanoid } from '../lib/nanoid.js';
@@ -23,9 +23,9 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
   const auth = (request as AuthedRequest).auth;
 
   const family = await env.DB
-    .prepare('SELECT has_ai_mentor, has_shield FROM families WHERE id = ?')
+    .prepare('SELECT has_ai_mentor, has_shield, currency FROM families WHERE id = ?')
     .bind(auth.family_id)
-    .first<{ has_ai_mentor: number; has_shield: number }>();
+    .first<{ has_ai_mentor: number; has_shield: number; currency: string | null }>();
   if (!family?.has_ai_mentor && !family?.has_shield) {
     return error('AI Mentor required', 403);
   }
@@ -112,7 +112,8 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
   if (classification.branch === 'off_topic') {
     reply = child.locale === 'pl' ? OFF_TOPIC_REPLY_PL : OFF_TOPIC_REPLY_EN;
   } else if (classification.branch === 'distress' || classification.branch === 'abuse_pattern') {
-    const resources = getCrisisResources(child.locale, classification.branch);
+    const region = resolveCrisisRegion(child.locale, family.currency);
+    const resources = getCrisisResources(region, classification.branch);
     reply = `${resources.title}. ${resources.body}`;
 
     // Resolve the actual send outcome BEFORE writing the escalation row, so
@@ -246,5 +247,19 @@ export async function handleGetMentorChatHistory(request: Request, env: Env): Pr
     .bind(childId)
     .all<{ id: string; role: string; content: string; created_at: number; escalation_type: string | null }>();
 
-  return json({ messages: rows.results });
+  // Parents deliberately aren't told the specific escalation type: on the
+  // abuse_pattern branch they're not notified in real time (a parent may be the
+  // source of risk), so labelling a message 'abuse_pattern' in a transcript any
+  // parent can later browse would create a written accusation of suspected
+  // parental abuse, readable by the parent themselves. Parents see only a generic
+  // 'flagged' indicator. The teen reading their own history still sees the real
+  // value — this restriction is about what a parent sees, not the child.
+  const messages = auth.role === 'parent'
+    ? rows.results.map((row) => ({
+        ...row,
+        escalation_type: row.escalation_type ? 'flagged' : null,
+      }))
+    : rows.results;
+
+  return json({ messages });
 }

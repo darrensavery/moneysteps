@@ -17,8 +17,25 @@ interface CrisisResource {
   body: string;
 }
 
-const CRISIS_RESOURCES: Record<'en' | 'pl', Record<'distress' | 'abuse_pattern', CrisisResource>> = {
-  en: {
+export type CrisisRegion = 'uk' | 'us' | 'pl';
+
+/**
+ * There's no dedicated region column on `families` — `currency` (GBP|USD|PLN,
+ * see migration 0027_global_foundations.sql) is the closest available signal, so
+ * it's what Darren decided to key crisis-resource selection on. `locale: 'pl'`
+ * always wins (a Polish-language teen should see Polish resources regardless of
+ * what currency the family happens to be billed in); otherwise USD currency
+ * selects US resources, and everything else (GBP or missing/unrecognised
+ * currency) falls back to UK — the safe default for English-locale families.
+ */
+export function resolveCrisisRegion(locale: 'en' | 'pl', currency: string | null | undefined): CrisisRegion {
+  if (locale === 'pl') return 'pl';
+  if (currency === 'USD') return 'us';
+  return 'uk';
+}
+
+const CRISIS_RESOURCES: Record<CrisisRegion, Record<'distress' | 'abuse_pattern', CrisisResource>> = {
+  uk: {
     distress: {
       title: "You're not alone",
       body: 'If you\'re struggling right now, Childline (0800 1111, free, confidential, 24/7) or Samaritans (116 123) can help. We\'ve also let your parent(s) know so someone who cares about you can check in.',
@@ -26,6 +43,16 @@ const CRISIS_RESOURCES: Record<'en' | 'pl', Record<'distress' | 'abuse_pattern',
     abuse_pattern: {
       title: 'You deserve to be safe',
       body: 'If someone at home is hurting you, Childline (0800 1111, free, confidential, 24/7) or the NSPCC (0808 800 5000) can help — you can talk to them without anyone else finding out.',
+    },
+  },
+  us: {
+    distress: {
+      title: "You're not alone",
+      body: 'If you\'re struggling right now, the 988 Suicide & Crisis Lifeline (call or text 988, free, confidential, 24/7) can help. We\'ve also let your parent(s) know so someone who cares about you can check in.',
+    },
+    abuse_pattern: {
+      title: 'You deserve to be safe',
+      body: 'If someone at home is hurting you, the Childhelp National Child Abuse Hotline (1-800-422-4453, free, 24/7) can help — you can talk to them without anyone else finding out.',
     },
   },
   pl: {
@@ -40,6 +67,6 @@ const CRISIS_RESOURCES: Record<'en' | 'pl', Record<'distress' | 'abuse_pattern',
   },
 };
 
-export function getCrisisResources(locale: 'en' | 'pl', kind: 'distress' | 'abuse_pattern'): CrisisResource {
-  return CRISIS_RESOURCES[locale][kind];
+export function getCrisisResources(region: CrisisRegion, kind: 'distress' | 'abuse_pattern'): CrisisResource {
+  return CRISIS_RESOURCES[region][kind];
 }
