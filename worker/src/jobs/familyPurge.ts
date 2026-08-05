@@ -49,6 +49,20 @@ export async function runSoftDeletePurge(env: Env, nowEpoch: number): Promise<vo
 
     const batch: D1PreparedStatement[] = [];
 
+    // ── Mentor chat escalations ─────────────────────────────────────
+    // mentor_chat_escalations has no family_id column of its own — it only
+    // references mentor_chat_messages.id via message_id. This delete MUST be
+    // queued before the mentor_chat_messages delete below (part of the
+    // familyTables loop), otherwise the subquery finds nothing and orphan
+    // escalation rows survive the purge.
+    batch.push(
+      env.DB
+        .prepare(
+          `DELETE FROM mentor_chat_escalations WHERE message_id IN (SELECT id FROM mentor_chat_messages WHERE family_id = ?)`,
+        )
+        .bind(familyId),
+    );
+
     // ── Family-keyed tables ─────────────────────────────────────────
     const familyTables = [
       'chores',
@@ -77,6 +91,7 @@ export async function runSoftDeletePurge(env: Env, nowEpoch: number): Promise<vo
       'referral_clicks',
       'referral_conversions',
       'family_governance_log',
+      'mentor_chat_messages',
     ];
     for (const table of familyTables) {
       batch.push(
