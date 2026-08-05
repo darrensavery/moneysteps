@@ -109,6 +109,12 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
 
   let reply: string;
 
+  // Generated up front (not inserted yet) so the distress/abuse_pattern branch below
+  // can link the escalation row to this id via assistant_message_id, even though the
+  // assistant message row itself isn't INSERTed until after `reply` is finalized.
+  // IDs don't need to be generated in insert order — only the INSERTs themselves do.
+  const assistantMessageId = nanoid();
+
   if (classification.branch === 'off_topic') {
     reply = child.locale === 'pl' ? OFF_TOPIC_REPLY_PL : OFF_TOPIC_REPLY_EN;
   } else if (classification.branch === 'distress' || classification.branch === 'abuse_pattern') {
@@ -146,9 +152,9 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
 
     const escalationId = nanoid();
     await env.DB
-      .prepare(`INSERT INTO mentor_chat_escalations (id, message_id, escalation_type, parents_notified, created_at)
-                VALUES (?, ?, ?, ?, unixepoch())`)
-      .bind(escalationId, childMessageId, classification.branch, parentsNotified ? 1 : 0)
+      .prepare(`INSERT INTO mentor_chat_escalations (id, message_id, escalation_type, parents_notified, assistant_message_id, created_at)
+                VALUES (?, ?, ?, ?, ?, unixepoch())`)
+      .bind(escalationId, childMessageId, classification.branch, parentsNotified ? 1 : 0, assistantMessageId)
       .run();
   } else {
     const systemPrompt = buildSystemPrompt(child.locale);
@@ -195,7 +201,7 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
   await env.DB
     .prepare(`INSERT INTO mentor_chat_messages (id, family_id, child_id, role, content, moderation_flags, created_at)
               VALUES (?, ?, ?, 'assistant', ?, NULL, unixepoch())`)
-    .bind(nanoid(), auth.family_id, childId, reply)
+    .bind(assistantMessageId, auth.family_id, childId, reply)
     .run();
 
   return json({ reply, branch: classification.branch });
@@ -238,14 +244,21 @@ export async function handleGetMentorChatHistory(request: Request, env: Env): Pr
     if (!isTeenAccount(child.birth_date)) return error('Not available for this account', 403);
   }
 
+  // Second LEFT JOIN (aliased `er`) finds, for each row, whether it IS the
+  // assistant's crisis-resource reply for some escalation — i.e. some escalation
+  // row's assistant_message_id points at this exact message. This is the explicit
+  // FK link added in migration 0090, not adjacency/ordering inference (see
+  // parent-content-redaction-report.md, option b).
   const rows = await env.DB
-    .prepare(`SELECT m.id, m.role, m.content, m.created_at, e.escalation_type
+    .prepare(`SELECT m.id, m.role, m.content, m.created_at, e.escalation_type,
+                     er.id AS crisis_reply_escalation_id
               FROM mentor_chat_messages m
               LEFT JOIN mentor_chat_escalations e ON e.message_id = m.id
+              LEFT JOIN mentor_chat_escalations er ON er.assistant_message_id = m.id
               WHERE m.child_id = ?
               ORDER BY m.created_at ASC`)
     .bind(childId)
-    .all<{ id: string; role: string; content: string; created_at: number; escalation_type: string | null }>();
+    .all<{ id: string; role: string; content: string; created_at: number; escalation_type: string | null; crisis_reply_escalation_id: string | null }>();
 
   // Parents deliberately aren't told the specific escalation type: on the
   // abuse_pattern branch they're not notified in real time (a parent may be the
@@ -254,12 +267,23 @@ export async function handleGetMentorChatHistory(request: Request, env: Env): Pr
   // parental abuse, readable by the parent themselves. Parents see only a generic
   // 'flagged' indicator. The teen reading their own history still sees the real
   // value — this restriction is about what a parent sees, not the child.
-  const messages = auth.role === 'parent'
-    ? rows.results.map((row) => ({
-        ...row,
-        escalation_type: row.escalation_type ? 'flagged' : null,
-      }))
-    : rows.results;
+  //
+  // The crisis-reply text itself is also branch-revealing (e.g. "we've also let
+  // your parent(s) know" only appears on the distress branch, "without anyone else
+  // finding out" only on abuse_pattern), so for a parent it's replaced with a
+  // generic, branch-agnostic string. The child's own triggering message is left
+  // untouched — their own words are real information, out of scope here. Ordinary
+  // (non-crisis) assistant replies are untouched for everyone.
+  const GENERIC_CRISIS_REPLY = 'Support resources were shared with your child.';
+  const messages = rows.results.map((row) => {
+    const { crisis_reply_escalation_id, ...rest } = row;
+    if (auth.role !== 'parent') return rest;
+    return {
+      ...rest,
+      escalation_type: rest.escalation_type ? 'flagged' : null,
+      content: crisis_reply_escalation_id ? GENERIC_CRISIS_REPLY : rest.content,
+    };
+  });
 
   return json({ messages });
 }

@@ -196,6 +196,45 @@ describe('handlePostMentorChatMessage', () => {
     expect(escalationBinds[0][3]).toBe(0);
   });
 
+  it("links the escalation row to the assistant's crisis-reply message id via assistant_message_id, matching the id actually used for the assistant's INSERT", async () => {
+    vi.spyOn(moderation, 'moderateText').mockResolvedValue({ flagged: true, categories: {}, category_scores: {} });
+    vi.spyOn(classifier, 'classifyChildMessage').mockResolvedValue({ branch: 'distress', rawFlags: {} });
+    vi.spyOn(alerts, 'notifyParentsOfDistress').mockResolvedValue(undefined);
+
+    const escalationBinds: unknown[][] = [];
+    const assistantMessageInserts: unknown[][] = [];
+    const env = makeEnv();
+    const originalPrepare = env.DB.prepare;
+    env.DB.prepare = (sql: string) => {
+      const stmt = originalPrepare(sql);
+      return {
+        bind: (...args: unknown[]) => {
+          if (sql.includes('mentor_chat_escalations')) escalationBinds.push(args);
+          if (sql.includes('INSERT INTO mentor_chat_messages') && sql.includes("'assistant'")) {
+            assistantMessageInserts.push(args);
+          }
+          return stmt.bind(...args);
+        },
+      };
+    };
+
+    const req = new Request('https://x/api/mentor-chat/messages', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: 'child_1', message: 'nothing matters anymore' }),
+    });
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+
+    const res = await handlePostMentorChatMessage(req, env);
+    expect(res.status).toBe(200);
+    expect(escalationBinds).toHaveLength(1);
+    expect(assistantMessageInserts).toHaveLength(1);
+    // mentor_chat_escalations columns are (id, message_id, escalation_type, parents_notified,
+    // assistant_message_id, created_at via unixepoch()) — assistant_message_id is bind arg
+    // index 4. It must equal the id actually used to insert the assistant's reply row
+    // (bind arg index 0 of that INSERT), not a fresh/unlinked id.
+    expect(escalationBinds[0][4]).toBe(assistantMessageInserts[0][0]);
+  });
+
   it('does not notify parents on abuse_pattern branch', async () => {
     vi.spyOn(moderation, 'moderateText').mockResolvedValue({ flagged: false, categories: {}, category_scores: {} });
     vi.spyOn(classifier, 'classifyChildMessage').mockResolvedValue({ branch: 'abuse_pattern', rawFlags: {} });
@@ -487,5 +526,63 @@ describe('handleGetMentorChatHistory', () => {
     const body = await res.json();
     expect(body.messages[0].escalation_type).toBe('distress');
     expect(body.messages[1].escalation_type).toBe('abuse_pattern');
+  });
+
+  it("replaces the assistant crisis-reply content with a generic string for a parent on the distress branch, identified via the explicit assistant_message_id FK link (crisis_reply_escalation_id populated)", async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const rows = [
+      { id: 'm1', role: 'child', content: 'nothing matters anymore', created_at: 1000, escalation_type: 'distress', crisis_reply_escalation_id: null },
+      { id: 'm2', role: 'assistant', content: "Childline... we've also let your parent(s) know you might be struggling.", created_at: 1001, escalation_type: null, crisis_reply_escalation_id: 'esc_1' },
+    ];
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    // Child's own triggering message is untouched — out of scope for this fix.
+    expect(body.messages[0].content).toBe('nothing matters anymore');
+    expect(body.messages[1].content).toBe('Support resources were shared with your child.');
+    expect(body.messages[1].content).not.toContain('parent(s)');
+  });
+
+  it("replaces the assistant crisis-reply content with the SAME generic string for a parent on the abuse_pattern branch, so a parent cannot distinguish distress from abuse_pattern via content OR escalation_type", async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const rows = [
+      { id: 'm1', role: 'child', content: 'my dad takes my chore money', created_at: 1000, escalation_type: 'abuse_pattern', crisis_reply_escalation_id: null },
+      { id: 'm2', role: 'assistant', content: "Childline... you can talk to someone without anyone else finding out.", created_at: 1001, escalation_type: null, crisis_reply_escalation_id: 'esc_2' },
+    ];
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.messages[1].content).toBe('Support resources were shared with your child.');
+    expect(body.messages[1].content).not.toContain('without anyone else finding out');
+    expect(body.messages[0].escalation_type).toBe('flagged');
+  });
+
+  it('does not redact ordinary (non-crisis) assistant reply content for a parent', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const rows = [
+      { id: 'm1', role: 'child', content: 'should I buy a game or save', created_at: 1000, escalation_type: null, crisis_reply_escalation_id: null },
+      { id: 'm2', role: 'assistant', content: 'Have you thought about splitting it between saving and spending?', created_at: 1001, escalation_type: null, crisis_reply_escalation_id: null },
+    ];
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.messages[1].content).toBe('Have you thought about splitting it between saving and spending?');
+  });
+
+  it("leaves the real, distinct crisis-reply text visible for a child reading their own history on both branches", async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    const rows = [
+      { id: 'm1', role: 'assistant', content: "we've also let your parent(s) know", created_at: 1000, escalation_type: null, crisis_reply_escalation_id: 'esc_1' },
+      { id: 'm2', role: 'assistant', content: 'without anyone else finding out', created_at: 1001, escalation_type: null, crisis_reply_escalation_id: 'esc_2' },
+    ];
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.messages[0].content).toBe("we've also let your parent(s) know");
+    expect(body.messages[1].content).toBe('without anyone else finding out');
   });
 });
