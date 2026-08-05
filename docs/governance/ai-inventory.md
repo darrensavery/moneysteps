@@ -3,7 +3,7 @@
 
 **Document type:** Internal accountability record. Not published to the public site.  
 **Controller:** Darren Savery, trading as Morechard (sole trader)  
-**Status:** Verified against codebase 2026-06-29; updated 2026-07-16 to record decommissioning of AI System 2 (Child Mentor Chat). Sections marked [OWNER TO COMPLETE] require human judgment.  
+**Status:** Verified against codebase 2026-06-29; updated 2026-07-16 to record decommissioning of AI System 2 (Child Mentor Chat); AI System 3 (Teen Mentor Chat) added 2026-08-05 — consent basis pending legal review, see spec. Sections marked [OWNER TO COMPLETE] require human judgment.  
 **Next review:** [OWNER TO COMPLETE — suggest quarterly; 2026-09-29]
 
 ---
@@ -71,6 +71,24 @@
 **Data retained:** The `chat_history`, `chat_rate_limits`, and `unlocked_modules` D1 tables are not dropped — any rows already written while the endpoint was live remain subject to the standard account-deletion purge (`worker/src/jobs/familyPurge.ts`). No new rows can be written; the write paths no longer exist. `unlocked_modules` continues to be written by the unrelated, non-AI Learning Lab unlock rules (`worker/src/lib/labTriggers.ts` — deterministic thresholds on ledger/goal data, not a generative or profiling system).
 
 **If free-text child chat is reconsidered in future:** it should be scoped and funded as its own feature, gated on (1) legal sign-off on COPPA/GDPR-K consent for minor free-text collection, (2) a co-parenting-specific escalation design that never feeds chat content into the court-submissible ledger/Shield AI export without separate explicit consent, (3) a real human escalation path (not just a moderation API call) for self-harm/abuse-adjacent content, and (4) an audit of any legacy logged data before reactivation.
+
+---
+
+## AI System 3: Teen Mentor Chat
+
+**Source files:** `worker/src/routes/mentorChat.ts`, `worker/src/lib/mentorChat/*.ts`
+
+- **Provider:** OpenAI
+- **Models:** `gpt-4o-mini` (chat replies, message/output classification), `omni-moderation-latest` (moderation pre-check)
+- **Scope:** Teen accounts only (13–17, enforced server-side against `users.birth_date` with exact day-level age math, added migration 0088). Not available to children under 13.
+- **Purpose:** Topic-locked conversational financial mentoring — money, chores, financial literacy only. Personality: supportive, motivating, honest, firm-but-fair; reflects the teen's thinking back rather than deciding for them.
+- **Safety pipeline:** (1) OpenAI Moderation API pre-check on every inbound message. (2) Topic-locked system prompt (not relied on alone for containment). (3) Post-check classifier on both the child's message and the assistant's own draft reply, routing to on_topic / off_topic / distress / abuse_pattern, with an explicit fail-safe: any abuse signal overrides a co-occurring distress signal, since wrongly alerting a potentially abusive parent is a worse failure than wrongly withholding a distress alert.
+- **Human oversight / escalation:** Distress branch → immediate in-chat crisis resources (region/locale-aware) + real-time email alert to both parents (`worker/src/lib/mentorChat/alerts.ts`, reuses `EmailService`). Abuse-pattern branch → in-chat child-protection resources, parents explicitly NOT notified, since a parent may be the source of risk. Neither branch allows the model to counsel or discuss the disclosed content — acknowledgment + resources + stop.
+- **Data retention & export boundary:** `mentor_chat_messages` / `mentor_chat_escalations` — separate tables, never joined into the hash-chained ledger or Shield AI forensic PDF export. Subject to the standard account-deletion purge (`worker/src/jobs/familyPurge.ts`).
+- **Children's data involved:** Yes — teen free-text content, including references to family circumstances. Identified by nickname/display_name only, consistent with the rest of the product.
+- **Consent basis:** [OWNER TO COMPLETE — legal review pending, see `docs/superpowers/specs/2026-08-04-teen-mentor-chat-design.md`, "Consent flow — UNRESOLVED, blocking". Do not mark this resolved until that review is complete.]
+- **Rate limiting:** 20 messages/hour, 60/day per child, enforced server-side.
+- **Fallback behavior:** If the chat completion call fails or times out, the route returns a 503 rather than a degraded/fabricated reply — no rule-based fallback exists for open-ended chat (unlike AI System 1's briefing fallback), since a wrong guess at conversational content is a worse outcome than a visible "try again" error.
 
 ---
 
