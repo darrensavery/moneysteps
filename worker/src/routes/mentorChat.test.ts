@@ -188,12 +188,12 @@ describe('handlePostMentorChatMessage', () => {
 });
 
 describe('handleGetMentorChatHistory', () => {
-  function makeHistoryEnv(rows: unknown[]) {
+  function makeHistoryEnv(rows: unknown[], overrides: { childFamilyId?: string; mentorChatEnabled?: string } = {}) {
     const all = vi.fn().mockResolvedValue({ results: rows });
-    const first = vi.fn().mockResolvedValue({ family_id: 'fam_1' });
+    const first = vi.fn().mockResolvedValue({ family_id: overrides.childFamilyId ?? 'fam_1' });
     const bind = vi.fn().mockReturnValue({ all, first });
     const prepare = vi.fn().mockReturnValue({ bind });
-    return { DB: { prepare } } as any;
+    return { DB: { prepare }, MENTOR_CHAT_ENABLED: overrides.mentorChatEnabled ?? 'true' } as any;
   }
 
   it('lets a child read their own history', async () => {
@@ -217,5 +217,19 @@ describe('handleGetMentorChatHistory', () => {
     (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv([]));
     expect(res.status).toBe(200);
+  });
+
+  it('blocks a parent from a different family reading this family\'s chat', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'parent_2', family_id: 'fam_2', role: 'parent' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { childFamilyId: 'fam_1' }));
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 403 when MENTOR_CHAT_ENABLED is not set, even for an otherwise-authorized request', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { mentorChatEnabled: 'false' }));
+    expect(res.status).toBe(403);
   });
 });

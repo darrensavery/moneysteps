@@ -151,6 +151,8 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
 }
 
 export async function handleGetMentorChatHistory(request: Request, env: Env): Promise<Response> {
+  if (env.MENTOR_CHAT_ENABLED !== 'true') return error('Not available', 403);
+
   const auth = (request as AuthedRequest).auth;
   const url = new URL(request.url);
   const childId = url.searchParams.get('child_id');
