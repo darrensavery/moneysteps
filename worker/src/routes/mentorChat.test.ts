@@ -218,11 +218,23 @@ describe('handlePostMentorChatMessage', () => {
 });
 
 describe('handleGetMentorChatHistory', () => {
-  function makeHistoryEnv(rows: unknown[], overrides: { childFamilyId?: string; mentorChatEnabled?: string } = {}) {
+  function makeHistoryEnv(rows: unknown[], overrides: { childFamilyId?: string; mentorChatEnabled?: string; familyRow?: unknown } = {}) {
     const all = vi.fn().mockResolvedValue({ results: rows });
-    const first = vi.fn().mockResolvedValue({ family_id: overrides.childFamilyId ?? 'fam_1' });
-    const bind = vi.fn().mockReturnValue({ all, first });
-    const prepare = vi.fn().mockReturnValue({ bind });
+    const first = vi.fn((sql: string) => {
+      if (sql.includes('has_ai_mentor')) {
+        return Promise.resolve(overrides.familyRow ?? { has_ai_mentor: 1, has_shield: 0 });
+      }
+      if (sql.includes('FROM users')) {
+        return Promise.resolve({ family_id: overrides.childFamilyId ?? 'fam_1' });
+      }
+      return Promise.resolve(null);
+    });
+    const prepare = vi.fn((sql: string) => ({
+      bind: (..._args: unknown[]) => ({
+        first: () => first(sql),
+        all,
+      }),
+    }));
     return { DB: { prepare }, MENTOR_CHAT_ENABLED: overrides.mentorChatEnabled ?? 'true' } as any;
   }
 
@@ -260,6 +272,13 @@ describe('handleGetMentorChatHistory', () => {
     const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
     (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { mentorChatEnabled: 'false' }));
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects a family without AI Mentor/Shield tier', async () => {
+    const req = new Request('https://x/api/mentor-chat/messages?child_id=child_1');
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+    const res = await handleGetMentorChatHistory(req, makeHistoryEnv([], { familyRow: { has_ai_mentor: 0, has_shield: 0 } }));
     expect(res.status).toBe(403);
   });
 });

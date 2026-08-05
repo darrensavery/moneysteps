@@ -163,6 +163,15 @@ export async function handleGetMentorChatHistory(request: Request, env: Env): Pr
   if (env.MENTOR_CHAT_ENABLED !== 'true') return error('Not available', 403);
 
   const auth = (request as AuthedRequest).auth;
+
+  const family = await env.DB
+    .prepare('SELECT has_ai_mentor, has_shield FROM families WHERE id = ?')
+    .bind(auth.family_id)
+    .first<{ has_ai_mentor: number; has_shield: number }>();
+  if (!family?.has_ai_mentor && !family?.has_shield) {
+    return error('AI Mentor required', 403);
+  }
+
   const url = new URL(request.url);
   const childId = url.searchParams.get('child_id');
   if (!childId) return error('child_id required', 400);
