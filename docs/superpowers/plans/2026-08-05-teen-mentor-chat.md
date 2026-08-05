@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Feature is teen-only (13+) — never exposed to sub-13 accounts, enforced server-side against a verified birth-year fact, not the client or the existing `teen_mode` UI-framing toggle.
+- Feature is teen-only (13+) — never exposed to sub-13 accounts, enforced server-side against a verified birth-date fact (exact day-level age, not calendar-year subtraction), not the client or the existing `teen_mode` UI-framing toggle.
 - Chat content is excluded from the hash-chained ledger and Shield AI forensic PDF export by construction (separate tables, never joined into export queries) — not a filter flag.
 - Both parents in a family see the same chat transcripts (no asymmetric access).
 - The mentor never attempts to counsel, discuss, or engage on self-harm/abuse content — acknowledge briefly, show resources, stop.
@@ -25,48 +25,60 @@
 
 ## Track 1 — Unblocked & Parallel (buildable now)
 
-### Task 1: Add verified birth-year column + parent-facing setter
+### Task 1: Add verified birth-date column + parent-facing setter
 
-No birth-year/DOB column exists anywhere in the schema today (confirmed by grep across `worker/migrations/*.sql` and `worker/src/`). `user_settings.teen_mode` is a parent-toggled UI-framing flag ("Seedling" vs "Professional" tone), not a verified age fact, and cannot be reused for a safety-relevant age gate. This task adds the real column and the one endpoint needed to set it.
+No birth-date/age column exists anywhere in the schema today (confirmed by grep across `worker/migrations/*.sql` and `worker/src/`). `user_settings.teen_mode` is a parent-toggled UI-framing flag ("Seedling" vs "Professional" tone), not a verified age fact, and cannot be reused for a safety-relevant age gate. This task adds the real column and the one endpoint needed to set it.
+
+**A note on precision:** this stores a full ISO date (`birth_date`), not just a birth year. A year-only field can't distinguish "just turned 13" from "turns 13 in five months" — computing age via `currentYear - birthYear` alone can misjudge a child's age by up to a year depending on whether their birthday has passed, which is not an acceptable error margin for a safety-relevant age gate (e.g. it could expose a 12-year-old, born late in the year, to the feature). Exact date avoids that.
 
 **Files:**
-- Create: `worker/migrations/0088_child_birth_year.sql`
-- Modify: `worker/src/types.ts` (add `birth_year: number | null` to the `users` row type, near the other `users` fields around line 83)
+- Create: `worker/migrations/0088_child_birth_date.sql`
+- Modify: `worker/src/types.ts` (add `birth_date: string | null` to the `users` row type, near the other `users` fields around line 83)
 - Modify: `worker/src/routes/childSettings.ts` — if this file doesn't exist, create it; otherwise add the new route to the existing child-settings route file (grep `worker/src/routes/` for `child.*settings` to confirm actual location before creating)
 - Modify: `worker/src/index.ts` (register new route)
 - Test: `worker/src/routes/childSettings.test.ts`
 
 **Interfaces:**
-- Produces: `PATCH /api/children/:child_id/birth-year` — parent-only, body `{ birth_year: number }`, validates `birth_year` is a 4-digit year between `(currentYear - 19)` and `(currentYear - 5)` inclusive (reject anything outside a plausible child age range). Returns `{ birth_year: number }`.
-- Produces: `isTeenAccount(birthYear: number | null, now: Date): boolean` exported from `worker/src/lib/ageGate.ts` — returns `true` when age is 13–17 inclusive; returns `false` (never throws) when `birthYear` is `null` (unset) or resolves to under 13 or 18+.
+- Produces: `PATCH /api/children/:child_id/birth-date` — parent-only, body `{ birth_date: string }` (ISO `YYYY-MM-DD`), validates it parses to a plausible child age (5–19 years old at time of write). Returns `{ birth_date: string }`.
+- Produces: `isTeenAccount(birthDate: string | null, now: Date): boolean` exported from `worker/src/lib/ageGate.ts` — returns `true` when exact age (day-level, not calendar-year subtraction) is 13–17 inclusive; returns `false` (never throws) when `birthDate` is `null`/unparseable or resolves to under 13 or 18+.
 
 - [ ] **Step 1: Write the migration**
 
 ```sql
--- worker/migrations/0088_child_birth_year.sql
-ALTER TABLE users ADD COLUMN birth_year INTEGER;
+-- worker/migrations/0088_child_birth_date.sql
+ALTER TABLE users ADD COLUMN birth_date TEXT;
 ```
 
 - [ ] **Step 2: Apply migration to dev DB and confirm**
 
 Run: `cd worker && npx wrangler d1 migrations apply morechard-dev --remote`
-Expected: migration `0088_child_birth_year.sql` listed as applied.
+Expected: migration `0088_child_birth_date.sql` listed as applied.
 
-- [ ] **Step 3: Add `birth_year` to the `users` row type in `worker/src/types.ts`**
+- [ ] **Step 3: Add `birth_date` to the `users` row type in `worker/src/types.ts`**
 
-Add `birth_year: number | null;` immediately after the existing `locale` field on the `users` row interface.
+Add `birth_date: string | null;` immediately after the existing `locale` field on the `users` row interface.
 
 - [ ] **Step 4: Write `worker/src/lib/ageGate.ts`**
 
 ```ts
-export function isTeenAccount(birthYear: number | null, now: Date = new Date()): boolean {
-  if (birthYear === null || birthYear === undefined) return false;
-  const age = now.getUTCFullYear() - birthYear;
+export function isTeenAccount(birthDate: string | null, now: Date = new Date()): boolean {
+  if (!birthDate) return false;
+  const dob = new Date(`${birthDate}T00:00:00Z`);
+  if (Number.isNaN(dob.getTime())) return false;
+
+  let age = now.getUTCFullYear() - dob.getUTCFullYear();
+  const hasHadBirthdayThisYear =
+    now.getUTCMonth() > dob.getUTCMonth() ||
+    (now.getUTCMonth() === dob.getUTCMonth() && now.getUTCDate() >= dob.getUTCDate());
+  if (!hasHadBirthdayThisYear) age -= 1;
+
   return age >= 13 && age <= 17;
 }
 ```
 
 - [ ] **Step 5: Write `worker/src/lib/ageGate.test.ts`**
+
+The boundary cases here are the point of this file — a naive `currentYear - birthYear` calculation would get several of these wrong.
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -75,24 +87,32 @@ import { isTeenAccount } from './ageGate.js';
 describe('isTeenAccount', () => {
   const now = new Date('2026-08-05T00:00:00Z');
 
-  it('returns false when birth_year is null', () => {
+  it('returns false when birth_date is null', () => {
     expect(isTeenAccount(null, now)).toBe(false);
   });
 
-  it('returns true for a 13-year-old', () => {
-    expect(isTeenAccount(2013, now)).toBe(true);
+  it('returns false for an unparseable birth_date', () => {
+    expect(isTeenAccount('not-a-date', now)).toBe(false);
   });
 
-  it('returns true for a 17-year-old', () => {
-    expect(isTeenAccount(2009, now)).toBe(true);
+  it('returns true for someone who already turned 13 earlier this year', () => {
+    expect(isTeenAccount('2013-01-01', now)).toBe(true);
   });
 
-  it('returns false for a 12-year-old', () => {
-    expect(isTeenAccount(2014, now)).toBe(false);
+  it('returns false for someone who does not turn 13 until later this year', () => {
+    expect(isTeenAccount('2013-12-31', now)).toBe(false);
   });
 
-  it('returns false for an 18-year-old', () => {
-    expect(isTeenAccount(2008, now)).toBe(false);
+  it('returns true for someone whose 13th birthday is today', () => {
+    expect(isTeenAccount('2013-08-05', now)).toBe(true);
+  });
+
+  it('returns true for someone who turns 18 later this year (still 17 today)', () => {
+    expect(isTeenAccount('2008-12-31', now)).toBe(true);
+  });
+
+  it('returns false for someone who already turned 18 earlier this year', () => {
+    expect(isTeenAccount('2008-01-01', now)).toBe(false);
   });
 });
 ```
@@ -100,7 +120,7 @@ describe('isTeenAccount', () => {
 - [ ] **Step 6: Run the test, confirm it passes**
 
 Run: `cd worker && npx vitest run src/lib/ageGate.test.ts`
-Expected: 5 passing.
+Expected: 7 passing.
 
 - [ ] **Step 7: Locate or create the child-settings route file**
 
@@ -112,7 +132,7 @@ If a route file already handles per-child settings (e.g. `teen_mode` toggle), ad
 ```ts
 // worker/src/routes/childSettings.test.ts
 import { describe, it, expect, vi } from 'vitest';
-import { handleSetChildBirthYear } from './childSettings.js';
+import { handleSetChildBirthDate } from './childSettings.js';
 
 function makeEnv(overrides: Partial<{ first: unknown; run: unknown }> = {}) {
   const first = vi.fn().mockResolvedValue(overrides.first ?? { family_id: 'fam_1' });
@@ -122,37 +142,47 @@ function makeEnv(overrides: Partial<{ first: unknown; run: unknown }> = {}) {
   return { DB: { prepare } } as any;
 }
 
-describe('handleSetChildBirthYear', () => {
+describe('handleSetChildBirthDate', () => {
   it('rejects a non-parent caller', async () => {
-    const req = new Request('https://x/api/children/child_1/birth-year', {
+    const req = new Request('https://x/api/children/child_1/birth-date', {
       method: 'PATCH',
-      body: JSON.stringify({ birth_year: 2013 }),
+      body: JSON.stringify({ birth_date: '2013-06-15' }),
     });
     (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
-    const res = await handleSetChildBirthYear(req, makeEnv());
+    const res = await handleSetChildBirthDate(req, makeEnv(), 'child_1');
     expect(res.status).toBe(403);
   });
 
-  it('rejects an implausible birth year', async () => {
-    const req = new Request('https://x/api/children/child_1/birth-year', {
+  it('rejects an implausible birth date', async () => {
+    const req = new Request('https://x/api/children/child_1/birth-date', {
       method: 'PATCH',
-      body: JSON.stringify({ birth_year: 1950 }),
+      body: JSON.stringify({ birth_date: '1950-01-01' }),
     });
     (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
-    const res = await handleSetChildBirthYear(req, makeEnv());
+    const res = await handleSetChildBirthDate(req, makeEnv(), 'child_1');
     expect(res.status).toBe(400);
   });
 
-  it('accepts a plausible birth year from a parent', async () => {
-    const req = new Request('https://x/api/children/child_1/birth-year', {
+  it('rejects a malformed date string', async () => {
+    const req = new Request('https://x/api/children/child_1/birth-date', {
       method: 'PATCH',
-      body: JSON.stringify({ birth_year: 2013 }),
+      body: JSON.stringify({ birth_date: 'not-a-date' }),
     });
     (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
-    const res = await handleSetChildBirthYear(req, makeEnv());
+    const res = await handleSetChildBirthDate(req, makeEnv(), 'child_1');
+    expect(res.status).toBe(400);
+  });
+
+  it('accepts a plausible birth date from a parent', async () => {
+    const req = new Request('https://x/api/children/child_1/birth-date', {
+      method: 'PATCH',
+      body: JSON.stringify({ birth_date: '2013-06-15' }),
+    });
+    (req as any).auth = { sub: 'parent_1', family_id: 'fam_1', role: 'parent' };
+    const res = await handleSetChildBirthDate(req, makeEnv(), 'child_1');
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual({ birth_year: 2013 });
+    expect(body).toEqual({ birth_date: '2013-06-15' });
   });
 });
 ```
@@ -160,9 +190,11 @@ describe('handleSetChildBirthYear', () => {
 - [ ] **Step 9: Run test, verify it fails**
 
 Run: `cd worker && npx vitest run src/routes/childSettings.test.ts`
-Expected: FAIL — `handleSetChildBirthYear` not exported.
+Expected: FAIL — `handleSetChildBirthDate` not exported.
 
 - [ ] **Step 10: Implement the endpoint**
+
+`childId` is passed in as a parameter, extracted by the route matcher's regex capture group in `worker/src/index.ts` (Step 11) — following the same convention the codebase already uses for other path-param routes, rather than re-parsing `request.url` inside the handler.
 
 ```ts
 // worker/src/routes/childSettings.ts
@@ -172,55 +204,56 @@ import type { JwtPayload } from '../lib/jwt.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
-export async function handleSetChildBirthYear(request: Request, env: Env): Promise<Response> {
+function isPlausibleBirthDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const dob = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(dob.getTime())) return false;
+  const ageYears = (Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+  return ageYears >= 5 && ageYears <= 19;
+}
+
+export async function handleSetChildBirthDate(request: Request, env: Env, childId: string): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   if (auth.role !== 'parent') return error('Forbidden', 403);
 
-  const url = new URL(request.url);
-  const childId = url.pathname.split('/')[3]; // /api/children/:child_id/birth-year
   const body = await parseBody(request);
-  const birthYear = body?.birth_year;
-  if (typeof birthYear !== 'number' || !Number.isInteger(birthYear)) {
-    return error('birth_year must be an integer', 400);
-  }
-
-  const currentYear = new Date().getUTCFullYear();
-  if (birthYear < currentYear - 19 || birthYear > currentYear - 5) {
-    return error('birth_year out of plausible range', 400);
+  const birthDate = body?.birth_date;
+  if (typeof birthDate !== 'string' || !isPlausibleBirthDate(birthDate)) {
+    return error('birth_date must be a plausible ISO date (YYYY-MM-DD)', 400);
   }
 
   const child = await env.DB.prepare('SELECT family_id FROM users WHERE id = ?')
     .bind(childId).first<{ family_id: string }>();
   if (!child || child.family_id !== auth.family_id) return error('Forbidden', 403);
 
-  await env.DB.prepare('UPDATE users SET birth_year = ? WHERE id = ?')
-    .bind(birthYear, childId).run();
+  await env.DB.prepare('UPDATE users SET birth_date = ? WHERE id = ?')
+    .bind(birthDate, childId).run();
 
-  return json({ birth_year: birthYear });
+  return json({ birth_date: birthDate });
 }
 ```
 
 - [ ] **Step 11: Register the route in `worker/src/index.ts`**
 
-Add near the other `/api/children/` routes:
+Add near the other `/api/children/` routes, following the existing path-param-via-regex-capture convention used elsewhere in this file:
 ```ts
-const birthYearMatch = path.match(/^\/api\/children\/([^/]+)\/birth-year$/);
-if (birthYearMatch && method === 'PATCH') {
-  return withAuth(request, auth, env, handleSetChildBirthYear);
+const birthDateMatch = path.match(/^\/api\/children\/([^/]+)\/birth-date$/);
+if (birthDateMatch && method === 'PATCH') {
+  return withAuth(request, auth, env, (req, e) => handleSetChildBirthDate(req, e, birthDateMatch[1]));
 }
 ```
-Add the import at the top: `import { handleSetChildBirthYear } from './routes/childSettings.js';`
+Add the import at the top: `import { handleSetChildBirthDate } from './routes/childSettings.js';`
 
 - [ ] **Step 12: Run test, verify it passes**
 
 Run: `cd worker && npx vitest run src/routes/childSettings.test.ts`
-Expected: 3 passing.
+Expected: 4 passing.
 
 - [ ] **Step 13: Commit**
 
 ```bash
-git add worker/migrations/0088_child_birth_year.sql worker/src/types.ts worker/src/lib/ageGate.ts worker/src/lib/ageGate.test.ts worker/src/routes/childSettings.ts worker/src/routes/childSettings.test.ts worker/src/index.ts
-git commit -m "feat: add verified child birth-year field for teen mentor chat age gate"
+git add worker/migrations/0088_child_birth_date.sql worker/src/types.ts worker/src/lib/ageGate.ts worker/src/lib/ageGate.test.ts worker/src/routes/childSettings.ts worker/src/routes/childSettings.test.ts worker/src/index.ts
+git commit -m "feat: add verified child birth-date field for teen mentor chat age gate"
 ```
 
 ---
@@ -569,6 +602,25 @@ describe('classifyChildMessage', () => {
   });
 });
 
+describe('classifyChildMessage fail-closed behavior', () => {
+  it('fails closed to distress when moderation flagged something but the classifier call itself throws', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('network error'));
+    const result = await classifyChildMessage(env, {
+      text: 'something is really wrong',
+      moderation: { flagged: true, categories: { 'self-harm': true }, category_scores: { 'self-harm': 0.7 } },
+    });
+    expect(result.branch).toBe('distress');
+  });
+
+  it('rethrows when the classifier call fails and moderation found nothing (ordinary service error, not a fabricated crisis branch)', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('network error'));
+    await expect(classifyChildMessage(env, {
+      text: 'should I buy a game or save',
+      moderation: { flagged: false, categories: {}, category_scores: {} },
+    })).rejects.toThrow('network error');
+  });
+});
+
 describe('classifyAssistantOutput', () => {
   it('flags output that drifted off-topic', async () => {
     mockClassifyResponse({ on_topic: false });
@@ -627,7 +679,24 @@ export async function classifyChildMessage(
 ): Promise<{ branch: ChatBranch; rawFlags: Record<string, unknown> }> {
   const systemPrompt = `Classify the following message from a teenager in a financial-literacy chat app. Respond as JSON: {"off_topic": boolean, "distress_signal": boolean, "abuse_signal": boolean}. "distress_signal" = self-harm, suicidal ideation, or severe emotional distress. "abuse_signal" = any suggestion a parent/guardian is hurting, threatening, or mistreating them, including financially. "off_topic" = the message is not about money, chores, or financial literacy AND has no distress or abuse signal. If uncertain between distress and abuse, set BOTH to true.`;
 
-  const raw = await callClassifier(env, systemPrompt, opts.text) as Partial<RawClassification>;
+  let raw: Partial<RawClassification>;
+  try {
+    raw = await callClassifier(env, systemPrompt, opts.text) as Partial<RawClassification>;
+  } catch (err) {
+    // Fail-closed: a thrown classifier call must never silently resolve to on_topic.
+    // If OpenAI's own moderation pre-check already flagged something, treat that as a
+    // real signal — crisis resources are always safe to show, and routing to distress
+    // is the least-bad guess when we have no way to tell distress apart from abuse
+    // (the moderation API has no caregiver-abuse category to lean on here). If
+    // moderation found nothing either, this was very likely an infra blip on an
+    // ordinary message — surface it as a normal service error instead of fabricating
+    // a crisis branch for a plain network failure.
+    if (opts.moderation.flagged) {
+      return { branch: 'distress', rawFlags: { classifierFailed: true } };
+    }
+    throw err;
+  }
+
   const distressSignal = raw.distress_signal === true || opts.moderation.categories['self-harm'] === true;
   const abuseSignal = raw.abuse_signal === true;
 
@@ -662,7 +731,7 @@ export async function classifyAssistantOutput(
 - [ ] **Step 4: Run test, verify it passes**
 
 Run: `cd worker && npx vitest run src/lib/mentorChat/classifier.test.ts`
-Expected: 6 passing. The fail-safe test (`fail-safe: returns abuse_pattern when BOTH...`) is the one that most directly encodes the spec's safety requirement — do not let this one pass by accident, read its assertion carefully before moving on.
+Expected: 8 passing. Two of these tests most directly encode the spec's safety requirements — read their assertions carefully before moving on, don't let them pass by accident: the fail-safe test (`fail-safe: returns abuse_pattern when BOTH...`), and the fail-closed test (`fails closed to distress when moderation flagged something but the classifier call itself throws`).
 
 - [ ] **Step 5: Commit**
 
@@ -802,7 +871,7 @@ import * as alerts from '../lib/mentorChat/alerts.js';
 function makeEnv(overrides: { childRow?: unknown; rateCount?: number; consentRow?: unknown } = {}) {
   const first = vi.fn((sql: string) => {
     if (sql.includes('FROM users')) {
-      return Promise.resolve(overrides.childRow ?? { family_id: 'fam_1', birth_year: 2013, locale: 'en', display_name: 'Robin' });
+      return Promise.resolve(overrides.childRow ?? { family_id: 'fam_1', birth_date: '2013-01-01', locale: 'en', display_name: 'Robin' });
     }
     if (sql.includes('mentor_chat_consents')) {
       return Promise.resolve(overrides.consentRow ?? { consented: 1 });
@@ -929,7 +998,7 @@ describe('handlePostMentorChatMessage', () => {
       body: JSON.stringify({ child_id: 'child_1', message: 'hi' }),
     });
     (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
-    const env = makeEnv({ childRow: { family_id: 'fam_1', birth_year: 2018, locale: 'en', display_name: 'Robin' } });
+    const env = makeEnv({ childRow: { family_id: 'fam_1', birth_date: '2018-01-01', locale: 'en', display_name: 'Robin' } });
     const res = await handlePostMentorChatMessage(req, env);
     expect(res.status).toBe(403);
   });
@@ -943,6 +1012,20 @@ describe('handlePostMentorChatMessage', () => {
     const env = makeEnv({ rateCount: 20 });
     const res = await handlePostMentorChatMessage(req, env);
     expect(res.status).toBe(429);
+  });
+
+  it('returns 503 when moderation succeeds but the classifier throws with no moderation flag (fail-closed to a plain service error, not a fabricated crisis branch)', async () => {
+    vi.spyOn(moderation, 'moderateText').mockResolvedValue({ flagged: false, categories: {}, category_scores: {} });
+    vi.spyOn(classifier, 'classifyChildMessage').mockRejectedValue(new Error('network error'));
+
+    const req = new Request('https://x/api/mentor-chat/messages', {
+      method: 'POST',
+      body: JSON.stringify({ child_id: 'child_1', message: 'hi' }),
+    });
+    (req as any).auth = { sub: 'child_1', family_id: 'fam_1', role: 'child' };
+
+    const res = await handlePostMentorChatMessage(req, makeEnv());
+    expect(res.status).toBe(503);
   });
 });
 ```
@@ -989,11 +1072,11 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
   if (childId !== auth.sub) return error('Forbidden', 403);
 
   const child = await env.DB
-    .prepare('SELECT family_id, birth_year, locale, display_name FROM users WHERE id = ?')
+    .prepare('SELECT family_id, birth_date, locale, display_name FROM users WHERE id = ?')
     .bind(childId)
-    .first<{ family_id: string; birth_year: number | null; locale: 'en' | 'pl'; display_name: string }>();
+    .first<{ family_id: string; birth_date: string | null; locale: 'en' | 'pl'; display_name: string }>();
   if (!child || child.family_id !== auth.family_id) return error('Forbidden', 403);
-  if (!isTeenAccount(child.birth_year)) return error('Not available for this account', 403);
+  if (!isTeenAccount(child.birth_date)) return error('Not available for this account', 403);
 
   const consent = await env.DB
     .prepare('SELECT consented FROM mentor_chat_consents WHERE user_id = ? ORDER BY consented_at DESC LIMIT 1')
@@ -1014,8 +1097,18 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
     .first<{ n: number }>();
   if ((dailyCount?.n ?? 0) >= DAILY_LIMIT) return error('Rate limit exceeded', 429);
 
-  const moderationResult = await moderateText(env, message);
-  const classification = await classifyChildMessage(env, { text: message, moderation: moderationResult });
+  let moderationResult;
+  let classification;
+  try {
+    moderationResult = await moderateText(env, message);
+    classification = await classifyChildMessage(env, { text: message, moderation: moderationResult });
+  } catch {
+    // Covers both: the moderation pre-check itself failing (no signal at all to act
+    // on), and classifyChildMessage's own fail-closed path re-throwing when moderation
+    // found nothing (see classifier.ts) — in both cases this was an infra failure on
+    // an otherwise-ordinary message, not a crisis, so surface a plain service error.
+    return error('Mentor is unavailable right now, try again shortly', 503);
+  }
 
   const childMessageId = nanoid();
   await env.DB
@@ -1088,7 +1181,7 @@ export async function handlePostMentorChatMessage(request: Request, env: Env): P
 - [ ] **Step 4: Run test, verify it passes**
 
 Run: `cd worker && npx vitest run src/routes/mentorChat.test.ts`
-Expected: 6 passing.
+Expected: 7 passing.
 
 - [ ] **Step 5: Register the route in `worker/src/index.ts`**
 
@@ -1201,7 +1294,7 @@ export async function handleGetMentorChatHistory(request: Request, env: Env): Pr
 - [ ] **Step 4: Run test, verify it passes**
 
 Run: `cd worker && npx vitest run src/routes/mentorChat.test.ts`
-Expected: 9 passing (6 from Task 7 + 3 new).
+Expected: 10 passing (7 from Task 7 + 3 new).
 
 - [ ] **Step 5: Register the route in `worker/src/index.ts`**
 
@@ -1277,7 +1370,7 @@ In `makeEnv()`, extend the `first` closure so a query containing `has_ai_mentor`
 - [ ] **Step 5: Run test, verify all pass**
 
 Run: `cd worker && npx vitest run src/routes/mentorChat.test.ts`
-Expected: 10 passing.
+Expected: 11 passing.
 
 - [ ] **Step 6: Commit**
 
@@ -1343,7 +1436,7 @@ git commit -m "feat: include mentor chat tables in family purge job"
 
 - **Provider:** OpenAI
 - **Models:** `gpt-4o-mini` (chat replies, message/output classification), `omni-moderation-latest` (moderation pre-check)
-- **Scope:** Teen accounts only (13–17, enforced server-side against `users.birth_year`, added migration 0088). Not available to children under 13.
+- **Scope:** Teen accounts only (13–17, enforced server-side against `users.birth_date` with exact day-level age math, added migration 0088). Not available to children under 13.
 - **Purpose:** Topic-locked conversational financial mentoring — money, chores, financial literacy only. Personality: supportive, motivating, honest, firm-but-fair; reflects the teen's thinking back rather than deciding for them.
 - **Safety pipeline:** (1) OpenAI Moderation API pre-check on every inbound message. (2) Topic-locked system prompt (not relied on alone for containment). (3) Post-check classifier on both the child's message and the assistant's own draft reply, routing to on_topic / off_topic / distress / abuse_pattern, with an explicit fail-safe: any abuse signal overrides a co-occurring distress signal, since wrongly alerting a potentially abusive parent is a worse failure than wrongly withholding a distress alert.
 - **Human oversight / escalation:** Distress branch → immediate in-chat crisis resources (region/locale-aware) + real-time email alert to both parents (`worker/src/lib/mentorChat/alerts.ts`, reuses `EmailService`). Abuse-pattern branch → in-chat child-protection resources, parents explicitly NOT notified, since a parent may be the source of risk. Neither branch allows the model to counsel or discuss the disclosed content — acknowledgment + resources + stop.
@@ -1659,7 +1752,7 @@ export function MentorChatScreen({ childId }: Props) {
 
 - [ ] **Step 3: Manual verification (no automated test — this is a thin UI composition over already-tested endpoints)**
 
-Run: `npm run dev`, log in as a teen test account with `birth_year` set (via the Task 1 endpoint), `has_ai_mentor` enabled, and `MENTOR_CHAT_ENABLED=true` set in the worker environment. Confirm: consent screen appears once, chat sends/receives, "Visible to parents" badge is always present, off-topic message redirects gracefully.
+Run: `npm run dev`, log in as a teen test account with `birth_date` set (via the Task 1 endpoint) to a date 13–17 years ago, `has_ai_mentor` enabled, and `MENTOR_CHAT_ENABLED=true` set in the worker environment. Confirm: consent screen appears once, chat sends/receives, "Visible to parents" badge is always present, off-topic message redirects gracefully.
 
 - [ ] **Step 4: Commit**
 
@@ -1682,7 +1775,7 @@ git commit -m "feat: add teen-facing mentor chat screen with persistent parent-v
 
 - [ ] **Step 1: Add `is_teen` to the insights response**
 
-Modify `worker/src/routes/insights.ts`: in the query that already fetches the child's `birth_year` context (or add a new lightweight query if none exists), include `is_teen: isTeenAccount(child.birth_year)` in the JSON response. Import `isTeenAccount` from `../lib/ageGate.js`.
+Modify `worker/src/routes/insights.ts`: in the query that already fetches the child's `birth_date` context (or add a new lightweight query if none exists), include `is_teen: isTeenAccount(child.birth_date)` in the JSON response. Import `isTeenAccount` from `../lib/ageGate.js`.
 
 - [ ] **Step 2: Build the transcript card**
 
@@ -1765,7 +1858,7 @@ Run: `cd worker && grep -n "vars\|MENTOR_CHAT\|_ENABLED" wrangler.toml`
 
 - [ ] **Step 3: Dark-launch to Darren's own test family only**
 
-Set `has_ai_mentor = 1` and a valid `birth_year` (13–17) for a test child via the Task 1 endpoint, confirm the full flow end-to-end in the `morechard-dev` environment with `MENTOR_CHAT_ENABLED=true`, before touching the production value.
+Set `has_ai_mentor = 1` and a valid `birth_date` (13–17 years ago) for a test child via the Task 1 endpoint, confirm the full flow end-to-end in the `morechard-dev` environment with `MENTOR_CHAT_ENABLED=true`, before touching the production value.
 
 - [ ] **Step 4: Commit the wrangler.toml change**
 
