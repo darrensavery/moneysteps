@@ -84,4 +84,71 @@ describe('classifyAssistantOutput', () => {
     const result = await classifyAssistantOutput(env, { text: 'Let\'s talk about your favorite movie instead' });
     expect(result.onTopic).toBe(false);
   });
+
+  it('throws on a malformed response missing on_topic', async () => {
+    mockClassifyResponse({});
+    await expect(classifyAssistantOutput(env, { text: 'some reply' }))
+      .rejects.toThrow('Malformed classifier response shape');
+  });
+
+  it('throws on a malformed response with a non-boolean on_topic', async () => {
+    mockClassifyResponse({ on_topic: 'true' });
+    await expect(classifyAssistantOutput(env, { text: 'some reply' }))
+      .rejects.toThrow('Malformed classifier response shape');
+  });
+});
+
+describe('classifyChildMessage malformed-response handling', () => {
+  it('fails closed to distress when the classifier returns an empty object and moderation flagged something', async () => {
+    mockClassifyResponse({});
+    const result = await classifyChildMessage(env, {
+      text: 'something is really wrong',
+      moderation: { flagged: true, categories: { 'self-harm': true }, category_scores: { 'self-harm': 0.7 } },
+    });
+    expect(result.branch).toBe('distress');
+    expect(result.rawFlags).toEqual({ classifierFailed: true });
+  });
+
+  it('rethrows when the classifier returns an empty object and moderation found nothing', async () => {
+    mockClassifyResponse({});
+    await expect(classifyChildMessage(env, {
+      text: 'should I buy a game or save',
+      moderation: { flagged: false, categories: {}, category_scores: {} },
+    })).rejects.toThrow('Malformed classifier response shape');
+  });
+
+  it('does not treat a non-boolean abuse_signal (e.g. the string "true") as abuse_signal: true — fails closed instead of silently coercing', async () => {
+    mockClassifyResponse({ off_topic: false, distress_signal: false, abuse_signal: 'true' });
+    // The malformed shape (abuse_signal is a string, not boolean) fails shape validation
+    // and is routed through the fail-closed catch, same as any other malformed response —
+    // it must NOT be silently coerced to abuse_signal: true nor fall through to on_topic.
+    await expect(classifyChildMessage(env, {
+      text: 'my dad takes all my chore money',
+      moderation: { flagged: false, categories: {}, category_scores: {} },
+    })).rejects.toThrow('Malformed classifier response shape');
+  });
+
+  it('fails closed to distress (not silently coerced abuse) when abuse_signal is non-boolean but moderation flagged something', async () => {
+    mockClassifyResponse({ off_topic: false, distress_signal: false, abuse_signal: 'true' });
+    const result = await classifyChildMessage(env, {
+      text: 'my dad takes all my chore money',
+      moderation: { flagged: true, categories: { 'self-harm': true }, category_scores: { 'self-harm': 0.5 } },
+    });
+    expect(result.branch).toBe('distress');
+  });
+});
+
+describe('classifyChildMessage self-harm subcategory backstop', () => {
+  it('routes to distress when moderation flags self-harm/intent even if the classifier says no distress', async () => {
+    mockClassifyResponse({ off_topic: false, distress_signal: false, abuse_signal: false });
+    const result = await classifyChildMessage(env, {
+      text: 'I have been thinking about hurting myself',
+      moderation: {
+        flagged: true,
+        categories: { 'self-harm': false, 'self-harm/intent': true },
+        category_scores: { 'self-harm/intent': 0.75 },
+      },
+    });
+    expect(result.branch).toBe('distress');
+  });
 });
