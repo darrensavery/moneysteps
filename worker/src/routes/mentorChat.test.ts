@@ -82,7 +82,7 @@ describe('handlePostMentorChatMessage', () => {
 
     const res = await handlePostMentorChatMessage(req, makeEnv());
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.branch).toBe('on_topic');
     expect(body.reply).toContain('splitting');
   });
@@ -115,7 +115,7 @@ describe('handlePostMentorChatMessage', () => {
 
     const res = await handlePostMentorChatMessage(req, env);
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.branch).toBe('off_topic');
     expect(body.reply).toContain("outside what I can help with");
     expect(runCalls.some((sql) => sql.includes('mentor_chat_escalations'))).toBe(false);
@@ -134,7 +134,7 @@ describe('handlePostMentorChatMessage', () => {
 
     const res = await handlePostMentorChatMessage(req, makeEnv());
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.branch).toBe('distress');
     expect(body.reply).toContain('Childline');
     expect(notifySpy).toHaveBeenCalledTimes(1);
@@ -154,7 +154,7 @@ describe('handlePostMentorChatMessage', () => {
     const env = makeEnv({ familyRow: { has_ai_mentor: 1, has_shield: 0, currency: 'USD' } });
     const res = await handlePostMentorChatMessage(req, env);
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.branch).toBe('distress');
     expect(body.reply).toContain('988');
   });
@@ -186,7 +186,7 @@ describe('handlePostMentorChatMessage', () => {
 
     const res = await handlePostMentorChatMessage(req, env);
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.branch).toBe('distress');
     expect(body.reply).toContain('Childline');
     expect(captureSpy).toHaveBeenCalledOnce();
@@ -358,7 +358,7 @@ describe('handlePostMentorChatMessage', () => {
 
     const res = await handlePostMentorChatMessage(req, makeEnv());
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.reply).toContain("outside what I can help with");
     expect(body.branch).toBe('on_topic');
   });
@@ -539,7 +539,7 @@ describe('handleGetMentorChatHistory', () => {
     ];
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.messages[0].escalation_type).toBe('flagged');
     expect(body.messages[1].escalation_type).toBe('flagged');
     expect(body.messages[2].escalation_type).toBeNull();
@@ -554,7 +554,7 @@ describe('handleGetMentorChatHistory', () => {
     ];
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.messages[0].escalation_type).toBe('distress');
     expect(body.messages[1].escalation_type).toBe('abuse_pattern');
   });
@@ -568,7 +568,7 @@ describe('handleGetMentorChatHistory', () => {
     ];
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     // Child's own triggering message is untouched — out of scope for this fix.
     expect(body.messages[0].content).toBe('nothing matters anymore');
     expect(body.messages[1].content).toBe('Support resources were shared with your child.');
@@ -584,7 +584,7 @@ describe('handleGetMentorChatHistory', () => {
     ];
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.messages[1].content).toBe('Support resources were shared with your child.');
     expect(body.messages[1].content).not.toContain('without anyone else finding out');
     expect(body.messages[0].escalation_type).toBe('flagged');
@@ -599,7 +599,7 @@ describe('handleGetMentorChatHistory', () => {
     ];
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.messages[1].content).toBe('Have you thought about splitting it between saving and spending?');
   });
 
@@ -612,7 +612,7 @@ describe('handleGetMentorChatHistory', () => {
     ];
     const res = await handleGetMentorChatHistory(req, makeHistoryEnv(rows));
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as any;
     expect(body.messages[0].content).toBe("we've also let your parent(s) know");
     expect(body.messages[1].content).toBe('without anyone else finding out');
   });

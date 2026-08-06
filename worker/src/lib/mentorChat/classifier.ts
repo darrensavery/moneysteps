@@ -93,7 +93,7 @@ export async function classifyChildMessage(
     branch = 'on_topic';
   }
 
-  return { branch, rawFlags: raw as Record<string, unknown> };
+  return { branch, rawFlags: raw as unknown as Record<string, unknown> };
 }
 
 export async function classifyAssistantOutput(

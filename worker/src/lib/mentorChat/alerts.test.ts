@@ -27,7 +27,7 @@ function makeEnv() {
 describe('notifyParentsOfDistress', () => {
   it('sends to every parent email in the family', async () => {
     const env = makeEnv();
-    const { __mockSendTransactional } = await import('../email.js');
+    const { __mockSendTransactional } = await import('../email.js') as unknown as { __mockSendTransactional: ReturnType<typeof vi.fn> };
     __mockSendTransactional.mockClear();
     await notifyParentsOfDistress(env, { familyId: 'fam_1', childDisplayName: 'Robin', locale: 'en' });
     expect(__mockSendTransactional).toHaveBeenCalledTimes(2);
