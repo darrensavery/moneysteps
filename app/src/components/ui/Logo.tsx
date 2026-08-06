@@ -126,7 +126,7 @@ export function FullLogo({ iconSize = 28, className = '' }: FullLogoProps) {
     >
       <BrandMark size={iconSize} aria-hidden />
       <span
-        className="font-semibold tracking-tight text-[#1b2d2e] dark:text-[#f9f7f2]"
+        className="font-semibold tracking-tight text-main"
         style={{ fontSize: Math.round(iconSize * 0.65) }}
       >
         Morechard

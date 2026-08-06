@@ -295,7 +295,7 @@ function BalanceBar({ data, currency }: { data: InsightsData; currency: string }
         <BalanceStat
           label="Allocated Savings"
           value={formatCurrency(data.goals_locked_pence, currency)}
-          valueColor="text-[#10b981]"
+          valueColor="text-success"
           position="center"
         />
         <BalanceStat
@@ -843,7 +843,7 @@ function SupportingStats({ data, currency }: { data: InsightsData; currency: str
           <p className="text-[15px] font-bold text-[var(--color-text)] tabular-nums mt-0.5 flex items-baseline gap-1">
             <AnimatedStat value={String(data.tasks_completed)}/>
             {choreDelta !== null && choreDelta > 0 && (
-              <span className="text-[10px] font-bold text-[#16a34a]">↑ {choreDelta}</span>
+              <span className="text-[10px] font-bold text-success">↑ {choreDelta}</span>
             )}
           </p>
         </div>
