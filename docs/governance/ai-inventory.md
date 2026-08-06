@@ -3,7 +3,7 @@
 
 **Document type:** Internal accountability record. Not published to the public site.  
 **Controller:** Darren Savery, trading as Morechard (sole trader)  
-**Status:** Verified against codebase 2026-06-29; updated 2026-07-16 to record decommissioning of AI System 2 (Child Mentor Chat); AI System 3 (Teen Mentor Chat) added 2026-08-05 — consent basis pending legal review, see spec. Sections marked [OWNER TO COMPLETE] require human judgment.  
+**Status:** Verified against codebase 2026-06-29; updated 2026-07-16 to record decommissioning of AI System 2 (Child Mentor Chat); AI System 3 (Teen Mentor Chat) added 2026-08-05, then marked SHELVED 2026-08-06 — code is merged and inert, feature is not launching, see AI System 3 entry for rationale. Sections marked [OWNER TO COMPLETE] require human judgment.  
 **Next review:** [OWNER TO COMPLETE — suggest quarterly; 2026-09-29]
 
 ---
@@ -74,7 +74,17 @@
 
 ---
 
-## AI System 3: Teen Mentor Chat
+## AI System 3: Teen Mentor Chat — SHELVED 2026-08-06 (not decommissioned; code merged and inert)
+
+**Status:** Track 1 (the safety pipeline, routes, and data model below) is built, tested (438/438), reviewed, and merged to `main`. It is **not live** — `MENTOR_CHAT_ENABLED` is unset in production and the route additionally requires a `mentor_chat_consents` row that no code path can write, since Track 2 (consent UI, parent transcript UI, the flag flip) was never built. The feature is shelved as a business decision, not blocked on an unresolved technical or legal question — re-read this entry in full before treating "shelved" as "nearly done."
+
+**Why shelved (2026-08-06):** Getting from here to a launchable feature requires a formal legal engagement — not just the originally-scoped consent-basis question, but a fuller picture that emerged from a non-binding risk read: the crisis-detection dataflow processes special category (health-adjacent) data under Article 9 UK GDPR, which a generic Article 6 consent screen doesn't cover; parental visibility is arguably a second, separate disclosure needing its own basis; the processing is very likely DPIA-mandatory (special category data, children, novel AI technology, safeguarding function — multiple independent triggers); and the international transfer to OpenAI needs to be confirmed as covering this specific, more sensitive dataflow, not just AI System 1's original financial-briefing use case.
+
+Weighed against that cost: this feature serves only the teen (13-17) subset of users, on a **non-core** part of the product (Morechard's positioning is chore-data-driven financial education for the whole family, not AI chat — see `docs/marketing`/business-strategy source docs), and duplicates content the existing templated Seedling/Professional nudge system already delivers in a lower-risk, non-generative form. It also makes Darren — a solo founder with no in-house legal or safeguarding team — personally the real-time human escalation path for any teen's self-harm or abuse disclosure. The demand signal behind reopening this (informal "real user feedback from teenagers") was judged too thin to justify that ongoing legal-compliance cost and personal safeguarding liability, on top of the DPIA/legal spend needed just to reach a launchable state.
+
+**Decision:** Shelved, not cancelled. The code stays on `main`, tested and reviewable, as a ready-to-resume asset. Do not delete it and do not flip `MENTOR_CHAT_ENABLED` without redoing this cost/benefit call.
+
+**To re-open this topic**, get a clearer demand signal than anecdotal feedback (e.g. retention/engagement data showing the templated nudge system is measurably failing to engage the teen segment) AND commission the legal work above (DPIA, Article 9 basis, parental-disclosure basis, OpenAI transfer confirmation) before resuming Track 2. Re-weigh the cost against whatever the new demand signal actually shows — the calculus above isn't a permanent verdict, it's the read as of 2026-08-06.
 
 **Source files:** `worker/src/routes/mentorChat.ts`, `worker/src/lib/mentorChat/*.ts`
 
@@ -86,7 +96,7 @@
 - **Human oversight / escalation:** Distress branch → immediate in-chat crisis resources (region/locale-aware) + real-time email alert to both parents (`worker/src/lib/mentorChat/alerts.ts`, reuses `EmailService`). Abuse-pattern branch → in-chat child-protection resources, parents explicitly NOT notified, since a parent may be the source of risk. Neither branch allows the model to counsel or discuss the disclosed content — acknowledgment + resources + stop.
 - **Data retention & export boundary:** `mentor_chat_messages` / `mentor_chat_escalations` — separate tables, never joined into the hash-chained ledger or Shield AI forensic PDF export. Subject to the standard account-deletion purge (`worker/src/jobs/familyPurge.ts`).
 - **Children's data involved:** Yes — teen free-text content, including references to family circumstances. Identified by nickname/display_name only, consistent with the rest of the product.
-- **Consent basis:** [OWNER TO COMPLETE — legal review pending, see `docs/superpowers/specs/2026-08-04-teen-mentor-chat-design.md`, "Consent flow — UNRESOLVED, blocking". Do not mark this resolved until that review is complete.]
+- **Consent basis:** Never resolved — this is why the feature is shelved rather than launched. See `docs/superpowers/specs/2026-08-04-teen-mentor-chat-design.md`, "Consent flow — UNRESOLVED, blocking", and the shelving rationale above. Do not mark this resolved without a real legal engagement, regardless of how confident any future non-binding analysis sounds.
 - **Rate limiting:** 20 messages/hour, 60/day per child, enforced server-side.
 - **Fallback behavior:** If the chat completion call fails or times out, the route returns a 503 rather than a degraded/fabricated reply — no rule-based fallback exists for open-ended chat (unlike AI System 1's briefing fallback), since a wrong guess at conversational content is a worse outcome than a visible "try again" error.
 

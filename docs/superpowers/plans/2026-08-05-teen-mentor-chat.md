@@ -1,5 +1,7 @@
 # Teen Mentor Chat Implementation Plan
 
+> **Status: SHELVED 2026-08-06.** Track 1 below was fully executed and merged to `main` (inert, `MENTOR_CHAT_ENABLED` unset). Track 2 was never started and the feature is not launching — a business decision (legal-compliance cost vs. value for a non-core, teen-only feature), not a technical blocker. Do not resume Track 2 from this document without re-reading `docs/governance/ai-inventory.md`, AI System 3, first. Left here as an executed reference, not an active task list.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a topic-locked, moderated chat surface between teen (13+) accounts and the AI Mentor, per `docs/superpowers/specs/2026-08-04-teen-mentor-chat-design.md`.

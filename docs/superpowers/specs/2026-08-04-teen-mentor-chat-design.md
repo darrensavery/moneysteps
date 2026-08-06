@@ -1,7 +1,7 @@
 # Teen Mentor Chat — Design Spec
 
 **Date:** 2026-08-04
-**Status:** Approved for planning
+**Status:** SHELVED 2026-08-06 — Track 1 (this spec's safety pipeline) was built and merged to `main`, but is inert (`MENTOR_CHAT_ENABLED` unset) and the feature is not launching. Not a technical or legal blocker alone — a business decision that the legal-compliance cost (DPIA, Article 9 special-category basis, parental-disclosure basis) outweighs the value for a non-core, teen-only feature. Full rationale and re-opening criteria: `docs/governance/ai-inventory.md`, AI System 3.
 **Supersedes context:** `docs/governance/ai-inventory.md` — AI System 2 (Child Mentor Chat), decommissioned 2026-07-16. This is a fresh feature, not a resurrection: new tables, new safety pipeline, new consent flow. The old `chat_history` / `chat_rate_limits` tables remain dead and subject to the standard purge; nothing here writes to them.
 
 ## Why
