@@ -1,6 +1,7 @@
 ﻿/**
  * Auth routes
  *
+ * (trivial touch to test GitHub Actions push trigger)
  * POST /auth/register          Create parent account (email + optional password)
  * POST /auth/login             Email + password login → JWT
  * POST /auth/magic-link        Request magic link email
