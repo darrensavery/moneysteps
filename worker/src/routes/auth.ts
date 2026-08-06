@@ -54,12 +54,16 @@ const createFamilySchema = z.object({
   base_currency:     z.string().optional(),
   parenting_mode:    z.string().optional(),
   referred_by_code:  z.string().optional(),
+  turnstile_token:   z.string().optional(),
 });
 
 export async function handleCreateFamily(request: Request, env: Env): Promise<Response> {
   const parsed = await parseValidatedBody(request, createFamilySchema);
   if (parsed instanceof Response) return parsed;
   const { display_name, email, password, locale } = parsed;
+
+  const turnstileCheck = await verifyTurnstile(request, env, parsed.turnstile_token);
+  if (turnstileCheck) return turnstileCheck;
 
   const normEmail = email.toLowerCase().trim();
   if (!isValidEmail(normEmail)) return error('Invalid email address');

@@ -323,8 +323,11 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
   const [settingsRow, userRow] = await Promise.all([
     env.DB.prepare(`SELECT teen_mode FROM user_settings WHERE user_id = ?`)
       .bind(effectiveChildId).first<{ teen_mode: number }>().catch(() => null),
-    env.DB.prepare(`SELECT locale, display_name FROM users WHERE id = ?`)
-      .bind(effectiveChildId).first<{ locale: string; display_name: string }>().catch(() => null),
+    env.DB.prepare(
+      `SELECT u.locale, u.display_name FROM users u
+       JOIN family_roles fr ON fr.user_id = u.id
+       WHERE u.id = ? AND fr.family_id = ?`,
+    ).bind(effectiveChildId, family_id).first<{ locale: string; display_name: string }>().catch(() => null),
   ]);
 
   const isTeenMode  = (settingsRow?.teen_mode ?? 0) === 1;

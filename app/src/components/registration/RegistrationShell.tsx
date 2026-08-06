@@ -45,6 +45,7 @@ export interface RegistrationState {
   // Step 2
   base_currency?: 'GBP' | 'USD' | 'PLN'   // add USD
   locale?:        AppLocale                 // new — no longer derived from currency
+  turnstile_token?: string
 
   // Step 3 — children added here; pin stored locally only
   children?: ChildRecord[]
@@ -123,6 +124,7 @@ export function RegistrationShell({ onComplete }: Props) {
             parenting_mode:    merged.parenting_mode!,
             governance_mode:   merged.governance_mode ?? 'amicable',
             base_currency:     merged.base_currency ?? 'GBP',
+            turnstile_token:   merged.turnstile_token,
             ...(referredByCode ? { referred_by_code: referredByCode } : {}),
           })
           // Clear referral code after successful family creation

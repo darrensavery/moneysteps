@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Info, Scale, Zap, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { detectLocale, type AppLocale } from '@/lib/locale'
+import { TurnstileWidget } from '@/components/ui/TurnstileWidget'
 import type { RegistrationState } from './RegistrationShell'
 
 interface Props {
@@ -57,7 +58,9 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
   )
   const [showGovInfo, setShowGovInfo] = useState(false)
   const [attempted,   setAttempted]   = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | undefined>(data.turnstile_token)
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const turnstileConfigured = !!(import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined)
 
   const isCoParenting = data.parenting_mode === 'co-parenting'
 
@@ -79,10 +82,11 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
       locale,
       base_currency:   currency,
       governance_mode: isCoParenting ? govMode : 'amicable',
+      turnstile_token: turnstileToken,
     })
   }
 
-  const canContinue = !!locale && !!currency
+  const canContinue = !!locale && !!currency && (!turnstileConfigured || !!turnstileToken)
   const moneyWord = locale === 'pl' ? 'kieszonkowe' : locale === 'en-US' ? 'allowance' : 'pocket money'
 
   return (
@@ -228,6 +232,12 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
             />
           </div>
         </section>
+      )}
+
+      {turnstileConfigured && (
+        <div className="flex justify-center pt-1">
+          <TurnstileWidget onVerify={setTurnstileToken} />
+        </div>
       )}
 
       {/* Navigation */}
