@@ -287,7 +287,8 @@ cd worker && npx wrangler d1 migrations apply morechard --remote --env productio
 ### **Phase 8: Polish & Passive Automation**
 - [x] Add Sentry Error Tracking (24/7 solo-dev monitoring)
 - [ ] Implement PostHog Session Replays (UX friction hunting)
-- [ ] Final PWA Optimization (Offline caching & Push notifications)
+- [x] Offline caching (`vite-plugin-pwa`/Workbox) — verified 2026-08-06: precaches full app shell (65 entries incl. all JS/CSS chunks, fonts, icons, manifest), SPA navigation fallback to `/index.html` with `/api` and `/auth` denylisted, cache-first for immutable hashed assets/fonts/DiceBear avatars, stale-while-revalidate for Google Fonts CSS. Confirmed via production build (`npm run build`) — `sw.js` output matches `vite.config.ts` config exactly.
+- [ ] Push notifications (remaining half of "Final PWA Optimization") — not built: no service worker `push` handler, no subscription flow, no server-side send (`web-push` or similar). Needed for both web and native (Capacitor) paths.
 
 ### **Infrastructure**
 - [x] JWT storage model migrated off `localStorage` — web now uses an `HttpOnly; Secure; SameSite=Lax` cookie (`mc_token`) + CSRF header check (`X-Morechard-Client`), native (Capacitor) uses Keychain/Keystore-backed secure storage instead of `localStorage`/Bearer-in-JS. Closes finding #4 from the 2026-07-15 production security audit (Pass 6). Spec: `docs/superpowers/specs/2026-07-15-jwt-cookie-migration-design.md`; plan: `docs/superpowers/plans/2026-07-15-jwt-cookie-migration.md`. Live Playwright verification of the cookie/CSRF flow still outstanding — `wrangler dev --remote` doesn't run in the sandboxed dev environment used to build this (503 on every route, reproduces on unmodified `main`); the spec (`app/e2e/auth-cookie.spec.ts`) is written and statically verified against the route code but never executed.
