@@ -194,8 +194,8 @@ export function ThemePicker() {
 
   return (
     <div>
-      <p className="text-[13px] font-bold text-[#6b6a66] uppercase tracking-wide mb-2">Display</p>
-      <div className="flex rounded-xl overflow-hidden border border-[#D3D1C7] bg-[#f3f2ee] dark:bg-[#1e2e2f] dark:border-[#3a5254]">
+      <p className="text-[13px] font-bold text-muted uppercase tracking-wide mb-2">Display</p>
+      <div className="flex rounded-xl overflow-hidden border border-subtle bg-surface-alt">
         {OPTIONS.map(opt => {
           const active = preference === opt.value
           return (
@@ -206,8 +206,8 @@ export function ThemePicker() {
                 flex-1 flex flex-col items-center gap-1 py-2.5 text-[12px] font-semibold
                 transition-colors duration-150 cursor-pointer
                 ${active
-                  ? 'bg-white dark:bg-[#243637] text-[#1C1C1A] dark:text-[#f9f7f2] shadow-sm'
-                  : 'text-[#6b6a66] dark:text-[#9bb5b7] hover:text-[#1C1C1A] dark:hover:text-[#f9f7f2]'}
+                  ? 'bg-surface text-main shadow-sm'
+                  : 'text-muted hover:text-main'}
               `}
               aria-pressed={active}
             >
@@ -217,7 +217,7 @@ export function ThemePicker() {
           )
         })}
       </div>
-      <p className="text-[11px] text-[#6b6a66] dark:text-[#9bb5b7] mt-1.5">
+      <p className="text-[11px] text-muted mt-1.5">
         Auto follows your device's display setting.
       </p>
     </div>
