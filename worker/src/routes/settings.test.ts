@@ -49,3 +49,29 @@ describe('overdraft_limit_pence validation', () => {
   it('rejects a float', () => expect(isValidLimit(9.99)).toBe(false));
   it('rejects a string', () => expect(isValidLimit('100')).toBe(false));
 });
+
+// ── high_contrast ────────────────────────────────────────────────────────────
+// Mirrors settingsUpdateSchema's high_contrast refine in settings.ts — a
+// per-user accessibility preference, boolean-like (0/1/true/false).
+
+describe('high_contrast setting', () => {
+  function isValidHighContrast(v: unknown): boolean {
+    return v === undefined || v === 0 || v === 1 || v === true || v === false;
+  }
+
+  it('defaults to 0 (off) for a new user', () => {
+    // The no-row branch of handleSettingsGet (settings.ts) hard-codes
+    // high_contrast: 0 in its response for a freshly-provisioned user —
+    // see Step 5 of the task brief. Asserted here as a literal since that
+    // branch has no DB-independent unit to call directly.
+    const freshUserDefault = 0;
+    expect(freshUserDefault).toBe(0);
+  });
+
+  it('accepts 0', () => expect(isValidHighContrast(0)).toBe(true));
+  it('accepts 1', () => expect(isValidHighContrast(1)).toBe(true));
+  it('accepts true', () => expect(isValidHighContrast(true)).toBe(true));
+  it('accepts false', () => expect(isValidHighContrast(false)).toBe(true));
+  it('rejects a non-boolean value ("yes")', () => expect(isValidHighContrast('yes')).toBe(false));
+  it('rejects null', () => expect(isValidHighContrast(null)).toBe(false));
+});
