@@ -4,7 +4,7 @@
  */
 
 import { useLocale, type AppLocale } from '../../../lib/locale'
-import { ThemePicker } from '../../../lib/theme'
+import { ThemePicker, HighContrastToggle } from '../../../lib/theme'
 import { Toast, SectionCard, SectionHeader } from '../shared'
 import { cn } from '../../../lib/utils'
 
@@ -29,6 +29,9 @@ export function AppearanceSettings({ toast, onBack }: Props) {
       <SectionCard>
         <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
           <ThemePicker />
+        </div>
+        <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
+          <HighContrastToggle />
         </div>
         <div className="px-4 py-3.5">
           <p className="text-[13px] font-semibold text-[var(--color-text)] mb-2.5">Language</p>
