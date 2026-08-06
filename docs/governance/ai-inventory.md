@@ -80,7 +80,7 @@
 
 - **Provider:** OpenAI
 - **Models:** `gpt-4o-mini` (chat replies, message/output classification), `omni-moderation-latest` (moderation pre-check)
-- **Scope:** Teen accounts only (13–17, enforced server-side against `users.birth_date` with exact day-level age math, added migration 0088). Not available to children under 13.
+- **Scope:** Teen accounts only (13–17, enforced server-side against `users.birth_date` with exact day-level age math, added migration 0089). Not available to children under 13.
 - **Purpose:** Topic-locked conversational financial mentoring — money, chores, financial literacy only. Personality: supportive, motivating, honest, firm-but-fair; reflects the teen's thinking back rather than deciding for them.
 - **Safety pipeline:** (1) OpenAI Moderation API pre-check on every inbound message. (2) Topic-locked system prompt (not relied on alone for containment). (3) Post-check classifier on both the child's message and the assistant's own draft reply, routing to on_topic / off_topic / distress / abuse_pattern, with an explicit fail-safe: any abuse signal overrides a co-occurring distress signal, since wrongly alerting a potentially abusive parent is a worse failure than wrongly withholding a distress alert.
 - **Human oversight / escalation:** Distress branch → immediate in-chat crisis resources (region/locale-aware) + real-time email alert to both parents (`worker/src/lib/mentorChat/alerts.ts`, reuses `EmailService`). Abuse-pattern branch → in-chat child-protection resources, parents explicitly NOT notified, since a parent may be the source of risk. Neither branch allows the model to counsel or discuss the disclosed content — acknowledgment + resources + stop.

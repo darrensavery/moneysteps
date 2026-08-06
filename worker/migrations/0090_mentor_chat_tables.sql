@@ -1,4 +1,4 @@
--- worker/migrations/0089_mentor_chat_tables.sql
+-- worker/migrations/0090_mentor_chat_tables.sql
 CREATE TABLE IF NOT EXISTS mentor_chat_messages (
   id               TEXT    PRIMARY KEY,
   family_id        TEXT    NOT NULL REFERENCES families(id),

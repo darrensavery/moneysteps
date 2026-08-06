@@ -247,7 +247,7 @@ export async function handleGetMentorChatHistory(request: Request, env: Env): Pr
   // Second LEFT JOIN (aliased `er`) finds, for each row, whether it IS the
   // assistant's crisis-resource reply for some escalation — i.e. some escalation
   // row's assistant_message_id points at this exact message. This is the explicit
-  // FK link added in migration 0090, not adjacency/ordering inference (see
+  // FK link added in migration 0091, not adjacency/ordering inference (see
   // parent-content-redaction-report.md, option b).
   const rows = await env.DB
     .prepare(`SELECT m.id, m.role, m.content, m.created_at, e.escalation_type,
