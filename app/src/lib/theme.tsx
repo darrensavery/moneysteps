@@ -30,12 +30,18 @@ interface ThemeContextValue {
   resolved: ResolvedTheme
   /** Change the theme and persist it. */
   setTheme: (t: ThemePreference) => void
+  /** Whether High Contrast (WCAG AA) mode is active. */
+  highContrast: boolean
+  /** Change the High Contrast preference and persist it. */
+  setHighContrast: (v: boolean) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   preference: 'system',
   resolved:   'light',
   setTheme:   () => {},
+  highContrast: false,
+  setHighContrast: () => {},
 })
 
 export function useTheme(): ThemeContextValue {
@@ -65,8 +71,34 @@ function resolve(preference: ThemePreference): ResolvedTheme {
   return systemPrefersDark() ? 'dark' : 'light'
 }
 
-function applyToDOM(resolved: ResolvedTheme) {
+export function readStoredHighContrast(): boolean | null {
+  try {
+    const v = localStorage.getItem('mc_high_contrast')
+    if (v === '1') return true
+    if (v === '0') return false
+  } catch { /* storage blocked */ }
+  return null // no explicit preference stored
+}
+
+export function systemPrefersMoreContrast(): boolean {
+  try {
+    return window.matchMedia('(prefers-contrast: more)').matches
+  } catch { return false }
+}
+
+export function resolveHighContrast(): boolean {
+  const stored = readStoredHighContrast()
+  if (stored !== null) return stored
+  return systemPrefersMoreContrast()
+}
+
+function applyToDOM(resolved: ResolvedTheme, highContrast: boolean) {
   document.documentElement.setAttribute('data-theme', resolved)
+  if (highContrast) {
+    document.documentElement.setAttribute('data-contrast', 'high')
+  } else {
+    document.documentElement.removeAttribute('data-contrast')
+  }
   // Keep the PWA chrome colour in sync
   const meta = document.getElementById('meta-theme-color')
   if (meta) meta.setAttribute('content', resolved === 'dark' ? '#1b2d2e' : '#00959c')
@@ -91,14 +123,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [resolved,   setResolved]        = useState<ResolvedTheme>(() =>
     resolve(readStoredPreference())
   )
+  const [highContrast, setHighContrastState] = useState<boolean>(resolveHighContrast)
 
   // Apply immediately on mount (the anti-flicker script may have already done
   // this, but we keep React and the DOM in sync regardless).
   useEffect(() => {
     const r = resolve(preference)
     setResolved(r)
-    applyToDOM(r)
-  }, [preference])
+    applyToDOM(r, highContrast)
+  }, [preference, highContrast])
 
   // Listen for OS-level changes when preference is 'system'
   useEffect(() => {
@@ -107,11 +140,25 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const handler = () => {
       const r = resolve('system')
       setResolved(r)
-      applyToDOM(r)
+      applyToDOM(r, highContrast)
     }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
-  }, [preference])
+  }, [preference, highContrast])
+
+  // OS-level high-contrast fallback — only live while no explicit user
+  // preference is stored (matches the `system` theme fallback pattern).
+  useEffect(() => {
+    if (readStoredHighContrast() !== null) return
+    const mq = window.matchMedia('(prefers-contrast: more)')
+    const handler = () => {
+      const hc = systemPrefersMoreContrast()
+      setHighContrastState(hc)
+      applyToDOM(resolved, hc)
+    }
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [resolved])
 
   const setTheme = useCallback((t: ThemePreference) => {
     setPreferenceState(t)
@@ -120,8 +167,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     updateSettings({ theme: t }).catch(() => { /* offline — localStorage is source of truth */ })
   }, [])
 
+  const setHighContrast = useCallback((v: boolean) => {
+    setHighContrastState(v)
+    try { localStorage.setItem('mc_high_contrast', v ? '1' : '0') } catch { /* storage blocked */ }
+    updateSettings({ high_contrast: v }).catch(() => { /* offline — localStorage is source of truth */ })
+  }, [])
+
   return (
-    <ThemeContext.Provider value={{ preference, resolved, setTheme }}>
+    <ThemeContext.Provider value={{ preference, resolved, setTheme, highContrast, setHighContrast }}>
       {children}
     </ThemeContext.Provider>
   )
@@ -167,6 +220,41 @@ export function ThemePicker() {
       <p className="text-[11px] text-[#6b6a66] dark:text-[#9bb5b7] mt-1.5">
         Auto follows your device's display setting.
       </p>
+    </div>
+  )
+}
+
+// ─── HighContrastToggle UI ────────────────────────────────────────────────────
+// Self-contained switch — drop into any settings panel alongside ThemePicker.
+
+export function HighContrastToggle() {
+  const { highContrast, setHighContrast } = useTheme()
+
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <p className="text-[13px] font-semibold text-main">High Contrast</p>
+        <p className="text-[11px] text-muted mt-0.5">
+          Meets WCAG AA accessibility standards for text and interface contrast.
+        </p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={highContrast}
+        onClick={() => setHighContrast(!highContrast)}
+        className={`
+          tap-target-44 relative w-11 h-6 rounded-full transition-colors duration-150 cursor-pointer shrink-0
+          ${highContrast ? 'bg-brand' : 'bg-surface-alt border border-subtle'}
+        `}
+      >
+        <span
+          className={`
+            absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-150
+            ${highContrast ? 'translate-x-5' : 'translate-x-0'}
+          `}
+        />
+      </button>
     </div>
   )
 }
