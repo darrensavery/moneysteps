@@ -89,6 +89,11 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
   }, [familyId, childId])
 
   async function handleClaim(choreId: string) {
+    // Optimistic: pull the card the instant it's tapped, don't wait on the round trip.
+    // load() below is the reconciler either way — it removes the card for good on
+    // success, restores it if the claim genuinely failed (e.g. network error), and
+    // drops it on a 409 (sibling claimed first) — so no manual rollback needed here.
+    setOpenChores(prev => prev.filter(c => c.id !== choreId))
     setClaiming(choreId)
     setClaimError(null)
     try {
@@ -169,15 +174,19 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
 
   async function handleNoteSubmit() {
     if (!submit) return
-    setSubmit(s => s ? { ...s, stage: 'submitting', error: null } : s)
+    const pending = submit
+    // Optimistic: jump straight to the harvest celebration instead of a
+    // 'submitting' spinner — no proof upload here, so the request is cheap and
+    // rarely fails. submitChore() fires in the background; a failure rolls the
+    // card back to the note stage with an error rather than losing the tap.
+    setSubmit(s => s ? { ...s, stage: 'harvesting', error: null } : s)
     try {
-      await submitChore(submit.choreId, submit.note.trim() || undefined)
-      const velocityMs = Date.now() - submit.startedAt
-      track.taskSubmitted({ chore_id: submit.choreId, is_revision: submit.isRevision, velocity_ms: velocityMs, had_proof: false })
-      setSubmit(s => s ? { ...s, stage: 'harvesting' } : s)
+      await submitChore(pending.choreId, pending.note.trim() || undefined)
+      const velocityMs = Date.now() - pending.startedAt
+      track.taskSubmitted({ chore_id: pending.choreId, is_revision: pending.isRevision, velocity_ms: velocityMs, had_proof: false })
       setTimeout(() => { setSubmit(null); load() }, 1800)
     } catch (err: unknown) {
-      setSubmit(s => s ? { ...s, stage: 'note', error: (err as Error).message } : s)
+      setSubmit(s => (s && s.choreId === pending.choreId) ? { ...s, stage: 'note', error: (err as Error).message } : s)
     }
   }
 
