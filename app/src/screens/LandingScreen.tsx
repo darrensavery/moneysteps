@@ -62,7 +62,7 @@ function Avatar({ src, initials, bgClass, textClass }: {
       <img
         src={src}
         alt=""
-        className="w-[52px] h-[52px] rounded-full object-cover shrink-0 border border-[#D3D1C7]"
+        className="w-[52px] h-[52px] rounded-full object-cover shrink-0 border border-subtle"
       />
     )
   }
@@ -96,8 +96,8 @@ export function LandingScreen() {
       {/* Body */}
       <main className="flex-1 flex flex-col items-center px-3.5 py-8 max-w-[560px] mx-auto w-full">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-extrabold text-[#1C1C1A] tracking-tight mb-1.5">Welcome back</h1>
-          <p className="text-[14px] text-[#6b6a66]">Who's signing in today?</p>
+          <h1 className="text-2xl font-extrabold text-main tracking-tight mb-1.5">Welcome back</h1>
+          <p className="text-[14px] text-muted">Who's signing in today?</p>
         </div>
 
         <div className="w-full flex flex-col gap-3">
@@ -121,9 +121,9 @@ export function LandingScreen() {
               />
               <div className="flex-1 min-w-0">
                 <div className={`text-[16px] font-bold ${tile.nameColor}`}>{tile.name}</div>
-                <div className="text-[13px] text-[#6b6a66] mt-0.5 leading-snug">{tile.description}</div>
+                <div className="text-[13px] text-muted mt-0.5 leading-snug">{tile.description}</div>
               </div>
-              <svg className="text-[#6b6a66] shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="text-muted shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m9 18 6-6-6-6"/>
               </svg>
             </button>
@@ -132,7 +132,7 @@ export function LandingScreen() {
 
         {/* New account link */}
         <div className="mt-8 text-center">
-          <p className="text-[13px] text-[#6b6a66]">
+          <p className="text-[13px] text-muted">
             New to Morechard?{' '}
             <button
               onClick={() => navigate('/signup')}

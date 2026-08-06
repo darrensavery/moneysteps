@@ -131,7 +131,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <span className="h-8 w-8 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
-        <p className="text-sm text-[#6b6a66]">Checking your device…</p>
+        <p className="text-sm text-muted">Checking your device…</p>
       </div>
     )
   }
@@ -143,8 +143,8 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
           <span className="text-5xl">✓</span>
         </div>
         <div>
-          <h2 ref={headingRef} tabIndex={-1} className="text-[22px] font-extrabold text-[#1C1C1A] tracking-tight outline-none">Face ID enabled</h2>
-          <p className="text-sm text-[#6b6a66] mt-1.5">Your app is now protected. Taking you to your dashboard…</p>
+          <h2 ref={headingRef} tabIndex={-1} className="text-[22px] font-extrabold text-main tracking-tight outline-none">Face ID enabled</h2>
+          <p className="text-sm text-muted mt-1.5">Your app is now protected. Taking you to your dashboard…</p>
         </div>
       </div>
     )
@@ -160,10 +160,10 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
             </div>
             <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
           </div>
-          <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight outline-none">
+          <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-main leading-tight outline-none">
             Secure your App
           </h2>
-          <p className="text-sm text-[#6b6a66] leading-relaxed">
+          <p className="text-sm text-muted leading-relaxed">
             Use Face ID or Touch ID so only you can open Morechard on this phone.
           </p>
         </div>
@@ -190,18 +190,18 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
               </svg>
             </div>
           </div>
-          <p className="text-[13px] text-[#6b6a66] text-center">
+          <p className="text-[13px] text-muted text-center">
             Follow the prompt on your device…
           </p>
         </div>
 
         <div className="flex gap-3">
           <button type="button" onClick={onBack}
-            className="flex-1 h-12 rounded-xl border-2 border-[#D3D1C7] bg-white text-sm font-semibold text-[#1C1C1A] hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer">
+            className="flex-1 h-12 rounded-xl border-2 border-subtle bg-white text-sm font-semibold text-main hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer">
             Back
           </button>
           <button type="button" onClick={() => setScreen('pin')}
-            className="flex-[2] h-12 rounded-xl border-2 border-[#D3D1C7] bg-white text-sm font-semibold text-[#1C1C1A] hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer">
+            className="flex-[2] h-12 rounded-xl border-2 border-subtle bg-white text-sm font-semibold text-main hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer">
             Use a PIN instead
           </button>
         </div>
@@ -219,10 +219,10 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
           </div>
           <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
         </div>
-        <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-[#1C1C1A] leading-tight outline-none">
+        <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-main leading-tight outline-none">
           Set a PIN
         </h2>
-        <p className="text-sm text-[#6b6a66] leading-relaxed">
+        <p className="text-sm text-muted leading-relaxed">
           Choose a 4-digit PIN. You'll use this to open the app when your phone is locked.
         </p>
       </div>
@@ -237,7 +237,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
       <div className="space-y-5">
         {/* Enter */}
         <div className={cn('space-y-3', pinStage === 'confirm' && 'opacity-40 pointer-events-none')}>
-          <p className="text-sm font-semibold text-[#1C1C1A]">Choose a PIN</p>
+          <p className="text-sm font-semibold text-main">Choose a PIN</p>
           <div className="flex gap-3">
             {pin.map((d, i) => (
               <input key={i} ref={el => { enterRefs.current[i] = el }}
@@ -247,9 +247,9 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
                 autoFocus={i === 0 && pinStage === 'enter'}
                 aria-label={`PIN digit ${i + 1}`}
                 className={cn(
-                  'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-[#1C1C1A]',
+                  'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-main',
                   'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
-                  d ? 'border-teal-500' : 'border-[#D3D1C7]', 'focus:border-teal-500',
+                  d ? 'border-teal-500' : 'border-subtle', 'focus:border-teal-500',
                 )}
               />
             ))}
@@ -258,7 +258,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
 
         {/* Confirm */}
         <div className={cn('space-y-3', pinStage === 'enter' && 'opacity-40 pointer-events-none')}>
-          <p className="text-sm font-semibold text-[#1C1C1A]">Type it again to confirm</p>
+          <p className="text-sm font-semibold text-main">Type it again to confirm</p>
           <div className="flex gap-3">
             {confirmPin.map((d, i) => (
               <input key={i} ref={el => { confirmRefs.current[i] = el }}
@@ -269,9 +269,9 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
                 aria-invalid={!!error}
                 aria-describedby={error ? 'pin-mismatch-error' : undefined}
                 className={cn(
-                  'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-[#1C1C1A]',
+                  'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-main',
                   'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
-                  error ? 'border-red-400 bg-red-50 text-red-700' : d ? 'border-teal-500' : 'border-[#D3D1C7]',
+                  error ? 'border-red-400 bg-red-50 text-red-700' : d ? 'border-teal-500' : 'border-subtle',
                   'focus:border-teal-500',
                 )}
               />
@@ -283,14 +283,14 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
 
       <div className="flex items-start gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3">
         <ShieldCheck size={14} className="text-teal-600 mt-0.5 shrink-0" />
-        <p className="text-xs text-[#6b6a66] leading-relaxed">
+        <p className="text-xs text-muted leading-relaxed">
           Your PIN stays on this device and is never sent to our servers.
         </p>
       </div>
 
       <div className="flex gap-3">
         <button type="button" onClick={onBack}
-          className="flex-1 h-12 rounded-xl border-2 border-[#D3D1C7] bg-white text-sm font-semibold text-[#1C1C1A] hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer">
+          className="flex-1 h-12 rounded-xl border-2 border-subtle bg-white text-sm font-semibold text-main hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer">
           Back
         </button>
         <button type="button" onClick={() => onNext({}, null)}
@@ -311,7 +311,7 @@ function PinStep({ number, label, active, done }: { number: number; label: strin
       )}>
         {done ? '✓' : number}
       </div>
-      <span className={cn('text-xs font-semibold', active ? 'text-[#1C1C1A]' : 'text-[#9b9a96]')}>{label}</span>
+      <span className={cn('text-xs font-semibold', active ? 'text-main' : 'text-muted')}>{label}</span>
     </div>
   )
 }
