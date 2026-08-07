@@ -43,10 +43,14 @@ const VALID_AVATARS = [
 // silently coerced to 'ORCHARD' by the handler, not rejected.
 // ----------------------------------------------------------------
 const settingsUpdateSchema = z.object({
-  avatar_id: z.enum(VALID_AVATARS, { message: 'Invalid avatar_id' }).optional(),
-  theme:     z.enum(VALID_THEMES,  { message: 'Invalid theme' }).optional(),
-  locale:    z.enum(VALID_LOCALES, { message: 'Invalid locale' }).optional(),
-  app_view:  z.any().optional(),
+  avatar_id:      z.enum(VALID_AVATARS, { message: 'Invalid avatar_id' }).optional(),
+  theme:          z.enum(VALID_THEMES,  { message: 'Invalid theme' }).optional(),
+  locale:         z.enum(VALID_LOCALES, { message: 'Invalid locale' }).optional(),
+  app_view:       z.any().optional(),
+  high_contrast:  z.any().optional().refine(
+    v => v === undefined || v === 0 || v === 1 || v === true || v === false,
+    'high_contrast must be a boolean',
+  ),
 });
 
 // ----------------------------------------------------------------
@@ -66,7 +70,7 @@ export async function handleSettingsGet(request: Request, env: Env): Promise<Res
 
   const settings = await env.DB
     .prepare(`
-      SELECT us.user_id, us.avatar_id, us.theme, us.locale, us.app_view,
+      SELECT us.user_id, us.avatar_id, us.theme, us.locale, us.app_view, us.high_contrast,
              u.earnings_mode, u.allowance_amount, u.allowance_frequency
       FROM user_settings us
       JOIN users u ON u.id = us.user_id
@@ -77,8 +81,8 @@ export async function handleSettingsGet(request: Request, env: Env): Promise<Res
   if (!settings) {
     const now = Math.floor(Date.now() / 1000);
     await env.DB
-      .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, app_view, updated_at)
-                VALUES (?,?,?,?,'ORCHARD',?) ON CONFLICT(user_id) DO NOTHING`)
+      .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, app_view, high_contrast, updated_at)
+                VALUES (?,?,?,?,'ORCHARD',0,?) ON CONFLICT(user_id) DO NOTHING`)
       .bind(targetId, 'bottts:spark', 'system', 'en', now).run();
     const userRow = await env.DB
       .prepare('SELECT earnings_mode, allowance_amount, allowance_frequency FROM users WHERE id = ?')
@@ -86,6 +90,7 @@ export async function handleSettingsGet(request: Request, env: Env): Promise<Res
       .first<{ earnings_mode: string; allowance_amount: number; allowance_frequency: string }>();
     return json({
       user_id: targetId, avatar_id: 'bottts:spark', theme: 'system', locale: 'en', app_view: 'ORCHARD',
+      high_contrast: 0,
       earnings_mode: userRow?.earnings_mode ?? 'CHORES',
       allowance_amount: userRow?.allowance_amount ?? 0,
       allowance_frequency: userRow?.allowance_frequency ?? 'WEEKLY',
@@ -134,6 +139,9 @@ export async function handleSettingsUpdate(request: Request, env: Env): Promise<
     const val = (parsed.app_view as string) === 'CLEAN' ? 'CLEAN' : 'ORCHARD';
     updates.push('app_view = ?'); values.push(val);
   }
+  if ('high_contrast' in parsed) {
+    updates.push('high_contrast = ?'); values.push(parsed.high_contrast ? 1 : 0);
+  }
 
   if (updates.length === 0) return error('No valid fields to update');
 
@@ -147,8 +155,8 @@ export async function handleSettingsUpdate(request: Request, env: Env): Promise<
     .catch(async () => {
       // Row may not exist yet — insert with defaults then retry
       await env.DB
-        .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, app_view, updated_at)
-                  VALUES (?,?,?,?,'ORCHARD',?) ON CONFLICT(user_id) DO NOTHING`)
+        .prepare(`INSERT INTO user_settings (user_id, avatar_id, theme, locale, app_view, high_contrast, updated_at)
+                  VALUES (?,?,?,?,'ORCHARD',0,?) ON CONFLICT(user_id) DO NOTHING`)
         .bind(targetId, 'bottts:spark', 'system', 'en', now).run();
       await env.DB
         .prepare(`UPDATE user_settings SET ${updates.join(', ')} WHERE user_id = ?`)

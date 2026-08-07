@@ -82,9 +82,9 @@ export function SparklineCard({
   let pill: React.ReactNode = null
   if (!isDiscovery && delta !== null) {
     if (direction === 'up')
-      pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-[rgba(22,163,74,0.12)] text-[#16a34a]">↑ {Math.abs(delta)}%</span>
+      pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-success/10 text-success">↑ {Math.abs(delta)}%</span>
     else if (direction === 'down')
-      pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-[rgba(220,38,38,0.1)] text-[#dc2626]">↓ {Math.abs(delta)}%</span>
+      pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-danger/10 text-danger">↓ {Math.abs(delta)}%</span>
     else
       pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-[rgba(156,163,175,0.1)] text-[var(--color-text-muted)]">→</span>
   }

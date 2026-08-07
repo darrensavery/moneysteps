@@ -12,7 +12,7 @@ import {
 import type { Chore, BalanceSummary, Goal, Completion, ChildNudge } from '../lib/api'
 import { ChildNudgeBanner } from '../components/child/ChildNudgeBanner'
 import { useAppView } from '../lib/useTone'
-import { ThemePicker } from '../lib/theme'
+import { ThemePicker, HighContrastToggle } from '../lib/theme'
 import { AvatarSVG, AVATAR_CATEGORIES, avatarsForCategory } from '../lib/avatars'
 import type { AvatarCategory } from '../lib/avatars'
 import { SavingsGrove } from '../components/dashboard/SavingsGrove'
@@ -545,7 +545,10 @@ export function ChildDashboard() {
             {/* Appearance */}
             <div>
               <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Appearance</p>
-              <ThemePicker />
+              <div className="space-y-3">
+                <ThemePicker />
+                <HighContrastToggle />
+              </div>
             </div>
 
             {/* Experience mode — read-only, parent controls */}

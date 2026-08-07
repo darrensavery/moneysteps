@@ -414,7 +414,7 @@ export async function getMyLockStatus(): Promise<{ locked: boolean; locked_until
   return request('/api/account-lock/me');
 }
 
-export async function updateSettings(body: { avatar_id?: string; theme?: string; locale?: string }): Promise<void> {
+export async function updateSettings(body: { avatar_id?: string; theme?: string; locale?: string; high_contrast?: boolean }): Promise<void> {
   await request('/api/settings', { method: 'PATCH', body: JSON.stringify(body) });
 }
 

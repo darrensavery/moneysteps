@@ -78,7 +78,7 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
           <div className="flex flex-col gap-3">
             <button
               onClick={handleLoveIt}
-              className="w-full rounded-xl bg-[var(--brand-primary,#4ade80)] py-3 font-semibold text-[#0f1a14]"
+              className="w-full rounded-xl bg-brand py-3 font-semibold text-on-brand"
             >
               Love it!
             </button>
@@ -117,7 +117,7 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
           <button
             onClick={handleFeedbackSubmit}
             disabled={submitting}
-            className="w-full rounded-xl bg-[var(--brand-primary,#4ade80)] py-3 font-semibold text-[#0f1a14] disabled:opacity-50"
+            className="w-full rounded-xl bg-brand py-3 font-semibold text-on-brand disabled:opacity-50"
           >
             {submitting ? 'Sending…' : 'Send feedback'}
           </button>
@@ -134,7 +134,7 @@ export function ReviewPromptSheet({ open, onClose }: Props) {
           </p>
           <button
             onClick={() => { void tick(); onClose(); }}
-            className="w-full rounded-xl bg-[var(--brand-primary,#4ade80)] py-3 font-semibold text-[#0f1a14]"
+            className="w-full rounded-xl bg-brand py-3 font-semibold text-on-brand"
           >
             Done
           </button>

@@ -95,14 +95,14 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
       {/* Header */}
       <div className="space-y-1.5">
         <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold tracking-tight outline-none">Family Setup</h2>
-        <p className="text-[#6b6a66] text-sm leading-relaxed">
+        <p className="text-muted text-sm leading-relaxed">
           Confirm your language and currency. Tap a card to lock in your choice.
         </p>
       </div>
 
       {/* Language selection */}
       <section className="space-y-3">
-        <span className="text-sm font-semibold text-[#1C1C1A]">Language</span>
+        <span className="text-sm font-semibold text-main">Language</span>
 
         <div className="grid grid-cols-3 gap-2">
           {LANGUAGE_OPTIONS.map(opt => (
@@ -126,7 +126,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
 
       {/* Currency selection */}
       <section className="space-y-3">
-        <span className="text-sm font-semibold text-[#1C1C1A]">Base currency</span>
+        <span className="text-sm font-semibold text-main">Base currency</span>
 
         <div className="grid grid-cols-3 gap-2">
           {CURRENCY_OPTIONS.map(opt => (
@@ -149,12 +149,12 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
 
         {/* Ledger integrity notice */}
         <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5">
-          <Lock size={15} className="text-[#6b6a66] mt-0.5 shrink-0" />
+          <Lock size={15} className="text-muted mt-0.5 shrink-0" />
           <ul className="space-y-1.5">
-            <li className="text-[13px] text-[#1C1C1A] font-medium leading-snug">
+            <li className="text-[13px] text-main font-medium leading-snug">
               Your {moneyWord} history is locked to one currency.
             </li>
-            <li className="text-[13px] text-[#6b6a66] leading-snug">
+            <li className="text-[13px] text-muted leading-snug">
               Moving country? Add a Relocation Audit to your ledger at any time in Settings.
             </li>
           </ul>
@@ -165,12 +165,12 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
       {isCoParenting && (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[#1C1C1A]">Approval style</span>
+            <span className="text-sm font-semibold text-main">Approval style</span>
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowGovInfo(v => !v)}
-                className="tap-target-44 rounded-full p-1 text-[#9b9a96] hover:text-[#1C1C1A] hover:bg-gray-100 transition-colors"
+                className="tap-target-44 rounded-full p-1 text-muted hover:text-main hover:bg-gray-100 transition-colors"
                 aria-label="Learn about approval styles"
               >
                 <Info size={15} />
@@ -181,30 +181,30 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
                   <div className="fixed inset-0 z-39" onClick={() => setShowGovInfo(false)} />
                   <div className="absolute left-0 top-8 z-50 w-72 rounded-2xl border border-gray-200 bg-white shadow-xl p-4 space-y-3">
                     <div>
-                      <p className="text-sm font-bold text-[#1C1C1A]">How should payments be approved?</p>
-                      <p className="text-xs text-[#6b6a66] mt-1 leading-relaxed">
+                      <p className="text-sm font-bold text-main">How should payments be approved?</p>
+                      <p className="text-xs text-muted mt-1 leading-relaxed">
                         This controls whether one parent can approve payments alone, or whether both of you need to agree.
                       </p>
                     </div>
                     <div className="space-y-2">
                       <div className="rounded-xl bg-gray-50 border border-gray-100 px-3 py-2.5 space-y-1">
-                        <p className="text-xs font-bold text-[#1C1C1A] flex items-center gap-1.5">
+                        <p className="text-xs font-bold text-main flex items-center gap-1.5">
                           <Zap size={11} className="text-amber-500" /> Quick approval
                         </p>
-                        <p className="text-xs text-[#6b6a66] leading-relaxed">
+                        <p className="text-xs text-muted leading-relaxed">
                           Either parent can approve and it's recorded straight away. The other parent gets a notification.
                         </p>
                       </div>
                       <div className="rounded-xl bg-gray-50 border border-gray-100 px-3 py-2.5 space-y-1">
-                        <p className="text-xs font-bold text-[#1C1C1A] flex items-center gap-1.5">
+                        <p className="text-xs font-bold text-main flex items-center gap-1.5">
                           <Scale size={11} className="text-teal-600" /> Both parents agree
                         </p>
-                        <p className="text-xs text-[#6b6a66] leading-relaxed">
+                        <p className="text-xs text-muted leading-relaxed">
                           Every payment needs a sign-off from both of you before it's recorded. Creates a full, verifiable history.
                         </p>
                       </div>
                     </div>
-                    <p className="text-[11px] text-[#9b9a96] border-t border-gray-100 pt-2 leading-relaxed">
+                    <p className="text-[11px] text-muted border-t border-gray-100 pt-2 leading-relaxed">
                       You can change this later — it requires agreement from both parents and is logged permanently.
                     </p>
                   </div>
@@ -245,7 +245,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
         <button
           type="button"
           onClick={onBack}
-          className="flex-1 h-12 rounded-xl border-2 border-[#D3D1C7] bg-white text-sm font-semibold text-[#1C1C1A] hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer"
+          className="flex-1 h-12 rounded-xl border-2 border-subtle bg-white text-sm font-semibold text-main hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer"
         >
           Back
         </button>
@@ -290,7 +290,7 @@ function SelectionCard({
           ? 'border-teal-500 bg-teal-50 shadow-md'
           : suggested
           ? 'border-dashed border-teal-400 bg-teal-50/30'
-          : 'border-[#D3D1C7] bg-white hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-sm',
+          : 'border-subtle bg-white hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-sm',
       )}
     >
       {/* Suggested pill / confirmed tick */}
@@ -309,13 +309,13 @@ function SelectionCard({
 
       <span className={cn(
         'text-[22px] font-extrabold tabular-nums leading-none',
-        active ? 'text-teal-700' : 'text-[#1C1C1A]',
+        active ? 'text-teal-700' : 'text-main',
       )}>
         {symbol}
       </span>
       <div>
-        <p className={cn('text-xs font-bold leading-tight', active ? 'text-teal-700' : 'text-[#1C1C1A]')}>{label}</p>
-        <p className="text-[10px] text-[#9b9a96] mt-0.5">{subLabel}</p>
+        <p className={cn('text-xs font-bold leading-tight', active ? 'text-teal-700' : 'text-main')}>{label}</p>
+        <p className="text-[10px] text-muted mt-0.5">{subLabel}</p>
       </div>
     </button>
   )
@@ -341,7 +341,7 @@ function GovernanceCard({
         'flex items-start gap-4 rounded-2xl border-2 p-4 text-left transition-all duration-150 cursor-pointer w-full',
         active
           ? 'border-teal-500 bg-teal-50 shadow-md'
-          : 'border-[#D3D1C7] bg-white hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-sm',
+          : 'border-subtle bg-white hover:border-teal-300 hover:bg-teal-50/40 hover:shadow-sm',
       )}
     >
       <span className={cn(
@@ -352,10 +352,10 @@ function GovernanceCard({
       </span>
       <div className="space-y-0.5">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className={cn('text-sm font-bold', active ? 'text-teal-700' : 'text-[#1C1C1A]')}>{title}</p>
-          <span className="text-[11px] text-[#9b9a96] border border-[#D3D1C7] rounded-full px-2 py-0.5">{subtitle}</span>
+          <p className={cn('text-sm font-bold', active ? 'text-teal-700' : 'text-main')}>{title}</p>
+          <span className="text-[11px] text-muted border border-subtle rounded-full px-2 py-0.5">{subtitle}</span>
         </div>
-        <p className="text-xs text-[#6b6a66] leading-relaxed">{description}</p>
+        <p className="text-xs text-muted leading-relaxed">{description}</p>
       </div>
     </button>
   )

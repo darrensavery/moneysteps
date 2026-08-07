@@ -105,6 +105,79 @@
     --border: 185 20% 27%;
     --input: 185 20% 27%;
   }
+
+  /* ── Tailwind utility mapping (Tailwind v4 @theme inline) ─────────────
+     Maps the runtime-swappable --color-*/--brand-* custom properties above
+     into real utility class names, so components use `text-main` instead
+     of `text-[var(--color-text)]` or a hardcoded hex. Because these are
+     `inline` theme values, Tailwind keeps them as `var(...)` references in
+     the generated CSS rather than baking in a static value — so light/dark/
+     high-contrast overrides via [data-theme]/[data-contrast] still apply. */
+  @theme inline {
+    --color-page:        var(--color-bg);
+    --color-surface:     var(--color-surface);
+    --color-surface-alt: var(--color-surface-alt);
+    --color-subtle:      var(--color-border);
+    --color-main:        var(--color-text);
+    --color-muted:       var(--color-text-muted);
+    --color-on-brand:    var(--color-text-on-brand);
+    --color-brand:       var(--brand-primary);
+    --color-accent:      var(--brand-accent);
+    --color-success:     var(--color-success);
+    --color-danger:      var(--color-danger);
+    --color-warning:     var(--color-warning);
+  }
+
+  /* ── High Contrast overrides (WCAG 2.1 AA) ─────────────────────────────
+     Values computed in app/src/lib/contrastRatio.ts / verified by
+     contrastRatio.test.ts. Light-mode brand colors are darkened to clear
+     4.5:1 on white; dark-mode brand colors already clear AA on near-black
+     so they're kept close to the default palette. */
+  [data-contrast="high"] {
+    --color-bg:            #FFFFFF;
+    --color-surface:       #FFFFFF;
+    --color-surface-alt:   #F2F2F2;
+    --color-border:        #707070;
+    --color-text:          #0A0A0A;
+    --color-text-muted:    #595959;
+    --brand-primary:       #006A70;
+    --brand-accent:        #8A6400;
+  }
+
+  [data-theme="dark"][data-contrast="high"] {
+    --color-bg:            #050505;
+    --color-surface:       #101010;
+    --color-surface-alt:   #1A1A1A;
+    --color-border:        #8C8C8C;
+    --color-text:          #FAFAFA;
+    --color-text-muted:    #A8A8A8;
+    --brand-primary:       #00959C;
+    --brand-accent:        #E6B222;
+  }
+
+  /* Non-brand semantic accents (success/danger/warning) used directly as
+     hex in several components today — Tasks 5/6 migrate those call sites
+     to reference these two custom properties instead. */
+  :root {
+    --color-success: #16a34a;
+    --color-danger:  #dc2626;
+    --color-warning: #f59e0b;
+  }
+  [data-theme="dark"] {
+    --color-success: #22c55e;
+    --color-danger:  #f87171;
+    --color-warning: #fbbf24;
+  }
+  [data-contrast="high"] {
+    --color-success: #0F7A38;
+    --color-danger:  #DC2626;
+    --color-warning: #8A5A00;
+  }
+  [data-theme="dark"][data-contrast="high"] {
+    --color-success: #22C55E;
+    --color-danger:  #F87171;
+    --color-warning: #FBBF24;
+  }
 }
 
 @layer base {

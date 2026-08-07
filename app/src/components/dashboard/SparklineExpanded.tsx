@@ -299,7 +299,7 @@ export function SparklineExpanded({
           <span className="text-[10px] text-[var(--color-text-muted)]">Chore (first-pass)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] opacity-50"/>
+          <div className="w-2.5 h-2.5 rounded-full bg-warning opacity-50"/>
           <span className="text-[10px] text-[var(--color-text-muted)]">Chore (revised)</span>
         </div>
         {hasLearningLab && (

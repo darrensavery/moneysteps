@@ -238,7 +238,7 @@ export function RegistrationShell({ onComplete }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3 rounded-2xl bg-white border border-gray-200 p-8 shadow-lg">
             <span className="h-7 w-7 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
-            <p className="text-sm font-medium text-[#6b6a66]">Setting things up…</p>
+            <p className="text-sm font-medium text-muted">Setting things up…</p>
           </div>
         </div>
       )}
