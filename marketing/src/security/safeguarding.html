@@ -1,0 +1,58 @@
+<!--
+  TITLE: Safeguarding Statement – Morechard
+  DESCRIPTION: How Morechard's design choices protect children, including a deliberate decision not to ship an AI chat feature until safeguarding infrastructure was in place.
+  CANONICAL: https://morechard.com/security/safeguarding
+  PAGE_CSS: page.css
+-->
+
+<!-- SCHEMA_START -->
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Safeguarding Statement – Morechard",
+  "url": "https://morechard.com/security/safeguarding",
+  "isPartOf": { "@type": "WebSite", "name": "Morechard", "url": "https://morechard.com" }
+}
+<!-- SCHEMA_END -->
+
+<!-- BODY_START -->
+<main class="prose-page container">
+  <h1>Safeguarding Statement</h1>
+  <p class="prose-meta">Last updated 10 August 2026 · <a href="/security.html">← Back to Security Center</a></p>
+
+  <div class="prose-tldr">
+    <h2>The Short Version</h2>
+    <ul>
+      <li>Morechard minimises what children can input in the first place — there's no open-ended AI chat live in the product today.</li>
+      <li>We built a teen AI chat feature, safety-tested it, and then <strong>deliberately chose not to launch it</strong> until we had a proper legal and safeguarding basis in place.</li>
+      <li>Because there's currently no open-ended input surface, there's currently no automated disclosure-escalation pipeline — this document says so plainly rather than implying one exists.</li>
+    </ul>
+  </div>
+
+  <h2>Design-first safeguarding</h2>
+  <p>
+    The single biggest safeguarding decision in Morechard's design is one you won't see: what we chose not to build. Child profiles use nicknames only — no legal name, no date of birth, no photo is required. Free-text input from children is limited to short labels (e.g. naming a savings goal) rather than open conversation, which minimises the surface for a child to disclose something concerning through the app in the first place.
+  </p>
+
+  <h2>A feature we built, then held back</h2>
+  <p>
+    In mid-2026 we built "Teen Mentor Chat" — a free-text AI conversation feature for teenage users, complete with a safety pipeline and a full automated test suite. Before launch, we identified that a genuine crisis-detection pipeline (recognising and responding to a disclosure of self-harm or abuse) involves processing <strong>special-category data</strong> under UK GDPR Article 9, requires its own distinct legal basis separate from ordinary consent, and is very likely to require a formal Data Protection Impact Assessment before it can be relied upon safely.
+  </p>
+  <p>
+    Rather than ship a feature that could mishandle a genuine disclosure from a child, <strong>we shelved it.</strong> It remains built and tested, but switched off in production, pending a proper legal review of the consent and disclosure model. We'd rather tell a school "this doesn't exist yet" than let a DPO discover a gap in a live safeguarding pathway.
+  </p>
+
+  <h2>What this means today</h2>
+  <p>
+    Because there is no open-ended AI chat live in the product, there is currently <strong>no automated escalation pathway</strong> for a child disclosure made through the app — because there's no channel through which a child could make an open-ended disclosure in the first place. If a family situation raises a genuine safeguarding concern, that sits with the school's and parents' existing safeguarding processes, not with Morechard's software. We think it's more honest to say this plainly than to describe a capability we don't have.
+  </p>
+
+  <h2>Questions</h2>
+  <p>If your school's designated safeguarding lead or DPO wants to discuss this further, email <a href="mailto:security@morechard.com">security@morechard.com</a>.</p>
+
+</main>
+<!-- BODY_END -->
+
+<!-- SCRIPTS_START -->
+<script>document.body.classList.add('prose-body');</script>
+<!-- SCRIPTS_END -->

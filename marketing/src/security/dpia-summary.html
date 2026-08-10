@@ -1,0 +1,61 @@
+<!--
+  TITLE: DPIA Summary – Morechard
+  DESCRIPTION: Summary of Morechard's Data Protection Impact Assessment covering children's data, the pseudonymised ledger, and identified risks.
+  CANONICAL: https://morechard.com/security/dpia-summary
+  PAGE_CSS: page.css
+-->
+
+<!-- SCHEMA_START -->
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "DPIA Summary – Morechard",
+  "url": "https://morechard.com/security/dpia-summary",
+  "isPartOf": { "@type": "WebSite", "name": "Morechard", "url": "https://morechard.com" }
+}
+<!-- SCHEMA_END -->
+
+<!-- BODY_START -->
+<main class="prose-page container">
+  <h1>DPIA Summary</h1>
+  <p class="prose-meta">Draft v0.1 · Last reviewed 28 June 2026 · <a href="/security.html">← Back to Security Center</a></p>
+
+  <div class="prose-tldr">
+    <h2>The Short Version</h2>
+    <ul>
+      <li>Morechard has an internal Data Protection Impact Assessment covering children's data, the family ledger, and our AI features. It is a <strong>working draft (v0.1)</strong>, not a finished, externally-reviewed document.</li>
+      <li>The single highest-priority open item is that <strong>no specialist data-protection solicitor has reviewed it yet</strong> — we say this plainly rather than implying legal sign-off that hasn't happened.</li>
+      <li>We're publishing this summary so a school's DPO can see exactly what's been assessed and what's still open, rather than asking you to take completeness on trust.</li>
+    </ul>
+  </div>
+
+  <h2>What the DPIA covers</h2>
+  <p>The assessment identifies ten risk areas (R1–R10) across the product, including: processing children's behavioural data via nicknames rather than legal identity; the tension between an immutable, hash-chained ledger and the right to erasure; retention of financial-dispute data in separated-family scenarios; and the two AI features (AI Mentor insights and the family audit) that process minimised behavioural summaries.</p>
+
+  <h3>The ledger and erasure (Risk R10)</h3>
+  <p>
+    The most detailed risk assessment concerns what happens to ledger data after account deletion. Our conclusion: pseudonymised ledger records (amounts, timestamps, and chore patterns with identifiers stripped) are <strong>pseudonymous personal data, not anonymous data</strong> — the combination of fields could, in principle, act as a behavioural fingerprint. We deliberately corrected an earlier internal description that overstated this as "anonymised." Mitigations in place: no retained linkage key between the pseudonymised records and any identity, no index on behavioural fields, and a hard 7-year deletion at the end of the retention window (aligned to the UK Limitation Act 1980), enforced by an automated purge job.
+  </p>
+
+  <h3>Automated decision-making</h3>
+  <p>Neither of Morechard's AI features makes a decision with legal or similarly significant effect on a user. Module unlocking and chore approval are rule-based, not AI-driven; AI-generated insights are informational only and always sit in front of a parent for review, not in place of one.</p>
+
+  <h2>What's still open</h2>
+  <p>We think a DPO evaluating a pilot deserves to see the gaps as clearly as the coverage:</p>
+  <ul>
+    <li><strong>Specialist legal review has not yet taken place.</strong> This DPIA has been produced through internal analysis, not sign-off from a data-protection solicitor. Given the combination of children's data, an immutable ledger, and use in custody-dispute contexts, this is our own top priority before scaling beyond a small pilot.</li>
+    <li><strong>Conformance against the ICO's 15 Children's Code standards</strong> has not been fully documented standard-by-standard yet.</li>
+    <li><strong>Final lawful basis wording</strong> for a couple of processing activities is still being tightened, tracked in our internal Record of Processing Activities.</li>
+  </ul>
+
+  <h2>Requesting the full document</h2>
+  <p>
+    Schools considering a pilot are welcome to request the full internal DPIA draft for their own DPO's review. Email <a href="mailto:security@morechard.com">security@morechard.com</a>.
+  </p>
+
+</main>
+<!-- BODY_END -->
+
+<!-- SCRIPTS_START -->
+<script>document.body.classList.add('prose-body');</script>
+<!-- SCRIPTS_END -->

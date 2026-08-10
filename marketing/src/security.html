@@ -1,0 +1,139 @@
+<!--
+  TITLE: Security Center – Morechard
+  DESCRIPTION: How Morechard protects family data – encryption, authentication, compliance, backups, and how to report a vulnerability.
+  CANONICAL: https://morechard.com/security
+  PAGE_CSS: page.css
+-->
+
+<!-- SCHEMA_START -->
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Security Center – Morechard",
+  "url": "https://morechard.com/security",
+  "description": "How Morechard protects family data – encryption, authentication, compliance, backups, and how to report a vulnerability.",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Morechard",
+    "url": "https://morechard.com"
+  }
+}
+<!-- SCHEMA_END -->
+
+<!-- BODY_START -->
+<main class="prose-page container">
+  <h1>Security Center</h1>
+  <p class="prose-meta">Last updated 10 August 2026</p>
+
+  <div class="prose-tldr">
+    <h2>The Short Version</h2>
+    <ul>
+      <li><strong>Your data is yours.</strong> We never sell or rent personal information to third parties. See our <a href="/privacy-policy.html">Privacy Policy</a> for the full detail.</li>
+      <li><strong>Nicknames only.</strong> Child profiles never require a legal name or date of birth – by design, not just policy.</li>
+      <li><strong>The ledger is tamper-evident.</strong> Every family transaction is chained with SHA-256 hashing, so records can't be silently altered.</li>
+      <li><strong>Biometric sign-in.</strong> Face ID, Touch ID, and fingerprint unlock are backed by real server-side WebAuthn verification, not a client-side toggle.</li>
+      <li><strong>Rigorously self-tested.</strong> Every deploy is gated by a full automated test suite and type-check, and a dedicated internal security review checked authentication, session handling, and injection surface across the codebase. We're currently applying for Cyber Essentials certification and haven't yet commissioned an external, third-party penetration test – see "Compliance & Standards" below for exactly where we stand and what's planned.</li>
+      <li><strong>Working with schools?</strong> See our <a href="/security/school-partnership-statement.html">School Partnership Statement</a>, <a href="/security/dpia-summary.html">DPIA Summary</a>, and <a href="/security/safeguarding.html">Safeguarding Statement</a>.</li>
+    </ul>
+  </div>
+
+  <h2>1. Data Protection &amp; Privacy</h2>
+  <p>
+    You own your data. We never sell or rent personal information to third parties – full detail on what we collect, why, and who we share it with (and under what legal safeguard) is in our
+    <a href="/privacy-policy.html">Privacy Policy</a>.
+  </p>
+
+  <h3>Encryption</h3>
+  <ul>
+    <li><strong>In transit:</strong> All traffic to the app and API is encrypted with TLS, terminated at Cloudflare's edge network.</li>
+    <li><strong>At rest:</strong> Family and ledger data is stored in Cloudflare D1 with platform-level encryption at rest.</li>
+    <li><strong>Payout details:</strong> If you use Payment Bridge to save a child's payout details (sort code, account number, or similar), they're encrypted client-side with AES-GCM in a per-family key that never leaves your device or reaches our servers.</li>
+  </ul>
+
+  <h3>Hosting</h3>
+  <p>Morechard runs entirely on Cloudflare's global network – Cloudflare Pages, Workers, and D1 – rather than a single data center. This gives us built-in DDoS protection, edge caching, and no single physical point of failure for the application layer.</p>
+
+  <h2>2. Account Security</h2>
+  <ul>
+    <li><strong>Biometric sign-in:</strong> Face ID, Touch ID, and fingerprint unlock use real WebAuthn – the server independently verifies your device's cryptographic signature, and we detect and alert on signature patterns consistent with a cloned credential.</li>
+    <li><strong>No passwords to leak:</strong> Morechard doesn't use traditional passwords. Sign-in is via magic link and biometric/PIN unlock, so there's no password database to be breached in the first place.</li>
+    <li><strong>PIN protection:</strong> Repeated incorrect PIN attempts trigger an escalating lockout, from 30 seconds up to 24 hours.</li>
+    <li><strong>Login protection:</strong> Login attempts are rate-limited, and Cloudflare Turnstile screens out automated bot traffic on login, magic-link, and invite-redemption flows.</li>
+    <li><strong>Sessions:</strong> Sessions are tracked server-side and can be revoked individually or all at once – not just cleared from one device.</li>
+  </ul>
+
+  <h3>Family access controls</h3>
+  <p>Morechard is built around families sharing access safely, including separated and co-parenting households:</p>
+  <ul>
+    <li>A <strong>lead parent</strong> and invited <strong>co-parents</strong> each have their own account and audit trail – nobody shares a login.</li>
+    <li>Children see only their own chores, goals, and balance – never a sibling's or a parent's financial data.</li>
+    <li>Access is granted by invitation, not by guesswork – there's no way to join a family account without an explicit invite.</li>
+  </ul>
+
+  <h2>3. Compliance &amp; Standards</h2>
+  <p>We'd rather tell you exactly where we stand than imply more than is true.</p>
+
+  <h3>Privacy regulation</h3>
+  <p>Morechard is designed around UK GDPR, GDPR-K, the ICO's Children's Code, and COPPA – data minimisation, nickname-only child profiles, and no behavioural nudging or session recording on child accounts. Full detail, including lawful bases for every category of processing, is in our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+
+  <h3>How we test what we ship</h3>
+  <p>
+    Every deploy to production is gated by a full automated test suite and a strict type-check – nothing reaches live users without passing both. In July 2026 we ran a dedicated internal security review covering authentication, session handling, and injection surface: all 284 database query sites in the codebase were confirmed to use parameterised queries with no raw SQL concatenation, our WebAuthn biometric sign-in was verified to perform genuine server-side signature checks with clone detection, and our full commit history was scanned for leaked secrets. We also run continuous automated dependency scanning to catch newly disclosed vulnerabilities in the libraries we rely on.
+  </p>
+
+  <h3>Independent audits &amp; certifications</h3>
+  <p>
+    The review above was an internal, source-code-level self-assessment – not a black-box penetration test carried out by an outside firm, and we haven't commissioned one yet. We also don't currently hold SOC 2 or ISO 27001 certification – both are common asks from enterprise procurement teams, but not the standard UK schools actually look for. We're in the process of applying for <strong>Cyber Essentials</strong>, the UK government-backed baseline security certification and the one most relevant to a school-supplier relationship. An external penetration test is next on our roadmap after that, and we'll publish results here once complete.
+  </p>
+
+  <h3>Data Protection Impact Assessment</h3>
+  <p>We maintain an internal DPIA covering children's data, the family ledger, and our AI features. It's an honest working draft, not a polished final document – see the <a href="/security/dpia-summary.html">DPIA Summary</a> for what's assessed and what's still open, including the fact that it hasn't yet had specialist legal review.</p>
+
+  <h3>Data Processing Agreements</h3>
+  <p>We're in the process of formalising Data Processing Agreements (Article 28 GDPR) with our own key infrastructure and service providers. Our sub-processors and the international-transfer safeguards already in place for each are listed in <a href="/privacy-policy.html">Section 4 of our Privacy Policy</a>. For schools evaluating a pilot partnership, see <a href="/security/school-partnership-statement.html">our School Partnership &amp; Data Protection Statement</a>, which explains exactly what data (if any) is shared and why.</p>
+
+  <h3>Backups &amp; recovery</h3>
+  <p>Our database is continuously backed up via Cloudflare D1's point-in-time recovery, plus a daily export to separate off-platform storage retained for 30 days. We periodically test restoring from backup to confirm it actually works, not just that it runs.</p>
+
+  <h2>4. Reporting a Vulnerability</h2>
+  <p>
+    If you believe you've found a security vulnerability in Morechard, email
+    <a href="mailto:security@morechard.com">security@morechard.com</a> with a description of the issue, steps to reproduce, and the affected URL or app version.
+  </p>
+  <p>We aim to acknowledge reports within 2 business days and give an initial assessment within 5. Please give us reasonable time to investigate and fix an issue before any public disclosure, and avoid accessing or modifying data that isn't yours – a proof of concept is enough. We don't currently run a paid bug bounty, but we're glad to credit researchers who report responsibly.</p>
+
+  <h3>If you suspect your account has been compromised</h3>
+  <p>Email <a href="mailto:support@morechard.com">support@morechard.com</a> immediately. We can revoke all active sessions on a family account and walk you through re-securing it.</p>
+
+  <h2>5. System Status</h2>
+  <p>
+    You can check current uptime and any ongoing incidents on our public status page:
+    <a href="https://stats.uptimerobot.com/Mu8Wqr2Pm2" rel="noopener noreferrer">stats.uptimerobot.com/Mu8Wqr2Pm2</a>.
+  </p>
+
+  <h2>6. Keeping Your Account Safe</h2>
+  <ul>
+    <li><strong>Turn on biometric sign-in</strong> if your device supports it – it's harder to phish than a code or password.</li>
+    <li><strong>Never share your PIN or child invite code</strong> outside your family, including with a co-parent's new partner unless you've decided together to add them.</li>
+    <li><strong>Check the domain before you sign in.</strong> Official Morechard sign-in only happens at <strong>morechard.com</strong> or inside the installed app – we'll never ask for your PIN by email or text.</li>
+    <li><strong>Keep the app updated</strong> so you have the latest security fixes.</li>
+    <li><strong>Sign out of shared or borrowed devices</strong> rather than relying on it to time out.</li>
+  </ul>
+
+  <h2>7. For Schools</h2>
+  <p>
+    If your school is considering a Morechard pilot, these three documents are written specifically for your Designated Safeguarding Lead and Data Protection Officer:
+  </p>
+  <ul>
+    <li><a href="/security/school-partnership-statement.html">School Partnership &amp; Data Protection Statement</a> – exactly what data (if any) is shared between your school and Morechard, and why.</li>
+    <li><a href="/security/dpia-summary.html">DPIA Summary</a> – what we've assessed, what mitigations are in place, and what's still open.</li>
+    <li><a href="/security/safeguarding.html">Safeguarding Statement</a> – including a feature we built and then deliberately didn't launch.</li>
+  </ul>
+  <p>Happy to join a call with your DPO directly – email <a href="mailto:security@morechard.com">security@morechard.com</a>.</p>
+
+</main>
+<!-- BODY_END -->
+
+<!-- SCRIPTS_START -->
+<script>document.body.classList.add('prose-body');</script>
+<!-- SCRIPTS_END -->

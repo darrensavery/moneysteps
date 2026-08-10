@@ -1,5 +1,5 @@
 /* ── Nav: always solid on prose pages ── */
-body.prose-body nav {
+body.prose-body nav#nav {
   background: var(--bg-cream);
   border-bottom: 1px solid var(--border-light);
 }
