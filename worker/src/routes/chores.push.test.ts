@@ -133,7 +133,7 @@ describe('handleChoreCreate — push notification', () => {
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'child_1',
-      expect.objectContaining({ route: expect.stringMatching(/^\/chores\//) }),
+      expect.objectContaining({ route: '/child?tab=chores' }),
     );
   });
 
@@ -183,12 +183,12 @@ describe('handleChoreSubmit — push notification (manual-review branch)', () =>
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'parent_1',
-      expect.objectContaining({ route: expect.stringMatching(/^\/chores\/approvals\//) }),
+      expect.objectContaining({ route: '/parent?tab=activity' }),
     );
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'parent_2',
-      expect.objectContaining({ route: expect.stringMatching(/^\/chores\/approvals\//) }),
+      expect.objectContaining({ route: '/parent?tab=activity' }),
     );
   });
 
@@ -215,7 +215,7 @@ describe('handleChoreSubmit — push notification (manual-review branch)', () =>
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'parent_1',
-      expect.objectContaining({ route: '/chores/approvals/completion_1' }),
+      expect.objectContaining({ route: '/parent?tab=activity' }),
     );
   });
 });

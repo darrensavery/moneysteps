@@ -251,7 +251,7 @@ export async function handleCompletionApprove(
       sendPushNotification(env, comp.child_id, {
         title: `${comp.title} approved!`,
         body: `+${currencySymbol}${(comp.reward_amount / 100).toFixed(2)} added`,
-        route: `/chores/${completionId}`,
+        route: '/child?tab=chores',
         badgeCount: pendingCount,
       }),
     ),
@@ -504,7 +504,7 @@ export async function handleCompletionReject(
       sendPushNotification(env, comp.child_id, {
         title: 'Needs a re-do',
         body: parent_notes ? `Tap to see the note: "${parent_notes}"` : 'Tap to check what to fix',
-        route: `/chores/${completionId}`,
+        route: '/child?tab=chores',
         badgeCount: pendingCount,
       }),
     ),

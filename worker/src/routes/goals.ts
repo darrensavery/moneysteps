@@ -367,7 +367,7 @@ export async function handleGoalContribute(
         sendPushNotification(env, goal.child_id, {
           title: `${updated.title} got a boost!`,
           body: `Now ${Math.round((updated.current_saved_pence / updated.target_amount) * 100)}% there`,
-          route: `/goals/${id}`,
+          route: '/child?tab=goals',
           badgeCount: pendingCount,
         }),
       ),

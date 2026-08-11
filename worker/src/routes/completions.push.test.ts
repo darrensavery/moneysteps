@@ -119,7 +119,7 @@ describe('handleCompletionApprove — push notification', () => {
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'child_1',
-      expect.objectContaining({ route: expect.stringMatching(/^\/chores\// ) }),
+      expect.objectContaining({ route: '/child?tab=chores' }),
     );
   });
 
@@ -160,7 +160,7 @@ describe('handleCompletionReject — push notification', () => {
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'child_1',
-      expect.objectContaining({ route: '/chores/completion_1' }),
+      expect.objectContaining({ route: '/child?tab=chores' }),
     );
   });
 

@@ -97,12 +97,12 @@ describe('handlePostGiveRequest — push notification', () => {
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'parent_1',
-      expect.objectContaining({ route: expect.stringMatching(/^\/give-requests\//) }),
+      expect.objectContaining({ route: '/parent?tab=activity' }),
     );
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'parent_2',
-      expect.objectContaining({ route: expect.stringMatching(/^\/give-requests\//) }),
+      expect.objectContaining({ route: '/parent?tab=activity' }),
     );
   });
 

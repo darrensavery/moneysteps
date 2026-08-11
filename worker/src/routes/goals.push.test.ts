@@ -86,7 +86,7 @@ describe('handleGoalContribute — push notification', () => {
     expect(sendSpy).toHaveBeenCalledWith(
       expect.anything(),
       'child_1',
-      expect.objectContaining({ route: '/goals/goal_1' }),
+      expect.objectContaining({ route: '/child?tab=goals' }),
     );
   });
 

@@ -90,7 +90,7 @@ export async function handlePostGiveRequest(
         sendPushNotification(env, p.id, {
           title: 'Give request received',
           body: `${childName} wants to give ${formattedAmount} to ${cause.trim()}`,
-          route: `/give-requests/${giveReqId}`,
+          route: '/parent?tab=activity',
           badgeCount: pendingCount,
         }),
       ),

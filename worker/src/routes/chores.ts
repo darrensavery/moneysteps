@@ -131,7 +131,7 @@ export async function handleChoreCreate(request: Request, env: Env, ctx: Executi
         sendPushNotification(env, assigned_to, {
           title: 'New chore',
           body: title.trim(),
-          route: `/chores/${id}`,
+          route: '/child?tab=chores',
           badgeCount: pendingCount,
         }),
       ),
@@ -655,7 +655,7 @@ export async function handleChoreSubmit(request: Request, env: Env, ctx: Executi
           sendPushNotification(env, p.id, {
             title: 'Ready to approve',
             body: `${childName} finished ${chore.title}`,
-            route: `/chores/approvals/${completionId}`,
+            route: '/parent?tab=activity',
             badgeCount: pendingCount,
           }),
         ),

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { updateDeviceIdentity } from '../lib/deviceIdentity'
 import { useFocusTrap } from '../hooks/useFocusTrap'
@@ -111,6 +111,7 @@ export function ChildDashboard() {
   const navigate   = useNavigate()
   const familyId   = getFamilyId()
   const userId     = getUserId()
+  const [searchParams] = useSearchParams()
 
   const [activeDay,  setActiveDay]  = useState<number>(() => {
     const d = new Date().getDay()           // 0=Sun … 6=Sat
@@ -172,7 +173,11 @@ export function ChildDashboard() {
   }>({ earn: null, money: null, goals: null })
 
   // Per-chore submission state
-  const [childTab,      setChildTab]      = useState<'home' | 'chores' | 'money' | 'goals' | 'lab'>('home')
+  const [childTab,      setChildTab]      = useState<'home' | 'chores' | 'money' | 'goals' | 'lab'>(() => {
+    const valid: Array<'home' | 'chores' | 'money' | 'goals' | 'lab'> = ['home', 'chores', 'money', 'goals', 'lab']
+    const fromQuery = searchParams.get('tab')
+    return valid.includes(fromQuery as typeof valid[number]) ? (fromQuery as typeof valid[number]) : 'home'
+  })
   const [labUnread,     setLabUnread]     = useState(0)
   const [submitting,    setSubmitting]    = useState<string | null>(null)
   const [submitted,     setSubmitted]     = useState<Set<string>>(new Set())
