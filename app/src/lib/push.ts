@@ -39,6 +39,19 @@ export async function registerDeviceToken(token: string, platform: 'ios' | 'andr
   });
 }
 
+/** Re-fetches the current user's pending-action count from the server —
+ *  used by the resume-time badge self-heal so the badge stays correct even
+ *  if a push notification was missed/coalesced by the OS while backgrounded.
+ *  Role-aware server-side: parents get awaiting-review + give-request counts,
+ *  children get new-chore + needs-redo counts (`getParentPendingCount` /
+ *  `getChildPendingCount`, `worker/src/lib/push/pendingCount.ts`). */
+export async function fetchCurrentPendingCount(): Promise<number> {
+  const res = await fetch(apiUrl('/api/push/pending-count'), { headers: await authHeaders() });
+  if (!res.ok) throw new Error(`pending-count request failed: ${res.status}`);
+  const data = (await res.json()) as { pending_count: number };
+  return data.pending_count;
+}
+
 export async function requestPushPermission(): Promise<boolean> {
   if (!Capacitor.isNativePlatform()) return false;
 

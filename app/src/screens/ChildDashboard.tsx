@@ -31,6 +31,7 @@ import { MicroToast } from '../components/celebration/MicroToast'
 import { CONFIGS } from '../components/celebration/registry'
 import { ErrorBox } from '../components/ui/ErrorBox'
 import { DevTriggerPanel } from '../components/dev/DevTriggerPanel'
+import { requestPushPermission, hasPromptedForPushPermission } from '../lib/push.js'
 
 // ─── localStorage grove planner ──────────────────────────────────────────────
 // Key: `grove_plans_${userId}`
@@ -265,6 +266,14 @@ export function ChildDashboard() {
   }, [familyId, userId, navigate])
 
   useEffect(() => { load() }, [load])
+
+  // Contextual push-permission prompt: first dashboard load with ≥1 assigned
+  // chore. `chores` is populated by `load()` above (`setChores(c)`).
+  useEffect(() => {
+    if (chores.length > 0 && !hasPromptedForPushPermission()) {
+      requestPushPermission().catch(() => {})
+    }
+  }, [chores.length])
 
   // Refresh chores + balance when app regains visibility or every 30s
   // so newly assigned chores appear without requiring a re-login

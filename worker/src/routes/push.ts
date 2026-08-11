@@ -2,6 +2,7 @@ import type { Env } from '../types.js';
 import type { JwtPayload } from '../lib/jwt.js';
 import { json, error } from '../lib/response.js';
 import { upsertDeviceToken, deleteDeviceToken } from '../lib/push/tokens.js';
+import { getParentPendingCount, getChildPendingCount } from '../lib/push/pendingCount.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -36,4 +37,23 @@ export async function handleUnregisterDeviceToken(request: Request, env: Env): P
 
   await deleteDeviceToken(env.DB, body.token, auth.sub);
   return json({ ok: true });
+}
+
+// ----------------------------------------------------------------
+// GET /api/push/pending-count
+// Role-aware badge count for the resume-time self-heal: parents get
+// getParentPendingCount (awaiting-review completions + give requests,
+// mirrors handleCompletionCount), children get getChildPendingCount
+// (new chores assigned + needs-redo completions). Reuses the same
+// helpers the push-send paths already use, so the badge always matches
+// what a push notification would have set it to.
+// ----------------------------------------------------------------
+export async function handleGetPendingCount(request: Request, env: Env): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
+
+  const count = auth.role === 'child'
+    ? await getChildPendingCount(env.DB, auth.family_id, auth.sub)
+    : await getParentPendingCount(env.DB, auth.family_id);
+
+  return json({ pending_count: count });
 }

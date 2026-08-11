@@ -15,13 +15,20 @@ vi.mock('@capacitor/push-notifications', () => ({
   },
 }));
 
-const { registerDeviceTokenMock, safeSetBadgeMock } = vi.hoisted(() => ({
+const { appAddListenerMock } = vi.hoisted(() => ({
+  appAddListenerMock: vi.fn().mockResolvedValue({ remove: vi.fn().mockResolvedValue(undefined) }),
+}));
+vi.mock('@capacitor/app', () => ({ App: { addListener: appAddListenerMock } }));
+
+const { registerDeviceTokenMock, safeSetBadgeMock, fetchCurrentPendingCountMock } = vi.hoisted(() => ({
   registerDeviceTokenMock: vi.fn().mockResolvedValue(undefined),
   safeSetBadgeMock: vi.fn().mockResolvedValue(undefined),
+  fetchCurrentPendingCountMock: vi.fn().mockResolvedValue(0),
 }));
 vi.mock('../lib/push.js', () => ({
   registerDeviceToken: registerDeviceTokenMock,
   safeSetBadge: safeSetBadgeMock,
+  fetchCurrentPendingCount: fetchCurrentPendingCountMock,
 }));
 
 const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
@@ -39,13 +46,23 @@ function callbackFor(eventName: string): (...args: unknown[]) => void {
   return call[1];
 }
 
+/** Finds the callback registered via `CapacitorApp.addListener(eventName, callback)`. */
+function appCallbackFor(eventName: string): (...args: unknown[]) => void {
+  const call = appAddListenerMock.mock.calls.find(c => c[0] === eventName);
+  if (!call) throw new Error(`No app listener registered for "${eventName}"`);
+  return call[1];
+}
+
 describe('PushNotificationListener', () => {
   beforeEach(() => {
     addListenerMock.mockClear();
+    appAddListenerMock.mockClear();
     getDeliveredNotificationsMock.mockClear();
     getDeliveredNotificationsMock.mockResolvedValue({ notifications: [] });
     registerDeviceTokenMock.mockClear();
     safeSetBadgeMock.mockClear();
+    fetchCurrentPendingCountMock.mockClear();
+    fetchCurrentPendingCountMock.mockResolvedValue(0);
     navigateMock.mockClear();
   });
 
@@ -91,5 +108,13 @@ describe('PushNotificationListener', () => {
     getDeliveredNotificationsMock.mockResolvedValue({ notifications: [{ data: { route: '/child?tab=goals' } }] });
     render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
     await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/child?tab=goals'));
+  });
+
+  it('registers an app resume listener that self-heals the badge from the server count', async () => {
+    fetchCurrentPendingCountMock.mockResolvedValue(4);
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    await appCallbackFor('resume')();
+    expect(fetchCurrentPendingCountMock).toHaveBeenCalledTimes(1);
+    expect(safeSetBadgeMock).toHaveBeenCalledWith(4);
   });
 });

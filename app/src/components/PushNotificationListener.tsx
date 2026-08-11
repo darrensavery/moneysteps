@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import { PushNotifications, type ActionPerformed, type PushNotificationSchema, type Token } from '@capacitor/push-notifications';
-import { registerDeviceToken, safeSetBadge } from '../lib/push.js';
+import { registerDeviceToken, safeSetBadge, fetchCurrentPendingCount } from '../lib/push.js';
 
 function platformOf(): 'ios' | 'android' {
   return Capacitor.getPlatform() === 'ios' ? 'ios' : 'android';
@@ -39,6 +40,15 @@ export function PushNotificationListener() {
       const launchRoute = notifications[0]?.data?.route;
       if (typeof launchRoute === 'string' && launchRoute.startsWith('/')) navigate(launchRoute);
     }).catch(() => {});
+
+    // Badge self-heal: on every foreground resume, re-fetch the real pending
+    // count from the server and reconcile the badge. Covers the case where a
+    // push was dropped/coalesced by the OS while backgrounded and the badge
+    // drifted from reality (e.g. a completion was approved from the parent's
+    // side while this device was asleep).
+    CapacitorApp.addListener('resume', () => {
+      fetchCurrentPendingCount().then(safeSetBadge).catch(() => {});
+    }).then(h => handles.push(h));
 
     return () => { handles.forEach(h => h.remove().catch(() => {})); };
   }, [navigate]);
