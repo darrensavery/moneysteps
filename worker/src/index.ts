@@ -892,7 +892,7 @@ async function route(request: Request, env: Env, ctx: ExecutionContext, method: 
 
   // Completions — parent approval
   const compApproveMatch = path.match(/^\/api\/completions\/([^/]+)\/approve$/);
-  if (compApproveMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleCompletionApprove(req, e, compApproveMatch[1]));
+  if (compApproveMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e, c) => handleCompletionApprove(req, e, c, compApproveMatch[1]));
   const compReviseMatch = path.match(/^\/api\/completions\/([^/]+)\/revise$/);
   if (compReviseMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleCompletionRevise(req, e, compReviseMatch[1]));
   const compRejectMatch = path.match(/^\/api\/completions\/([^/]+)\/reject$/);

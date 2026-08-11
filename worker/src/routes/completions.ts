@@ -159,6 +159,7 @@ export async function handleCompletionHistory(request: Request, env: Env): Promi
 export async function handleCompletionApprove(
   request: Request,
   env: Env,
+  ctx: ExecutionContext,
   completionId: string,
 ): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
@@ -242,6 +243,19 @@ export async function handleCompletionApprove(
       (ledger_id, from_status, to_status, actor_id, ip_address)
     VALUES (?,?,?,?,?)
   `).bind(newLedgerId, 'pending', verificationStatus, auth.sub, ip).run();
+
+  // Push notification — chore approved & paid. Non-critical, fire-and-forget.
+  const currencySymbol = comp.currency === 'GBP' ? '£' : comp.currency === 'USD' ? '$' : 'zł';
+  ctx.waitUntil(
+    getChildPendingCount(env.DB, comp.family_id, comp.child_id).then(pendingCount =>
+      sendPushNotification(env, comp.child_id, {
+        title: `${comp.title} approved!`,
+        body: `+${currencySymbol}${(comp.reward_amount / 100).toFixed(2)} added`,
+        route: `/chores/${completionId}`,
+        badgeCount: pendingCount,
+      }),
+    ),
+  );
 
   // ── Jar allocation hook ────────────────────────────────────────────────────
   // Emit allocation jar_movements if the child has jars enabled.
