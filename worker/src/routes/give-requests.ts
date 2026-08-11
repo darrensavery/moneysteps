@@ -2,6 +2,8 @@ import { Env } from '../types.js';
 import { json, error } from '../lib/response.js';
 import { JwtPayload } from '../lib/jwt.js';
 import { getJarBalances } from '../lib/jar-balance.js';
+import { sendPushNotification } from '../lib/push/send.js';
+import { getParentPendingCount } from '../lib/push/pendingCount.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -10,7 +12,11 @@ type AuthedRequest = Request & { auth: JwtPayload };
 // Body: { family_id, child_id, cause, amount }
 // Child only. Reserves Give jar balance.
 // ----------------------------------------------------------------
-export async function handlePostGiveRequest(request: Request, env: Env): Promise<Response> {
+export async function handlePostGiveRequest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   if (auth.role !== 'child') return error('Only children can submit give requests', 403);
 
@@ -60,6 +66,36 @@ export async function handlePostGiveRequest(request: Request, env: Env): Promise
   await env.DB.prepare(
     `UPDATE give_requests SET jar_movement_id=? WHERE id=?`
   ).bind(movId, giveReqId).run();
+
+  // Push notification — notify every parent that a give request is awaiting
+  // review. Non-critical, fire-and-forget.
+  const currencySymbol = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : 'zł';
+  const formattedAmount = `${currencySymbol}${(amount / 100).toFixed(2)}`;
+  ctx.waitUntil((async () => {
+    const childRow = await env.DB
+      .prepare('SELECT display_name FROM users WHERE id = ?')
+      .bind(child_id)
+      .first<{ display_name: string }>();
+    const childName = childRow?.display_name ?? 'Your child';
+
+    // Note: 'role' lives on family_roles, not users — users has no role column.
+    const parents = await env.DB
+      .prepare(`SELECT u.id FROM users u JOIN family_roles fr ON fr.user_id = u.id
+                WHERE fr.family_id = ? AND fr.role = 'parent'`)
+      .bind(family_id)
+      .all<{ id: string }>();
+    const pendingCount = await getParentPendingCount(env.DB, family_id);
+    await Promise.allSettled(
+      (parents.results ?? []).map(p =>
+        sendPushNotification(env, p.id, {
+          title: 'Give request received',
+          body: `${childName} wants to give ${formattedAmount} to ${cause.trim()}`,
+          route: `/give-requests/${giveReqId}`,
+          badgeCount: pendingCount,
+        }),
+      ),
+    );
+  })());
 
   return json({ ok: true, id: giveReqId }, 201);
 }

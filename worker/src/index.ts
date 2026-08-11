@@ -904,7 +904,7 @@ async function route(request: Request, env: Env, ctx: ExecutionContext, method: 
 
   // Goals — contribute is parent-only (parent tops up child's goal)
   const goalContributeMatch = path.match(/^\/api\/goals\/([^/]+)\/contribute$/);
-  if (goalContributeMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleGoalContribute(req, e, goalContributeMatch[1]));
+  if (goalContributeMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e, c) => handleGoalContribute(req, e, c, goalContributeMatch[1]));
 
   // Finance write — parent only
   if (path === '/api/payouts' && method === 'POST')        return withAuth(request, auth, env, ctx, handlePayoutCreate);

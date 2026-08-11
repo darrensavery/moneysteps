@@ -24,6 +24,8 @@ import { getJarConfig, getJarBalances } from '../lib/jar-balance.js';
 import { generateChildNudge, generateOnceChildNudge } from './child-nudges.js';
 import { z } from 'zod';
 import { parseValidatedBody } from '../lib/validate.js';
+import { sendPushNotification } from '../lib/push/send.js';
+import { getChildPendingCount } from '../lib/push/pendingCount.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -311,7 +313,12 @@ export async function handleGoalPurchase(request: Request, env: Env, id: string)
 // Parent makes a one-time fixed contribution to a child goal.
 // Body: { amount_pence: number }
 // Increments current_saved_pence on the goal.
-export async function handleGoalContribute(request: Request, env: Env, id: string): Promise<Response> {
+export async function handleGoalContribute(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+  id: string,
+): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   if (auth.role !== 'parent') return error('Only parents can contribute to goals', 403);
 
@@ -351,6 +358,21 @@ export async function handleGoalContribute(request: Request, env: Env, id: strin
     console.error('[goal_allocate] non-critical:', e);
   }
 
-  const updated = await env.DB.prepare('SELECT * FROM goals WHERE id = ?').bind(id).first();
+  const updated = await env.DB.prepare('SELECT * FROM goals WHERE id = ?').bind(id)
+    .first<{ title: string; current_saved_pence: number; target_amount: number }>();
+
+  if (updated) {
+    ctx.waitUntil(
+      getChildPendingCount(env.DB, goal.family_id, goal.child_id).then(pendingCount =>
+        sendPushNotification(env, goal.child_id, {
+          title: `${updated.title} got a boost!`,
+          body: `Now ${Math.round((updated.current_saved_pence / updated.target_amount) * 100)}% there`,
+          route: `/goals/${id}`,
+          badgeCount: pendingCount,
+        }),
+      ),
+    );
+  }
+
   return json(updated);
 }
