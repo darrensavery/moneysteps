@@ -1,26 +1,53 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => true, getPlatform: () => 'ios' } }));
-const { addListenerMock } = vi.hoisted(() => ({
+
+const { addListenerMock, getDeliveredNotificationsMock } = vi.hoisted(() => ({
   addListenerMock: vi.fn().mockResolvedValue({ remove: vi.fn().mockResolvedValue(undefined) }),
+  getDeliveredNotificationsMock: vi.fn().mockResolvedValue({ notifications: [] }),
 }));
 vi.mock('@capacitor/push-notifications', () => ({
   PushNotifications: {
     addListener: addListenerMock,
-    getDeliveredNotifications: vi.fn().mockResolvedValue({ notifications: [] }),
+    getDeliveredNotifications: getDeliveredNotificationsMock,
   },
 }));
-vi.mock('../lib/push.js', () => ({
-  registerDeviceToken: vi.fn().mockResolvedValue(undefined),
-  safeSetBadge: vi.fn().mockResolvedValue(undefined),
+
+const { registerDeviceTokenMock, safeSetBadgeMock } = vi.hoisted(() => ({
+  registerDeviceTokenMock: vi.fn().mockResolvedValue(undefined),
+  safeSetBadgeMock: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock('../lib/push.js', () => ({
+  registerDeviceToken: registerDeviceTokenMock,
+  safeSetBadge: safeSetBadgeMock,
+}));
+
+const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return { ...actual, useNavigate: () => navigateMock };
+});
 
 import { PushNotificationListener } from './PushNotificationListener.js';
 
+/** Finds the callback registered via `PushNotifications.addListener(eventName, callback)`. */
+function callbackFor(eventName: string): (...args: unknown[]) => void {
+  const call = addListenerMock.mock.calls.find(c => c[0] === eventName);
+  if (!call) throw new Error(`No listener registered for "${eventName}"`);
+  return call[1];
+}
+
 describe('PushNotificationListener', () => {
-  beforeEach(() => { addListenerMock.mockClear(); });
+  beforeEach(() => {
+    addListenerMock.mockClear();
+    getDeliveredNotificationsMock.mockClear();
+    getDeliveredNotificationsMock.mockResolvedValue({ notifications: [] });
+    registerDeviceTokenMock.mockClear();
+    safeSetBadgeMock.mockClear();
+    navigateMock.mockClear();
+  });
 
   it('registers all four expected native listeners on mount', () => {
     render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
@@ -28,5 +55,41 @@ describe('PushNotificationListener', () => {
     expect(registeredEvents).toEqual(
       expect.arrayContaining(['registration', 'pushNotificationReceived', 'pushNotificationActionPerformed']),
     );
+  });
+
+  it('registers the device token with the platform when the registration callback fires', () => {
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    callbackFor('registration')({ value: 'fake-token-123' });
+    expect(registerDeviceTokenMock).toHaveBeenCalledWith('fake-token-123', 'ios');
+  });
+
+  it('sets the badge to the numeric pendingCount when a notification is received in the foreground', () => {
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    callbackFor('pushNotificationReceived')({ data: { pendingCount: '3' } });
+    expect(safeSetBadgeMock).toHaveBeenCalledWith(3);
+  });
+
+  it('does not set the badge when pendingCount is not a number', () => {
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    callbackFor('pushNotificationReceived')({ data: { pendingCount: 'not-a-number' } });
+    expect(safeSetBadgeMock).not.toHaveBeenCalled();
+  });
+
+  it('navigates to the route when a notification tap is actioned', () => {
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    callbackFor('pushNotificationActionPerformed')({ notification: { data: { route: '/parent?tab=activity' } } });
+    expect(navigateMock).toHaveBeenCalledWith('/parent?tab=activity');
+  });
+
+  it('does not navigate when the actioned route is malformed', () => {
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    callbackFor('pushNotificationActionPerformed')({ notification: { data: { route: 'not-a-path' } } });
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('navigates to the cold-start route from a delivered notification present at launch', async () => {
+    getDeliveredNotificationsMock.mockResolvedValue({ notifications: [{ data: { route: '/child?tab=goals' } }] });
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/child?tab=goals'));
   });
 });
