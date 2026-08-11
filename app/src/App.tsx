@@ -9,6 +9,7 @@ import { primeAuthState, isAuthenticated } from './lib/authState'
 import { Capacitor } from '@capacitor/core'
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin'
 import { AppUrlListener } from './components/AppUrlListener'
+import { PushNotificationListener } from './components/PushNotificationListener'
 import { AndroidBackController } from './components/AndroidBackController'
 import { AppAutoLock } from './components/AppAutoLock'
 import { hasSeenOnboarding }  from './lib/onboarding'
@@ -241,6 +242,7 @@ export default function App() {
     <ThemeProvider>
     <BrowserRouter>
       <AppUrlListener />
+      <PushNotificationListener />
       <AndroidBackController />
       <AppAutoLock />
       <Suspense fallback={<SuspenseFallback />}>
