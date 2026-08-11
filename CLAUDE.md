@@ -114,6 +114,73 @@ Wave 1 shipped deep-link support + `assetlinks.json` (Google's Digital Asset Lin
 
 Before production release: replace the debug SHA-256 in `app/public/.well-known/assetlinks.json` with the **release cert fingerprint** from Play Console → App integrity → App signing. Keep the upload cert fingerprint.
 
+## Outstanding — Push notifications and badge native configuration
+
+Push notifications (Capacitor v8 plugin) and badge support (CapAwesome plugin) require manual setup in two cloud portals and Xcode before deployment.
+
+**Apple Developer Portal (for iOS APNs):**
+
+1. Go to [developer.apple.com](https://developer.apple.com)
+2. Navigate to Certificates, Identifiers & Profiles → Identifiers
+3. Select the App ID for `com.morechard.app`
+4. Enable the Push Notifications capability (edit identifier if not yet enabled)
+5. Generate an APNs authentication key (Auth Key, not certificate):
+   - Click "Create a Key" under Push Notifications
+   - Name it (e.g., "Morechard Push APNs")
+   - Download the `.p8` file
+   - Record the Key ID (visible in the portal immediately after generation)
+   - Record your Team ID (visible in Account Settings)
+
+**Firebase Console (for Android FCM):**
+
+1. Go to [console.firebase.google.com](https://console.firebase.google.com)
+2. Create a new project or select an existing one for Morechard
+3. Add an Android app with package name `com.morechard.app`
+4. Download the generated `google-services.json` file
+5. Copy it into `android/app/google-services.json` (create the file if it doesn't exist)
+
+**Xcode (iOS build-time configuration):**
+
+1. Open `ios/App/App.xcworkspace` in Xcode
+2. Select the App target
+3. Go to Signing & Capabilities
+4. Click + Capability and add "Push Notifications"
+5. Verify that a Push Notifications capability row now appears
+
+**Worker secrets (Cloudflare):**
+
+Set these secrets for both dev and production environments. The Worker uses them to send notifications via APNs (iOS) and FCM (Android). Retrieve values from the portals above and the `google-services.json` / APNs key download:
+
+```bash
+# Dev database:
+npx wrangler secret put FCM_PROJECT_ID --env development
+npx wrangler secret put FCM_CLIENT_EMAIL --env development
+npx wrangler secret put FCM_PRIVATE_KEY --env development
+npx wrangler secret put APNS_KEY_ID --env development
+npx wrangler secret put APNS_TEAM_ID --env development
+npx wrangler secret put APNS_PRIVATE_KEY --env development
+npx wrangler secret put APNS_BUNDLE_ID --env development
+
+# Production database:
+npx wrangler secret put FCM_PROJECT_ID --env production
+npx wrangler secret put FCM_CLIENT_EMAIL --env production
+npx wrangler secret put FCM_PRIVATE_KEY --env production
+npx wrangler secret put APNS_KEY_ID --env production
+npx wrangler secret put APNS_TEAM_ID --env production
+npx wrangler secret put APNS_PRIVATE_KEY --env production
+npx wrangler secret put APNS_BUNDLE_ID --env production
+```
+
+**Extracting secret values from firebase:**
+
+- `FCM_PROJECT_ID`: Visible in Firebase project settings (Settings gear → Project settings, listed as "Project ID")
+- `FCM_CLIENT_EMAIL`: In the service account JSON (Firebase Settings → Service Accounts → Generate new private key)
+- `FCM_PRIVATE_KEY`: Same service account JSON file (base64-encoded private key, copy as-is)
+- `APNS_KEY_ID`: The Key ID from the APNs authentication key you downloaded from Apple Developer
+- `APNS_TEAM_ID`: Your Apple Developer Team ID
+- `APNS_PRIVATE_KEY`: The full content of the `.p8` file downloaded from Apple Developer (copy as-is)
+- `APNS_BUNDLE_ID`: Should match `com.morechard.app`
+
 ## Database & Deployment Rules (CRITICAL — read before touching any wrangler command)
 
 ### The two databases
