@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ChildDashboard } from '../ChildDashboard'
 import { LocaleProvider } from '../../lib/locale'
@@ -62,10 +62,18 @@ vi.mock('../../lib/push.js', () => ({
   hasPromptedForPushPermission: () => localStorage.getItem('mc_push_permission_prompted') === '1',
 }))
 
-function renderDashboard(initialPath: string) {
+/** Navigates in-place without remounting — simulates a warm-start deep link
+ *  (push tap while the dashboard is already on screen). */
+function NavHelper({ to }: { to: string }) {
+  const navigate = useNavigate()
+  return <button onClick={() => navigate(to)}>WARM_NAV</button>
+}
+
+function renderDashboard(initialPath: string, warmTarget?: string) {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <LocaleProvider>
+        {warmTarget ? <NavHelper to={warmTarget} /> : null}
         <Routes>
           <Route path="/child" element={<ChildDashboard />} />
         </Routes>
@@ -97,6 +105,18 @@ describe('ChildDashboard — ?tab= query param deep-link routing', () => {
 
     const moneyMock = screen.getByText('MOCK_MONEY_TAB')
     expect(moneyMock.closest('.tab-panel')?.className).toContain('hidden')
+  })
+
+  it('switches tabs on a WARM-start deep link (already mounted, ?tab= changes)', async () => {
+    renderDashboard('/child', '/child?tab=goals')
+    const goalsMock = await screen.findByText('MOCK_GOALS_TAB')
+    expect(goalsMock.closest('.tab-panel')?.className).toContain('hidden')
+
+    fireEvent.click(screen.getByText('WARM_NAV'))
+
+    await waitFor(() =>
+      expect(screen.getByText('MOCK_GOALS_TAB').closest('.tab-panel')?.className).not.toContain('hidden'),
+    )
   })
 
   it('ignores an invalid ?tab= value and falls back to home', async () => {

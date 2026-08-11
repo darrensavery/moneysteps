@@ -24,8 +24,7 @@ import { getJarConfig, getJarBalances } from '../lib/jar-balance.js';
 import { generateChildNudge, generateOnceChildNudge } from './child-nudges.js';
 import { z } from 'zod';
 import { parseValidatedBody } from '../lib/validate.js';
-import { sendPushNotification } from '../lib/push/send.js';
-import { getChildPendingCount } from '../lib/push/pendingCount.js';
+import { notifyChild } from '../lib/push/notify.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -363,14 +362,11 @@ export async function handleGoalContribute(
 
   if (updated) {
     ctx.waitUntil(
-      getChildPendingCount(env.DB, goal.family_id, goal.child_id).then(pendingCount =>
-        sendPushNotification(env, goal.child_id, {
-          title: `${updated.title} got a boost!`,
-          body: `Now ${Math.round((updated.current_saved_pence / updated.target_amount) * 100)}% there`,
-          route: '/child?tab=goals',
-          badgeCount: pendingCount,
-        }),
-      ),
+      notifyChild(env, goal.child_id, goal.family_id, {
+        title: `${updated.title} got a boost!`,
+        body: `Now ${Math.round((updated.current_saved_pence / updated.target_amount) * 100)}% there`,
+        route: '/child?tab=goals',
+      }),
     );
   }
 

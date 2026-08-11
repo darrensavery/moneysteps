@@ -4,6 +4,10 @@ import { Badge } from '@capawesome/capacitor-badge';
 import { apiUrl, authHeaders } from './api.js';
 
 const PROMPT_FLAG_KEY = 'mc_push_permission_prompted';
+/** Last device token successfully registered with the server on this device, so
+ *  logout can DELETE the row for it (design spec: "on explicit logout: also
+ *  DELETE the row for that token"). */
+const LAST_TOKEN_KEY = 'mc_push_device_token';
 
 export function hasPromptedForPushPermission(): boolean {
   return localStorage.getItem(PROMPT_FLAG_KEY) === '1';
@@ -32,11 +36,34 @@ export async function registerDeviceToken(token: string, platform: 'ios' | 'andr
   // verification pass (design doc Section 5) that TestFlight/App Store builds
   // actually register as 'production' — not just that local dev builds don't.
   const environment = import.meta.env.PROD ? 'production' : 'sandbox';
-  await fetch(apiUrl('/api/push/register'), {
+  const res = await fetch(apiUrl('/api/push/register'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify({ token, platform, environment }),
   });
+  if (res.ok) {
+    try { localStorage.setItem(LAST_TOKEN_KEY, token); } catch { /* ignore */ }
+  }
+}
+
+/** Called from logout() before the session is torn down. Removes this device's
+ *  token row server-side so a subsequent user of the same device never receives
+ *  the previous account's notifications. No-ops (and never throws) when no token
+ *  was ever registered — web-only usage, or permission never granted. */
+export async function unregisterDeviceTokenOnLogout(): Promise<void> {
+  let token: string | null = null;
+  try { token = localStorage.getItem(LAST_TOKEN_KEY); } catch { /* ignore */ }
+  if (!token) return;
+
+  try {
+    await fetch(apiUrl('/api/push/unregister'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+      body: JSON.stringify({ token }),
+    });
+  } catch { /* best-effort — never block logout */ }
+
+  try { localStorage.removeItem(LAST_TOKEN_KEY); } catch { /* ignore */ }
 }
 
 /** Re-fetches the current user's pending-action count from the server —

@@ -68,5 +68,22 @@ export async function sendApnsPush(
   });
 
   if (res.ok) return { ok: true, shouldPruneToken: false };
-  return { ok: false, shouldPruneToken: res.status === 410 || res.status === 400 };
+
+  // APNs returns `{"reason": "..."}` on failure. A 400 covers many *config*
+  // errors (BadTopic, MissingTopic, DeviceTokenNotForTopic, InvalidPushType,
+  // BadExpirationDate…) as well as BadDeviceToken — pruning on every 400 would
+  // wipe every iOS token in the table the first time the bundle id or
+  // sandbox/production environment was misconfigured. Only prune when the
+  // reason genuinely says the token is dead.
+  const body = await res.json<{ reason?: string }>().catch(() => ({} as { reason?: string }));
+  const reason = body.reason;
+  const shouldPruneToken =
+    res.status === 410 || (res.status === 400 && (reason === 'BadDeviceToken' || reason === 'Unregistered'));
+
+  if (!shouldPruneToken) {
+    // Log it — a config error must be diagnosable, not indistinguishable from a dead token.
+    console.error(`[push] APNs send failed: HTTP ${res.status} reason=${reason ?? 'unknown'} env=${environment}`);
+  }
+
+  return { ok: false, shouldPruneToken };
 }

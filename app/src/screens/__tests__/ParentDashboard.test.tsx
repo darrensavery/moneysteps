@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ParentDashboard } from '../ParentDashboard'
 import { LocaleProvider } from '../../lib/locale'
@@ -73,10 +73,18 @@ const child: ChildRecord = {
   monzo_handle: null, revolut_handle: null, paypal_handle: null, venmo_handle: null,
 }
 
-function renderDashboard(initialPath: string) {
+/** Navigates in-place without remounting — simulates a warm-start deep link
+ *  (push tap while the dashboard is already on screen). */
+function NavHelper({ to }: { to: string }) {
+  const navigate = useNavigate()
+  return <button onClick={() => navigate(to)}>WARM_NAV</button>
+}
+
+function renderDashboard(initialPath: string, warmTarget?: string) {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <LocaleProvider>
+        {warmTarget ? <NavHelper to={warmTarget} /> : null}
         <Routes>
           <Route path="/parent" element={<ParentDashboard />} />
         </Routes>
@@ -121,6 +129,20 @@ describe('ParentDashboard — ?tab= query param deep-link routing', () => {
 
     const panels = document.querySelectorAll('.tab-panel')
     expect(panels[0].className).not.toContain('hidden')
+  })
+
+  it('switches tabs on a WARM-start deep link (already mounted, ?tab= changes)', async () => {
+    renderDashboard('/parent', '/parent?tab=activity')
+    await screen.findByText('MOCK_CHORES_TAB')
+    expect(document.querySelectorAll('.tab-panel')[1].className).toContain('hidden')
+
+    fireEvent.click(screen.getByText('WARM_NAV'))
+
+    await waitFor(() => {
+      const panels = document.querySelectorAll('.tab-panel')
+      expect(panels[0].className).toContain('hidden')       // chores — hidden
+      expect(panels[1].className).not.toContain('hidden')   // activity — visible
+    })
   })
 
   it('persists the query-param-selected tab to localStorage', async () => {

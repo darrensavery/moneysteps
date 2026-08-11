@@ -33,7 +33,7 @@ function makeEnv(opts: {
     status: 'IN_PROGRESS', current_saved_pence: 500, target_amount: 1000,
   };
 
-  const updatedGoal = { ...goal, current_saved_pence: goal.current_saved_pence + 250 };
+  const updatedGoal = goal ? { ...goal, current_saved_pence: goal.current_saved_pence + 250 } : null;
 
   const first = vi.fn((sql: string) => {
     if (sql.includes('SELECT * FROM goals WHERE id = ? AND archived = 0')) {

@@ -22,8 +22,7 @@ import { getJarConfig } from '../lib/jar-balance.js';
 import { getStreakState, buildStreakEvent, saveStreakEvent, allScheduledChoresDone } from '../lib/streaks.js';
 import { getBadgeStats, badgesToAward, insertBadges } from '../lib/badges.js';
 import { evaluateOnChoreApproval, evaluatePassive } from '../lib/labTriggers.js';
-import { sendPushNotification } from '../lib/push/send.js';
-import { getChildPendingCount, getParentPendingCount } from '../lib/push/pendingCount.js';
+import { notifyChild, notifyParents } from '../lib/push/notify.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -127,14 +126,11 @@ export async function handleChoreCreate(request: Request, env: Env, ctx: Executi
   // sentinel values, which aren't a real user id to notify.
   if (!isSentinel) {
     ctx.waitUntil(
-      getChildPendingCount(env.DB, family_id, assigned_to).then(pendingCount =>
-        sendPushNotification(env, assigned_to, {
-          title: 'New chore',
-          body: title.trim(),
-          route: '/child?tab=chores',
-          badgeCount: pendingCount,
-        }),
-      ),
+      notifyChild(env, assigned_to, family_id, {
+        title: 'New chore',
+        body: title.trim(),
+        route: '/child?tab=chores',
+      }),
     );
   }
 
@@ -636,31 +632,14 @@ export async function handleChoreSubmit(request: Request, env: Env, ctx: Executi
   // ready to approve. Shared by both the resubmission and fresh-insert paths
   // below, since both land the completion in 'awaiting_review'.
   const notifyParentsAwaitingReview = (completionId: string): void => {
-    ctx.waitUntil((async () => {
-      const childRow = await env.DB
-        .prepare('SELECT display_name FROM users WHERE id = ?')
-        .bind(auth.sub)
-        .first<{ display_name: string }>();
-      const childName = childRow?.display_name ?? 'Your child';
-
-      // Note: 'role' lives on family_roles, not users — users has no role column.
-      const parents = await env.DB
-        .prepare(`SELECT u.id FROM users u JOIN family_roles fr ON fr.user_id = u.id
-                  WHERE fr.family_id = ? AND fr.role = 'parent'`)
-        .bind(chore.family_id)
-        .all<{ id: string }>();
-      const pendingCount = await getParentPendingCount(env.DB, chore.family_id);
-      await Promise.allSettled(
-        (parents.results ?? []).map(p =>
-          sendPushNotification(env, p.id, {
-            title: 'Ready to approve',
-            body: `${childName} finished ${chore.title}`,
-            route: '/parent?tab=activity',
-            badgeCount: pendingCount,
-          }),
-        ),
-      );
-    })());
+    ctx.waitUntil(
+      notifyParents(env, chore.family_id, {
+        title: 'Ready to approve',
+        body: (childName: string) => `${childName} finished ${chore.title}`,
+        actorChildId: auth.sub,
+        route: '/parent?tab=activity',
+      }),
+    );
   };
 
   const existingRecord = await env.DB

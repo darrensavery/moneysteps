@@ -238,6 +238,16 @@ export async function webauthnLoginVerify(body: WebauthnLoginVerifyBody): Promis
 }
 
 export async function logout(): Promise<void> {
+  // Drop this device's push token server-side first, while the session is still
+  // valid — otherwise a later user of the same device inherits notifications
+  // addressed to the account that just logged out. Dynamically imported to avoid
+  // a static import cycle (push.ts imports apiUrl/authHeaders from this module).
+  // Best-effort: never let it block or fail the logout itself.
+  try {
+    const { unregisterDeviceTokenOnLogout } = await import('./push.js');
+    await unregisterDeviceTokenOnLogout();
+  } catch { /* ignore */ }
+
   await request('/auth/logout', { method: 'POST' });
   await clearToken();
 }

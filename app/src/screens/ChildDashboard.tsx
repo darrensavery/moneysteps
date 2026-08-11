@@ -179,6 +179,15 @@ export function ChildDashboard() {
     const fromQuery = searchParams.get('tab')
     return valid.includes(fromQuery as typeof valid[number]) ? (fromQuery as typeof valid[number]) : 'home'
   })
+  // Warm start: the initializer above only runs on first mount, so navigating
+  // to /child?tab=chores while this screen is ALREADY mounted (a push-
+  // notification deep-link tap with the app open/backgrounded) would otherwise
+  // do nothing. Re-apply a valid ?tab= whenever the query param changes.
+  const queryTab = searchParams.get('tab')
+  useEffect(() => {
+    const valid: Array<'home' | 'chores' | 'money' | 'goals' | 'lab'> = ['home', 'chores', 'money', 'goals', 'lab']
+    if (valid.includes(queryTab as typeof valid[number])) setChildTab(queryTab as typeof valid[number])
+  }, [queryTab])
   const [labUnread,     setLabUnread]     = useState(0)
   const [submitting,    setSubmitting]    = useState<string | null>(null)
   const [submitted,     setSubmitted]     = useState<Set<string>>(new Set())

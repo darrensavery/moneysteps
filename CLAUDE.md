@@ -153,13 +153,13 @@ Set these secrets for both dev and production environments. The Worker uses them
 
 ```bash
 # Dev database:
-npx wrangler secret put FCM_PROJECT_ID --env development
-npx wrangler secret put FCM_CLIENT_EMAIL --env development
-npx wrangler secret put FCM_PRIVATE_KEY --env development
-npx wrangler secret put APNS_KEY_ID --env development
-npx wrangler secret put APNS_TEAM_ID --env development
-npx wrangler secret put APNS_PRIVATE_KEY --env development
-npx wrangler secret put APNS_BUNDLE_ID --env development
+npx wrangler secret put FCM_PROJECT_ID
+npx wrangler secret put FCM_CLIENT_EMAIL
+npx wrangler secret put FCM_PRIVATE_KEY
+npx wrangler secret put APNS_KEY_ID
+npx wrangler secret put APNS_TEAM_ID
+npx wrangler secret put APNS_PRIVATE_KEY
+npx wrangler secret put APNS_BUNDLE_ID
 
 # Production database:
 npx wrangler secret put FCM_PROJECT_ID --env production
@@ -355,7 +355,7 @@ cd worker && npx wrangler d1 migrations apply morechard --remote --env productio
 - [x] Add Sentry Error Tracking (24/7 solo-dev monitoring)
 - [ ] Implement PostHog Session Replays (UX friction hunting)
 - [x] Offline caching (`vite-plugin-pwa`/Workbox) — verified 2026-08-06: precaches full app shell (65 entries incl. all JS/CSS chunks, fonts, icons, manifest), SPA navigation fallback to `/index.html` with `/api` and `/auth` denylisted, cache-first for immutable hashed assets/fonts/DiceBear avatars, stale-while-revalidate for Google Fonts CSS. Confirmed via production build (`npm run build`) — `sw.js` output matches `vite.config.ts` config exactly.
-- [ ] Push notifications (remaining half of "Final PWA Optimization") — not built: no service worker `push` handler, no subscription flow, no server-side send (`web-push` or similar). Needed for both web and native (Capacitor) paths.
+- [x] Push notifications (remaining half of "Final PWA Optimization") — native only (iOS via APNs, Android via FCM); **web push is explicitly out of scope** per the design spec, so there is deliberately no service-worker `push` handler. Server-side send lives in `worker/src/lib/push/` (`apns.ts` / `fcm.ts` / `send.ts` / `notify.ts`) with token storage in `device_tokens` (migration `0093_push_notifications.sql`); client registration + deep-link/badge handling in `app/src/lib/push.ts` and `app/src/components/PushNotificationListener.tsx`. Six triggers wired: new chore, completion approved, needs-redo, ready-to-approve, goal boost, give request. Spec: `docs/superpowers/specs/2026-08-11-push-notifications-design.md`; plan: `docs/superpowers/plans/2026-08-11-push-notifications.md`. **Ships verified by unit tests + code review only** — no real-device verification was possible in the build environment (no iOS/Android device or emulator, and `wrangler dev --remote` 503s here), and the APNs/FCM credentials are not yet set as Worker secrets. Needs a real end-to-end run on actual hardware plus the native configuration steps in "Outstanding — Push notifications and badge native configuration" above before it can be called done.
 - [x] High Contrast mode (WCAG 2.1 AA, opt-in, parent + child accounts) — merged to `main` 2026-08-07. `data-contrast="high"` attribute drives a CSS override layer independent of `data-theme`; `user_settings.high_contrast` persists per-account (migration `0092_high_contrast_setting.sql`, confirmed applied to `morechard-dev`); OS-level `prefers-contrast: more` fallback when no explicit preference is stored; toggle lives in Appearance Settings for both parent and child. Spec: `docs/superpowers/specs/2026-08-06-high-contrast-mode-design.md`; plan: `docs/superpowers/plans/2026-08-06-high-contrast-mode.md`. Axe (`@axe-core/playwright`) e2e sweep (`app/e2e/high-contrast-a11y.spec.ts`) covers 4 surfaces × 2 contrast states, but only 2/8 cases (registration) have run against a live worker — the other 6 (parent/child dashboard, settings) are blocked by the same sandboxed `wrangler dev --remote` 503 limitation as the JWT/WebAuthn work above; needs a real run from a machine that can reach Cloudflare. Two non-blocking findings from the partial run, not yet filed as tickets: (1) `meta-viewport` WCAG 1.4.4 violation — `user-scalable=no` disables pinch-zoom, pre-existing and unrelated to contrast; (2) a possibly-flaky `color-contrast` finding on the disabled registration "Continue" button, seen once, not reproduced.
 
 ### **Infrastructure**

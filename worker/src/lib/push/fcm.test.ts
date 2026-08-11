@@ -1,5 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { sendFcmPush } from './fcm.js';
+
+// The signing key is generated fresh at test runtime rather than checked in, so
+// this file never contains a literal PEM private-key block for secret scanners
+// (gitleaks et al.) to flag.
+let TEST_PRIVATE_KEY_PEM = '';
+
+function toPem(pkcs8: ArrayBuffer): string {
+  const bytes = new Uint8Array(pkcs8);
+  let raw = '';
+  for (const b of bytes) raw += String.fromCharCode(b);
+  const b64 = btoa(raw).replace(/(.{64})/g, '$1\n').trimEnd();
+  return `-----BEGIN PRIVATE KEY-----\n${b64}\n-----END PRIVATE KEY-----`;
+}
+
+beforeAll(async () => {
+  const pair = await crypto.subtle.generateKey(
+    { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    true,
+    ['sign', 'verify'],
+  ) as CryptoKeyPair;
+  TEST_PRIVATE_KEY_PEM = toPem(await crypto.subtle.exportKey('pkcs8', pair.privateKey) as ArrayBuffer);
+});
 
 function makeEnv(overrides: Partial<{ kvGet: unknown; fetchImpl: typeof fetch }> = {}) {
   const kvStore = new Map<string, string>();
@@ -14,36 +36,6 @@ function makeEnv(overrides: Partial<{ kvGet: unknown; fetchImpl: typeof fetch }>
     },
   } as any;
 }
-
-// A real PKCS8 RSA test key, generated solely for this test suite (not a production secret).
-const TEST_PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCw07atHKMEncO1
-HEdGfStrfzqrVfhpwXfa2fyWODy+NJiaCrgj9hGpaCthPMkEA9rLE8kOXocpEJ7v
-4GyWEs9Vj+l/q4TpprKWkrFVHJ0TCK6Rc5O1dof4ZBkv6IFDsWOH0uuzbL4WdPUb
-y8uXxuY/8y5mi81cNXuRg6dEX2Ek2io+qgTqE1k/3dhEiMFTiGke+F0KCGf46dqt
-iRHb+MOAiC8lm4i0CtHE6m9jFahRa6mrtYLwL2Guo+OWeqdSMWNX4aLbXXjOkJN1
-R64RNnwk8PZnyh0WROtXu1Gm4ueb+r2AGQW1G6wDD2iZgjgKR3EAlr48RFcRfrhS
-xc92E+z/AgMBAAECggEAOoNMWztzLEdiaA97/HTWBePbj6/KnIBDP33Lyg/A9fXk
-m3C5n1jBXmwUksAxCm2WHIYnDWS1WB7iYSFD/WMrDbap/y/MMx8Q0KepG690wMQq
-NAJpWe5nrwe8l/BZugM8msjuavisbDT2mOSWsdpE/dtkOtW/NmiSQ8QreQIQ3Mbx
-k7l1HJWme2x6DubY7Mw7TW+zff1FSYvPuosctG5+/yTTsxdCu7I+rT6KJM8U7XkU
-3kpLdKYr5PBWi/nd3nm7LaW7FefjwfHeGwW4vOag3oYcoBleWfVCMoZaVOeJOBgW
-WIq5ByUj8EVC/bn5RH9jPQyxM2sbtf9VAklZoGHpFQKBgQDhIx/6Mc9lwITWdLoJ
-n8Q7YFBL3dyoTYC/qocZ0H+CDak0jBsZnax/75CkTQ6OZbaLp5DQeyyigGdClsfj
-e85PuyU0BC+iYKORumDQyOrwNMSuDN0cm7I+R+Edh3hhnFj3tMqzylw7902YWYpS
-UEY6Ed98OIhDJHFQ0dPssrMVhQKBgQDJETW2PufGOdxKuuWURmOfOF4Ztf39q1y4
-IeVwsutS+5Z7oWrJUnQ5fJDi9+9pnmMr9v26Lw+qmRhUelNGD8AMM032hVCJBdfm
-Sqj2yOVQ17hTEj0585GPBBOic4BuZ9PLlTFkXPqN1HZKZFm41AUsFzldb3EhCKIc
-x4CjvF2tswKBgFaGLEz4ha+iXKsa80CtoTn8mv99Rcd8+cUvoXp/UfHGlEf4rJWc
-rmYAyQMMBlMdrhlgDdzB6faOCKFj13CK7VBhKTwje7cZEuP30CuNfBVTAl+t2/CZ
-udgLwe2aWd6RuvOADQMp+2akdbLefrWB2muI4O4Zv+yl/dLEwYDPcNoNAoGAfn/l
-WxOYno4ompubdP4UD0hXa7WkZsQ5QV+SCqWGiF7g/kc/+Al4NfK49RMn/Ts5CaAL
-YefZ42sOc5fCbIHcQdDFbCPT12Flw+2VAC7El2gg/6KqApvLKD9YWwxv8QZBqgPj
-X1FgEXtqMMOR70b1OhgibzZ95lqYI6Mgu+L2zSECgYEA32+szb+mTyHWsZdhlbW/
-EJpjqa9Qcy/qc/pOjQqq0JEl/gmfvXPN2qZBNmoQkfxf2g+AwwYyygU/BHWqqQg0
-ah9ukREWQFaJ3deBwlv0FUaVjwYocicW4KfNMNMqHnSdU3BqNBNMUKPRMMSk+gCg
-hHAtcxe9GBcci3IbiVCSLpk=
------END PRIVATE KEY-----`;
 
 describe('sendFcmPush', () => {
   beforeEach(() => vi.restoreAllMocks());

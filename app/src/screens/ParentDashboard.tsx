@@ -53,6 +53,15 @@ export function ParentDashboard() {
     const saved = localStorage.getItem('mc_parent_tab')
     return valid.includes(saved as Tab) ? (saved as Tab) : 'chores'
   })
+  // Warm start: the initializer above only runs on first mount, so navigating
+  // to /parent?tab=activity while this screen is ALREADY mounted (a push-
+  // notification deep-link tap with the app open/backgrounded) would otherwise
+  // do nothing. Re-apply a valid ?tab= whenever the query param changes.
+  const queryTab = searchParams.get('tab')
+  useEffect(() => {
+    const valid: Tab[] = ['chores', 'activity', 'pool', 'insights', 'goals']
+    if (valid.includes(queryTab as Tab)) setTab(queryTab as Tab)
+  }, [queryTab])
   // Persist whenever the tab changes, including the initial value when it
   // came from a ?tab= query param (e.g. a push-notification deep link) —
   // not just on manual clicks via handleTabChange.

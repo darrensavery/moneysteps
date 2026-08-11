@@ -2,8 +2,7 @@ import { Env } from '../types.js';
 import { json, error } from '../lib/response.js';
 import { JwtPayload } from '../lib/jwt.js';
 import { getJarBalances } from '../lib/jar-balance.js';
-import { sendPushNotification } from '../lib/push/send.js';
-import { getParentPendingCount } from '../lib/push/pendingCount.js';
+import { notifyParents } from '../lib/push/notify.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -71,31 +70,14 @@ export async function handlePostGiveRequest(
   // review. Non-critical, fire-and-forget.
   const currencySymbol = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : 'zł';
   const formattedAmount = `${currencySymbol}${(amount / 100).toFixed(2)}`;
-  ctx.waitUntil((async () => {
-    const childRow = await env.DB
-      .prepare('SELECT display_name FROM users WHERE id = ?')
-      .bind(child_id)
-      .first<{ display_name: string }>();
-    const childName = childRow?.display_name ?? 'Your child';
-
-    // Note: 'role' lives on family_roles, not users — users has no role column.
-    const parents = await env.DB
-      .prepare(`SELECT u.id FROM users u JOIN family_roles fr ON fr.user_id = u.id
-                WHERE fr.family_id = ? AND fr.role = 'parent'`)
-      .bind(family_id)
-      .all<{ id: string }>();
-    const pendingCount = await getParentPendingCount(env.DB, family_id);
-    await Promise.allSettled(
-      (parents.results ?? []).map(p =>
-        sendPushNotification(env, p.id, {
-          title: 'Give request received',
-          body: `${childName} wants to give ${formattedAmount} to ${cause.trim()}`,
-          route: '/parent?tab=activity',
-          badgeCount: pendingCount,
-        }),
-      ),
-    );
-  })());
+  ctx.waitUntil(
+    notifyParents(env, family_id, {
+      title: 'Give request received',
+      body: (childName: string) => `${childName} wants to give ${formattedAmount} to ${cause.trim()}`,
+      actorChildId: child_id,
+      route: '/parent?tab=activity',
+    }),
+  );
 
   return json({ ok: true, id: giveReqId }, 201);
 }

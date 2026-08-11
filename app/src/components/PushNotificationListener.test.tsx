@@ -4,14 +4,18 @@ import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => true, getPlatform: () => 'ios' } }));
 
-const { addListenerMock, getDeliveredNotificationsMock } = vi.hoisted(() => ({
+const { addListenerMock, getDeliveredNotificationsMock, checkPermissionsMock, registerMock } = vi.hoisted(() => ({
   addListenerMock: vi.fn().mockResolvedValue({ remove: vi.fn().mockResolvedValue(undefined) }),
   getDeliveredNotificationsMock: vi.fn().mockResolvedValue({ notifications: [] }),
+  checkPermissionsMock: vi.fn().mockResolvedValue({ receive: 'granted' }),
+  registerMock: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock('@capacitor/push-notifications', () => ({
   PushNotifications: {
     addListener: addListenerMock,
     getDeliveredNotifications: getDeliveredNotificationsMock,
+    checkPermissions: checkPermissionsMock,
+    register: registerMock,
   },
 }));
 
@@ -59,6 +63,9 @@ describe('PushNotificationListener', () => {
     appAddListenerMock.mockClear();
     getDeliveredNotificationsMock.mockClear();
     getDeliveredNotificationsMock.mockResolvedValue({ notifications: [] });
+    checkPermissionsMock.mockClear();
+    checkPermissionsMock.mockResolvedValue({ receive: 'granted' });
+    registerMock.mockClear();
     registerDeviceTokenMock.mockClear();
     safeSetBadgeMock.mockClear();
     fetchCurrentPendingCountMock.mockClear();
@@ -104,17 +111,35 @@ describe('PushNotificationListener', () => {
     expect(navigateMock).not.toHaveBeenCalled();
   });
 
-  it('navigates to the cold-start route from a delivered notification present at launch', async () => {
+  it('does NOT navigate just because undismissed notifications sit in the tray', async () => {
+    // A normal (non-tap) launch with stale notifications still in the tray must
+    // not redirect — cold-start taps arrive via pushNotificationActionPerformed.
     getDeliveredNotificationsMock.mockResolvedValue({ notifications: [{ data: { route: '/child?tab=goals' } }] });
     render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
-    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/child?tab=goals'));
+    await waitFor(() => expect(checkPermissionsMock).toHaveBeenCalled());
+    expect(getDeliveredNotificationsMock).not.toHaveBeenCalled();
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 
-  it('registers an app resume listener that self-heals the badge from the server count', async () => {
+  it('re-registers the device token on mount when permission is already granted', async () => {
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    await waitFor(() => expect(registerMock).toHaveBeenCalledTimes(1));
+  });
+
+  it('does not re-register on mount when permission is not granted', async () => {
+    checkPermissionsMock.mockResolvedValue({ receive: 'prompt' });
+    render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    await waitFor(() => expect(checkPermissionsMock).toHaveBeenCalled());
+    expect(registerMock).not.toHaveBeenCalled();
+  });
+
+  it('registers an app resume listener that self-heals the badge and re-registers the token', async () => {
     fetchCurrentPendingCountMock.mockResolvedValue(4);
     render(<MemoryRouter><PushNotificationListener /></MemoryRouter>);
+    await waitFor(() => expect(registerMock).toHaveBeenCalledTimes(1)); // mount call
     await appCallbackFor('resume')();
     expect(fetchCurrentPendingCountMock).toHaveBeenCalledTimes(1);
     expect(safeSetBadgeMock).toHaveBeenCalledWith(4);
+    await waitFor(() => expect(registerMock).toHaveBeenCalledTimes(2)); // + resume call
   });
 });

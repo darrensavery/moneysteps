@@ -33,13 +33,27 @@ export function PushNotificationListener() {
       if (typeof route === 'string' && route.startsWith('/')) navigate(route);
     }).then(h => handles.push(h));
 
-    // Cold-start capture: if the app was launched by tapping a push (not
-    // just backgrounded), the tap event can fire before this listener
-    // attached. Check for a delivered/launch notification explicitly.
-    PushNotifications.getDeliveredNotifications().then(({ notifications }) => {
-      const launchRoute = notifications[0]?.data?.route;
-      if (typeof launchRoute === 'string' && launchRoute.startsWith('/')) navigate(launchRoute);
-    }).catch(() => {});
+    // Cold start is covered by `pushNotificationActionPerformed` above: on both
+    // iOS and Android, Capacitor replays the launch-tap event to the listener
+    // once it attaches, so a tap that started the app arrives there too. We
+    // deliberately do NOT inspect getDeliveredNotifications() — that returns
+    // the whole notification tray, not the one that launched the app, so a
+    // normal launch with old undismissed notifications sitting in the tray
+    // would incorrectly redirect the user.
+
+    // Re-register the device token on every launch and resume when permission
+    // is already granted. requestPushPermission() is gated behind a one-time
+    // localStorage prompt flag, so without this, register() would never run
+    // again after the first grant — leaving a stale/missing token after token
+    // rotation, a reinstall, or a second account signing in on this device.
+    // register() is idempotent (the server upserts on token), so calling it
+    // repeatedly is safe.
+    const reRegisterIfGranted = (): void => {
+      PushNotifications.checkPermissions()
+        .then(status => { if (status.receive === 'granted') return PushNotifications.register(); })
+        .catch(() => {});
+    };
+    reRegisterIfGranted();
 
     // Badge self-heal: on every foreground resume, re-fetch the real pending
     // count from the server and reconcile the badge. Covers the case where a
@@ -47,6 +61,7 @@ export function PushNotificationListener() {
     // drifted from reality (e.g. a completion was approved from the parent's
     // side while this device was asleep).
     CapacitorApp.addListener('resume', () => {
+      reRegisterIfGranted();
       fetchCurrentPendingCount().then(safeSetBadge).catch(() => {});
     }).then(h => handles.push(h));
 

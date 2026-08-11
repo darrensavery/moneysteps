@@ -1,13 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { sendApnsPush } from './apns.js';
 
-// A real PKCS8 EC (P-256) test key, generated solely for this test suite
-// (not a production secret): openssl ecparam -genkey -name prime256v1 -noout | openssl pkcs8 -topk8 -nocrypt
-const TEST_APNS_KEY_PEM = `-----BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgnzxbfqxO/I0pIf8O
-HSBF1h1IVTZ+dyr3BEm3BMlZxKahRANCAAT8mvFsTCYybn1k7ve+2JbDU0OhcxF4
-dFCzrvS/OkyVPK2wOkeTt2qsTjtA9cDUL0f/uKerI0xJbWHkuiwAu7K0
------END PRIVATE KEY-----`;
+// The ES256 signing key is generated fresh at test runtime rather than checked
+// in, so this file never contains a literal PEM private-key block for secret
+// scanners (gitleaks et al.) to flag.
+let TEST_APNS_KEY_PEM = '';
+
+function toPem(pkcs8: ArrayBuffer): string {
+  const bytes = new Uint8Array(pkcs8);
+  let raw = '';
+  for (const b of bytes) raw += String.fromCharCode(b);
+  const b64 = btoa(raw).replace(/(.{64})/g, '$1\n').trimEnd();
+  return `-----BEGIN PRIVATE KEY-----\n${b64}\n-----END PRIVATE KEY-----`;
+}
+
+beforeAll(async () => {
+  const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']) as CryptoKeyPair;
+  TEST_APNS_KEY_PEM = toPem(await crypto.subtle.exportKey('pkcs8', pair.privateKey) as ArrayBuffer);
+});
 
 function makeEnv() {
   return {
@@ -57,9 +67,39 @@ describe('sendApnsPush', () => {
   });
 
   it('returns shouldPruneToken=true on 410', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 410 }));
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ reason: 'Unregistered' }), { status: 410 }),
+    );
     const result = await sendApnsPush(makeEnv(), 'device-token', 'production', { title: 't', body: 'b', route: '/x', badgeCount: 1 });
     expect(result).toEqual({ ok: false, shouldPruneToken: true });
+  });
+
+  it('returns shouldPruneToken=true on 400 + BadDeviceToken', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ reason: 'BadDeviceToken' }), { status: 400 }),
+    );
+    const result = await sendApnsPush(makeEnv(), 'device-token', 'production', { title: 't', body: 'b', route: '/x', badgeCount: 1 });
+    expect(result).toEqual({ ok: false, shouldPruneToken: true });
+  });
+
+  it('does NOT prune on 400 + BadTopic (a config error, not a dead token) and logs the reason', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ reason: 'BadTopic' }), { status: 400 }),
+    );
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = await sendApnsPush(makeEnv(), 'device-token', 'production', { title: 't', body: 'b', route: '/x', badgeCount: 1 });
+
+    expect(result).toEqual({ ok: false, shouldPruneToken: false });
+    expect(errSpy).toHaveBeenCalledTimes(1);
+    expect(String(errSpy.mock.calls[0][0])).toContain('BadTopic');
+  });
+
+  it('does NOT prune on a 400 with an unparseable body', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('not json', { status: 400 }));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const result = await sendApnsPush(makeEnv(), 'device-token', 'production', { title: 't', body: 'b', route: '/x', badgeCount: 1 });
+    expect(result).toEqual({ ok: false, shouldPruneToken: false });
   });
 
   it('returns ok=true, shouldPruneToken=false on a 200 response', async () => {

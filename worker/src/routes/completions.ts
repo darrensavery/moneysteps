@@ -31,8 +31,7 @@ import { evaluateOnChoreApproval, evaluatePassive } from '../lib/labTriggers.js'
 import { nanoid } from '../lib/nanoid.js';
 import { getJarConfig } from '../lib/jar-balance.js'
 import { generateChildNudge, generateOnceChildNudge } from './child-nudges.js';
-import { sendPushNotification } from '../lib/push/send.js';
-import { getChildPendingCount } from '../lib/push/pendingCount.js';
+import { notifyChild } from '../lib/push/notify.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -247,14 +246,11 @@ export async function handleCompletionApprove(
   // Push notification — chore approved & paid. Non-critical, fire-and-forget.
   const currencySymbol = comp.currency === 'GBP' ? '£' : comp.currency === 'USD' ? '$' : 'zł';
   ctx.waitUntil(
-    getChildPendingCount(env.DB, comp.family_id, comp.child_id).then(pendingCount =>
-      sendPushNotification(env, comp.child_id, {
-        title: `${comp.title} approved!`,
-        body: `+${currencySymbol}${(comp.reward_amount / 100).toFixed(2)} added`,
-        route: '/child?tab=chores',
-        badgeCount: pendingCount,
-      }),
-    ),
+    notifyChild(env, comp.child_id, comp.family_id, {
+      title: `${comp.title} approved!`,
+      body: `+${currencySymbol}${(comp.reward_amount / 100).toFixed(2)} added`,
+      route: '/child?tab=chores',
+    }),
   );
 
   // ── Jar allocation hook ────────────────────────────────────────────────────
@@ -500,14 +496,11 @@ export async function handleCompletionReject(
   generateChildNudge(env.DB, comp.child_id, comp.family_id, 'task_rejected').catch(() => {})
 
   ctx.waitUntil(
-    getChildPendingCount(env.DB, comp.family_id, comp.child_id).then(pendingCount =>
-      sendPushNotification(env, comp.child_id, {
-        title: 'Needs a re-do',
-        body: parent_notes ? `Tap to see the note: "${parent_notes}"` : 'Tap to check what to fix',
-        route: '/child?tab=chores',
-        badgeCount: pendingCount,
-      }),
-    ),
+    notifyChild(env, comp.child_id, comp.family_id, {
+      title: 'Needs a re-do',
+      body: parent_notes ? `Tap to see the note: "${parent_notes}"` : 'Tap to check what to fix',
+      route: '/child?tab=chores',
+    }),
   );
 
   return json({ ok: true, parent_notes });

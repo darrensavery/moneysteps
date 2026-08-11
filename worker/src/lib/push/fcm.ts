@@ -107,7 +107,12 @@ export async function sendFcmPush(
 
   if (res.ok) return { ok: true, shouldPruneToken: false };
 
-  const errBody = await res.json<{ error?: { status?: string } }>().catch(() => ({}));
-  const shouldPrune = errBody.error?.status === 'UNREGISTERED' || errBody.error?.status === 'NOT_FOUND';
+  type FcmErrorBody = { error?: { status?: string; message?: string } };
+  const errBody = await res.json<FcmErrorBody>().catch(() => ({} as FcmErrorBody));
+  const status = errBody.error?.status;
+  const shouldPrune = status === 'UNREGISTERED' || status === 'NOT_FOUND';
+  if (!shouldPrune) {
+    console.error(`[push] FCM send failed: HTTP ${res.status} status=${status ?? 'unknown'} message=${errBody.error?.message ?? ''}`);
+  }
   return { ok: false, shouldPruneToken: shouldPrune };
 }

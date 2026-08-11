@@ -1169,6 +1169,12 @@ export async function handleDeleteFamily(request: Request & { auth?: JwtPayload 
     // Delete registration progress
     env.DB.prepare(`DELETE FROM registration_progress WHERE family_id = ?`)
       .bind(familyId),
+    // Delete push device tokens for every user in the family. `device_tokens.user_id`
+    // has no ON DELETE CASCADE, and users here are anonymised rather than deleted,
+    // so nothing else would remove them — leaving live push endpoints pointing at
+    // an erased account (data-erasure gap).
+    env.DB.prepare(`DELETE FROM device_tokens WHERE user_id IN (SELECT id FROM users WHERE family_id = ?)`)
+      .bind(familyId),
   ]);
 
   return json({ ok: true, action: 'uprooted' });
