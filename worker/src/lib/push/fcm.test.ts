@@ -82,4 +82,53 @@ describe('sendFcmPush', () => {
     expect(body.message.notification).toEqual({ title: 'Chore approved!', body: '+£5.00 added' });
     expect(body.message.data).toEqual({ pendingCount: '2', route: '/chores/123' });
   });
+
+  it('exchanges a fresh OAuth token and caches it when nothing is cached', async () => {
+    const env = makeEnv(); // no kvGet override — CACHE.get resolves to null
+
+    const fetchSpy = vi.fn(async (url: unknown, init?: RequestInit) => {
+      const u = String(url);
+      if (u.includes('oauth2.googleapis.com')) {
+        return new Response(JSON.stringify({ access_token: 'fresh-token', expires_in: 3599 }), { status: 200 });
+      }
+      if (u.includes('fcm.googleapis.com')) {
+        return new Response('{}', { status: 200 });
+      }
+      throw new Error(`Unexpected fetch to ${u}`);
+    });
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const result = await sendFcmPush(env, 'device-token', { title: 't', body: 'b', route: '/x', pendingCount: 1 });
+    expect(result).toEqual({ ok: true, shouldPruneToken: false });
+
+    // Exactly two fetch calls: the OAuth exchange, then the FCM send.
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+
+    const [oauthUrl, oauthInit] = fetchSpy.mock.calls[0];
+    expect(String(oauthUrl)).toContain('oauth2.googleapis.com/token');
+    const oauthParams = oauthInit?.body as URLSearchParams;
+    expect(oauthParams.get('grant_type')).toBe('urn:ietf:params:oauth:grant-type:jwt-bearer');
+    const assertion = oauthParams.get('assertion');
+    expect(assertion).toBeTruthy();
+
+    // The assertion is a JWT: three dot-separated base64url segments.
+    const segments = String(assertion).split('.');
+    expect(segments).toHaveLength(3);
+    for (const segment of segments) {
+      expect(segment).toMatch(/^[A-Za-z0-9_-]+$/);
+    }
+
+    // Decode the claims segment and confirm the exact OAuth scope requested.
+    const claimsJson = atob(segments[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(segments[1].length / 4) * 4, '='));
+    const claims = JSON.parse(claimsJson);
+    expect(claims.scope).toBe('https://www.googleapis.com/auth/firebase.messaging');
+
+    // The freshly exchanged token is cached in KV.
+    expect(env.CACHE.put).toHaveBeenCalledTimes(1);
+    const [putKey, putValue] = (env.CACHE.put as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(putKey).toBe('fcm_oauth_token');
+    const cached = JSON.parse(putValue as string);
+    expect(cached.access_token).toBe('fresh-token');
+    expect(cached).toHaveProperty('expires_at');
+  });
 });
