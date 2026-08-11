@@ -23,8 +23,8 @@ export async function upsertDeviceToken(
     .run();
 }
 
-export async function deleteDeviceToken(db: D1Database, token: string): Promise<void> {
-  await db.prepare('DELETE FROM device_tokens WHERE token = ?').bind(token).run();
+export async function deleteDeviceToken(db: D1Database, token: string, userId: string): Promise<void> {
+  await db.prepare('DELETE FROM device_tokens WHERE token = ? AND user_id = ?').bind(token, userId).run();
 }
 
 export async function getDeviceTokensForUser(db: D1Database, userId: string): Promise<DeviceToken[]> {

@@ -36,11 +36,12 @@ describe('handleRegisterDeviceToken', () => {
 });
 
 describe('handleUnregisterDeviceToken', () => {
-  it('deletes the token', async () => {
-    const { env, prepare } = makeEnv();
+  it('deletes the token scoped to the authenticated user', async () => {
+    const { env, prepare, bind } = makeEnv();
     const req = authedRequest({ token: 'tok_1' });
     const res = await handleUnregisterDeviceToken(req, env);
     expect(res.status).toBe(200);
-    expect(prepare.mock.calls[0][0]).toMatch(/DELETE FROM device_tokens/);
+    expect(prepare.mock.calls[0][0]).toMatch(/DELETE FROM device_tokens WHERE token = \? AND user_id = \?/);
+    expect(bind).toHaveBeenCalledWith('tok_1', 'user_1');
   });
 });

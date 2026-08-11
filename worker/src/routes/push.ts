@@ -30,9 +30,10 @@ export async function handleRegisterDeviceToken(request: Request, env: Env): Pro
 }
 
 export async function handleUnregisterDeviceToken(request: Request, env: Env): Promise<Response> {
+  const auth = (request as AuthedRequest).auth;
   const body = await request.json<{ token?: string }>().catch(() => null);
   if (!body?.token) return error('token required', 400);
 
-  await deleteDeviceToken(env.DB, body.token);
+  await deleteDeviceToken(env.DB, body.token, auth.sub);
   return json({ ok: true });
 }

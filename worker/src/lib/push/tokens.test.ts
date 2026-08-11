@@ -20,11 +20,20 @@ describe('upsertDeviceToken', () => {
 });
 
 describe('deleteDeviceToken', () => {
-  it('deletes by token', async () => {
+  it('deletes by token scoped to the owning user', async () => {
     const { db, prepare, bind, run } = makeDb();
-    await deleteDeviceToken(db, 'tok_1');
-    expect(prepare.mock.calls[0][0]).toMatch(/DELETE FROM device_tokens WHERE token = \?/);
-    expect(bind).toHaveBeenCalledWith('tok_1');
+    await deleteDeviceToken(db, 'tok_1', 'user_1');
+    expect(prepare.mock.calls[0][0]).toMatch(/DELETE FROM device_tokens WHERE token = \? AND user_id = \?/);
+    expect(bind).toHaveBeenCalledWith('tok_1', 'user_1');
+    expect(run).toHaveBeenCalled();
+  });
+
+  it('does not delete when the token belongs to a different user (query scoped, no matching row)', async () => {
+    const { db, bind, run } = makeDb();
+    await deleteDeviceToken(db, 'tok_1', 'user_2');
+    // The bind args prove the delete is scoped to the caller's own user id,
+    // so a token owned by another user can never match this WHERE clause.
+    expect(bind).toHaveBeenCalledWith('tok_1', 'user_2');
     expect(run).toHaveBeenCalled();
   });
 });
