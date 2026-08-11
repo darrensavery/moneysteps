@@ -30,6 +30,15 @@ interface Props {
   onCountChange: (n: number) => void
 }
 
+// Co-parent race guard — the worker returns a 409 with one of these messages
+// when a completion has already been actioned by the time this request lands
+// (both parents can be shown the same "ready to approve" push notification).
+// See worker/src/routes/completions.ts handleCompletionApprove/Revise/Reject.
+function isAlreadyResolvedError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false
+  return /no longer awaiting review|^Cannot (approve|reject|request revision) — completion is/.test(err.message)
+}
+
 export function PendingTab({ familyId, child, onCountChange }: Props) {
   const { challenge, GatekeeperModal } = useGatekeeper()
   const [completions, setCompletions] = useState<Completion[]>([])
@@ -95,6 +104,17 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
           setShowReviewPrompt(true)
         }, 500)
       }
+    } catch (err) {
+      // Co-parent race: both parents can be looking at the same awaiting_review
+      // item (e.g. both tapped the "ready to approve" push notification). Whoever
+      // taps second gets a 409 from the server — refresh the list instead of
+      // leaving a dead card / a raw error on screen.
+      if (isAlreadyResolvedError(err)) {
+        await load()
+        showToast('Already actioned by the other parent')
+      } else {
+        showToast('Something went wrong — please try again.')
+      }
     } finally {
       setBusy(null)
     }
@@ -108,6 +128,15 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
       setReviseId(null)
       setReviseNote('')
       await load()
+    } catch (err) {
+      if (isAlreadyResolvedError(err)) {
+        setReviseId(null)
+        setReviseNote('')
+        await load()
+        showToast('Already actioned by the other parent')
+      } else {
+        showToast('Something went wrong — please try again.')
+      }
     } finally {
       setBusy(null)
     }
@@ -158,19 +187,23 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
 
   if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
 
-  if (completions.length === 0) {
-    return (
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-10 text-center">
-        <div className="text-4xl mb-3">✓</div>
-        <p className="text-[16px] font-bold text-[var(--color-text)]">All clear</p>
-        <p className="text-[13px] text-[var(--color-text-muted)] mt-1">Nothing waiting for your review.</p>
-      </div>
-    )
-  }
+  // Note: even when the list is empty (e.g. the co-parent just resolved the
+  // only pending item, or every item was approved), we still render the toast
+  // / pay-now button / review-prompt below — a bare early-return here used to
+  // swallow the "Already actioned by the other parent" toast whenever the
+  // race left the list empty.
+  const isEmpty = completions.length === 0
 
   return (
     <div className="space-y-3">
       <GatekeeperModal />
+      {isEmpty && (
+        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-10 text-center">
+          <div className="text-4xl mb-3">✓</div>
+          <p className="text-[16px] font-bold text-[var(--color-text)]">All clear</p>
+          <p className="text-[13px] text-[var(--color-text-muted)] mt-1">Nothing waiting for your review.</p>
+        </div>
+      )}
       {/* Approve-all bulk action */}
       {completions.length > 1 && (
         <button
