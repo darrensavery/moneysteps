@@ -10,6 +10,7 @@ import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles } from '../ui
 import { Button } from '../ui/button'
 import { useLocale } from '../../lib/locale'
 import { ErrorBox } from '../ui/ErrorBox'
+import { requestPushPermission, hasPromptedForPushPermission } from '../../lib/push.js'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -406,7 +407,11 @@ export function ChoresTab({ familyId, child, children }: Props) {
           familyId={familyId}
           children={children}
           currency={CURRENCY}
-          onCreated={() => { setShowSheet(false); load() }}
+          onCreated={() => {
+            setShowSheet(false)
+            load()
+            if (!hasPromptedForPushPermission()) requestPushPermission().catch(() => {})
+          }}
           onClose={() => setShowSheet(false)}
         />
       )}

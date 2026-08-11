@@ -22,6 +22,7 @@ import { getJarConfig } from '../lib/jar-balance.js';
 import { getStreakState, buildStreakEvent, saveStreakEvent, allScheduledChoresDone } from '../lib/streaks.js';
 import { getBadgeStats, badgesToAward, insertBadges } from '../lib/badges.js';
 import { evaluateOnChoreApproval, evaluatePassive } from '../lib/labTriggers.js';
+import { notifyChild, notifyParents } from '../lib/push/notify.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -56,7 +57,7 @@ const choreCreateSchema = z.object({
   auto_approve:   z.unknown().optional(),
 });
 
-export async function handleChoreCreate(request: Request, env: Env): Promise<Response> {
+export async function handleChoreCreate(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   const parsed = await parseValidatedBody(request, choreCreateSchema);
   if (parsed instanceof Response) return parsed;
@@ -120,6 +121,19 @@ export async function handleChoreCreate(request: Request, env: Env): Promise<Res
   ).run();
 
   const chore = await env.DB.prepare('SELECT * FROM chores WHERE id = ?').bind(id).first();
+
+  // Fire-and-forget push to the assigned child — skip the 'anyone'/'everyone'
+  // sentinel values, which aren't a real user id to notify.
+  if (!isSentinel) {
+    ctx.waitUntil(
+      notifyChild(env, assigned_to, family_id, {
+        title: 'New chore',
+        body: title.trim(),
+        route: '/child?tab=chores',
+      }),
+    );
+  }
+
   return json(chore, 201);
 }
 
@@ -412,7 +426,7 @@ const choreSubmitSchema = z.object({
   note: z.string().optional(),
 });
 
-export async function handleChoreSubmit(request: Request, env: Env, id: string): Promise<Response> {
+export async function handleChoreSubmit(request: Request, env: Env, ctx: ExecutionContext, id: string): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   if (auth.role !== 'child') return error('Only children can submit chores', 403);
 
@@ -614,6 +628,20 @@ export async function handleChoreSubmit(request: Request, env: Env, id: string):
   //   2. available record → lazy-gen transition (child tapped Done)
   //   3. neither → fresh INSERT
 
+  // Fire-and-forget: notify every parent in the family that a completion is
+  // ready to approve. Shared by both the resubmission and fresh-insert paths
+  // below, since both land the completion in 'awaiting_review'.
+  const notifyParentsAwaitingReview = (completionId: string): void => {
+    ctx.waitUntil(
+      notifyParents(env, chore.family_id, {
+        title: 'Ready to approve',
+        body: (childName: string) => `${childName} finished ${chore.title}`,
+        actorChildId: auth.sub,
+        route: '/parent?tab=activity',
+      }),
+    );
+  };
+
   const existingRecord = await env.DB
     .prepare(`SELECT id, status, attempt_count FROM completions
               WHERE chore_id = ? AND child_id = ? AND status IN ('needs_revision','available')
@@ -636,6 +664,7 @@ export async function handleChoreSubmit(request: Request, env: Env, id: string):
     const updated = await env.DB
       .prepare('SELECT * FROM completions WHERE id = ?')
       .bind(existingRecord.id).first();
+    notifyParentsAwaitingReview(existingRecord.id);
     return json(updated, 200);
   }
 
@@ -646,6 +675,8 @@ export async function handleChoreSubmit(request: Request, env: Env, id: string):
     INSERT INTO completions (id, family_id, chore_id, child_id, note, status, submitted_at)
     VALUES (?,?,?,?,?,'awaiting_review',?)
   `).bind(completionId, chore.family_id, id, auth.sub, note, now).run();
+
+  notifyParentsAwaitingReview(completionId);
 
   return json({
     id: completionId,

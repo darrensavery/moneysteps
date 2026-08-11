@@ -114,6 +114,73 @@ Wave 1 shipped deep-link support + `assetlinks.json` (Google's Digital Asset Lin
 
 Before production release: replace the debug SHA-256 in `app/public/.well-known/assetlinks.json` with the **release cert fingerprint** from Play Console → App integrity → App signing. Keep the upload cert fingerprint.
 
+## Outstanding — Push notifications and badge native configuration
+
+Push notifications (Capacitor v8 plugin) and badge support (CapAwesome plugin) require manual setup in two cloud portals and Xcode before deployment.
+
+**Apple Developer Portal (for iOS APNs):**
+
+1. Go to [developer.apple.com](https://developer.apple.com)
+2. Navigate to Certificates, Identifiers & Profiles → Identifiers
+3. Select the App ID for `com.morechard.app`
+4. Enable the Push Notifications capability (edit identifier if not yet enabled)
+5. Generate an APNs authentication key (Auth Key, not certificate):
+   - Click "Create a Key" under Push Notifications
+   - Name it (e.g., "Morechard Push APNs")
+   - Download the `.p8` file
+   - Record the Key ID (visible in the portal immediately after generation)
+   - Record your Team ID (visible in Account Settings)
+
+**Firebase Console (for Android FCM):**
+
+1. Go to [console.firebase.google.com](https://console.firebase.google.com)
+2. Create a new project or select an existing one for Morechard
+3. Add an Android app with package name `com.morechard.app`
+4. Download the generated `google-services.json` file
+5. Copy it into `android/app/google-services.json` (create the file if it doesn't exist)
+
+**Xcode (iOS build-time configuration):**
+
+1. Open `ios/App/App.xcworkspace` in Xcode
+2. Select the App target
+3. Go to Signing & Capabilities
+4. Click + Capability and add "Push Notifications"
+5. Verify that a Push Notifications capability row now appears
+
+**Worker secrets (Cloudflare):**
+
+Set these secrets for both dev and production environments. The Worker uses them to send notifications via APNs (iOS) and FCM (Android). Retrieve values from the portals above and the `google-services.json` / APNs key download:
+
+```bash
+# Dev database:
+npx wrangler secret put FCM_PROJECT_ID
+npx wrangler secret put FCM_CLIENT_EMAIL
+npx wrangler secret put FCM_PRIVATE_KEY
+npx wrangler secret put APNS_KEY_ID
+npx wrangler secret put APNS_TEAM_ID
+npx wrangler secret put APNS_PRIVATE_KEY
+npx wrangler secret put APNS_BUNDLE_ID
+
+# Production database:
+npx wrangler secret put FCM_PROJECT_ID --env production
+npx wrangler secret put FCM_CLIENT_EMAIL --env production
+npx wrangler secret put FCM_PRIVATE_KEY --env production
+npx wrangler secret put APNS_KEY_ID --env production
+npx wrangler secret put APNS_TEAM_ID --env production
+npx wrangler secret put APNS_PRIVATE_KEY --env production
+npx wrangler secret put APNS_BUNDLE_ID --env production
+```
+
+**Extracting secret values from firebase:**
+
+- `FCM_PROJECT_ID`: Visible in Firebase project settings (Settings gear → Project settings, listed as "Project ID")
+- `FCM_CLIENT_EMAIL`: In the service account JSON (Firebase Settings → Service Accounts → Generate new private key)
+- `FCM_PRIVATE_KEY`: Same service account JSON file (base64-encoded private key, copy as-is)
+- `APNS_KEY_ID`: The Key ID from the APNs authentication key you downloaded from Apple Developer
+- `APNS_TEAM_ID`: Your Apple Developer Team ID
+- `APNS_PRIVATE_KEY`: The full content of the `.p8` file downloaded from Apple Developer (copy as-is)
+- `APNS_BUNDLE_ID`: Should match `com.morechard.app`
+
 ## Database & Deployment Rules (CRITICAL — read before touching any wrangler command)
 
 ### The two databases
@@ -288,7 +355,7 @@ cd worker && npx wrangler d1 migrations apply morechard --remote --env productio
 - [x] Add Sentry Error Tracking (24/7 solo-dev monitoring)
 - [ ] Implement PostHog Session Replays (UX friction hunting)
 - [x] Offline caching (`vite-plugin-pwa`/Workbox) — verified 2026-08-06: precaches full app shell (65 entries incl. all JS/CSS chunks, fonts, icons, manifest), SPA navigation fallback to `/index.html` with `/api` and `/auth` denylisted, cache-first for immutable hashed assets/fonts/DiceBear avatars, stale-while-revalidate for Google Fonts CSS. Confirmed via production build (`npm run build`) — `sw.js` output matches `vite.config.ts` config exactly.
-- [ ] Push notifications (remaining half of "Final PWA Optimization") — not built: no service worker `push` handler, no subscription flow, no server-side send (`web-push` or similar). Needed for both web and native (Capacitor) paths.
+- [x] Push notifications (remaining half of "Final PWA Optimization") — native only (iOS via APNs, Android via FCM); **web push is explicitly out of scope** per the design spec, so there is deliberately no service-worker `push` handler. Server-side send lives in `worker/src/lib/push/` (`apns.ts` / `fcm.ts` / `send.ts` / `notify.ts`) with token storage in `device_tokens` (migration `0093_push_notifications.sql`); client registration + deep-link/badge handling in `app/src/lib/push.ts` and `app/src/components/PushNotificationListener.tsx`. Six triggers wired: new chore, completion approved, needs-redo, ready-to-approve, goal boost, give request. Spec: `docs/superpowers/specs/2026-08-11-push-notifications-design.md`; plan: `docs/superpowers/plans/2026-08-11-push-notifications.md`. **Ships verified by unit tests + code review only** — no real-device verification was possible in the build environment (no iOS/Android device or emulator, and `wrangler dev --remote` 503s here), and the APNs/FCM credentials are not yet set as Worker secrets. Needs a real end-to-end run on actual hardware plus the native configuration steps in "Outstanding — Push notifications and badge native configuration" above before it can be called done.
 - [x] High Contrast mode (WCAG 2.1 AA, opt-in, parent + child accounts) — merged to `main` 2026-08-07. `data-contrast="high"` attribute drives a CSS override layer independent of `data-theme`; `user_settings.high_contrast` persists per-account (migration `0092_high_contrast_setting.sql`, confirmed applied to `morechard-dev`); OS-level `prefers-contrast: more` fallback when no explicit preference is stored; toggle lives in Appearance Settings for both parent and child. Spec: `docs/superpowers/specs/2026-08-06-high-contrast-mode-design.md`; plan: `docs/superpowers/plans/2026-08-06-high-contrast-mode.md`. Axe (`@axe-core/playwright`) e2e sweep (`app/e2e/high-contrast-a11y.spec.ts`) covers 4 surfaces × 2 contrast states, but only 2/8 cases (registration) have run against a live worker — the other 6 (parent/child dashboard, settings) are blocked by the same sandboxed `wrangler dev --remote` 503 limitation as the JWT/WebAuthn work above; needs a real run from a machine that can reach Cloudflare. Two non-blocking findings from the partial run, not yet filed as tickets: (1) `meta-viewport` WCAG 1.4.4 violation — `user-scalable=no` disables pinch-zoom, pre-existing and unrelated to contrast; (2) a possibly-flaky `color-contrast` finding on the disabled registration "Continue" button, seen once, not reproduced.
 
 ### **Infrastructure**

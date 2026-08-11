@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { updateDeviceIdentity } from '../lib/deviceIdentity'
 import { useFocusTrap } from '../hooks/useFocusTrap'
@@ -31,6 +31,7 @@ import { MicroToast } from '../components/celebration/MicroToast'
 import { CONFIGS } from '../components/celebration/registry'
 import { ErrorBox } from '../components/ui/ErrorBox'
 import { DevTriggerPanel } from '../components/dev/DevTriggerPanel'
+import { requestPushPermission, hasPromptedForPushPermission } from '../lib/push.js'
 
 // ─── localStorage grove planner ──────────────────────────────────────────────
 // Key: `grove_plans_${userId}`
@@ -111,6 +112,7 @@ export function ChildDashboard() {
   const navigate   = useNavigate()
   const familyId   = getFamilyId()
   const userId     = getUserId()
+  const [searchParams] = useSearchParams()
 
   const [activeDay,  setActiveDay]  = useState<number>(() => {
     const d = new Date().getDay()           // 0=Sun … 6=Sat
@@ -172,7 +174,20 @@ export function ChildDashboard() {
   }>({ earn: null, money: null, goals: null })
 
   // Per-chore submission state
-  const [childTab,      setChildTab]      = useState<'home' | 'chores' | 'money' | 'goals' | 'lab'>('home')
+  const [childTab,      setChildTab]      = useState<'home' | 'chores' | 'money' | 'goals' | 'lab'>(() => {
+    const valid: Array<'home' | 'chores' | 'money' | 'goals' | 'lab'> = ['home', 'chores', 'money', 'goals', 'lab']
+    const fromQuery = searchParams.get('tab')
+    return valid.includes(fromQuery as typeof valid[number]) ? (fromQuery as typeof valid[number]) : 'home'
+  })
+  // Warm start: the initializer above only runs on first mount, so navigating
+  // to /child?tab=chores while this screen is ALREADY mounted (a push-
+  // notification deep-link tap with the app open/backgrounded) would otherwise
+  // do nothing. Re-apply a valid ?tab= whenever the query param changes.
+  const queryTab = searchParams.get('tab')
+  useEffect(() => {
+    const valid: Array<'home' | 'chores' | 'money' | 'goals' | 'lab'> = ['home', 'chores', 'money', 'goals', 'lab']
+    if (valid.includes(queryTab as typeof valid[number])) setChildTab(queryTab as typeof valid[number])
+  }, [queryTab])
   const [labUnread,     setLabUnread]     = useState(0)
   const [submitting,    setSubmitting]    = useState<string | null>(null)
   const [submitted,     setSubmitted]     = useState<Set<string>>(new Set())
@@ -260,6 +275,14 @@ export function ChildDashboard() {
   }, [familyId, userId, navigate])
 
   useEffect(() => { load() }, [load])
+
+  // Contextual push-permission prompt: first dashboard load with ≥1 assigned
+  // chore. `chores` is populated by `load()` above (`setChores(c)`).
+  useEffect(() => {
+    if (chores.length > 0 && !hasPromptedForPushPermission()) {
+      requestPushPermission().catch(() => {})
+    }
+  }, [chores.length])
 
   // Refresh chores + balance when app regains visibility or every 30s
   // so newly assigned chores appear without requiring a re-login

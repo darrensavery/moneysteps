@@ -165,6 +165,7 @@ Manual checklist for that follow-up pass:
 3. Badge appears/increments on iOS home screen and on at least one Android launcher (Pixel + Samsung, given OEM fragmentation) — and clears after the underlying item resolves
 4. Logout on a shared device → token deleted → other account doesn't receive stray pushes
 5. Two-parent race: both notified, one approves, the other's tap shows "already approved," not an error
+6. Task 15 contextual prompts + resume self-heal: (a) parent sees the permission prompt immediately after creating their first chore, not before; (b) child sees the prompt on first dashboard load once ≥1 chore is assigned, not on an empty dashboard; (c) neither prompt re-appears on subsequent app opens after being shown once; (d) backgrounding the app, having a completion/chore change happen server-side (e.g. parent approves from another device), then foregrounding — badge count self-heals to the correct number within the `resume` handler without requiring a push to have been delivered
 
 **Rollout sequencing:**
 1. Ship Worker infra + `device_tokens` table + registration endpoint first, permission-prompt UI behind a flag — silent, verifiable against `morechard-dev`

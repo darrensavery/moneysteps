@@ -2,6 +2,7 @@ import { Env } from '../types.js';
 import { json, error } from '../lib/response.js';
 import { JwtPayload } from '../lib/jwt.js';
 import { getJarBalances } from '../lib/jar-balance.js';
+import { notifyParents } from '../lib/push/notify.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -10,7 +11,11 @@ type AuthedRequest = Request & { auth: JwtPayload };
 // Body: { family_id, child_id, cause, amount }
 // Child only. Reserves Give jar balance.
 // ----------------------------------------------------------------
-export async function handlePostGiveRequest(request: Request, env: Env): Promise<Response> {
+export async function handlePostGiveRequest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   if (auth.role !== 'child') return error('Only children can submit give requests', 403);
 
@@ -60,6 +65,19 @@ export async function handlePostGiveRequest(request: Request, env: Env): Promise
   await env.DB.prepare(
     `UPDATE give_requests SET jar_movement_id=? WHERE id=?`
   ).bind(movId, giveReqId).run();
+
+  // Push notification — notify every parent that a give request is awaiting
+  // review. Non-critical, fire-and-forget.
+  const currencySymbol = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : 'zł';
+  const formattedAmount = `${currencySymbol}${(amount / 100).toFixed(2)}`;
+  ctx.waitUntil(
+    notifyParents(env, family_id, {
+      title: 'Give request received',
+      body: (childName: string) => `${childName} wants to give ${formattedAmount} to ${cause.trim()}`,
+      actorChildId: child_id,
+      route: '/parent?tab=activity',
+    }),
+  );
 
   return json({ ok: true, id: giveReqId }, 201);
 }

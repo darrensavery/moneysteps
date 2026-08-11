@@ -1,0 +1,98 @@
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Badge } from '@capawesome/capacitor-badge';
+import { apiUrl, authHeaders } from './api.js';
+
+const PROMPT_FLAG_KEY = 'mc_push_permission_prompted';
+/** Last device token successfully registered with the server on this device, so
+ *  logout can DELETE the row for it (design spec: "on explicit logout: also
+ *  DELETE the row for that token"). */
+const LAST_TOKEN_KEY = 'mc_push_device_token';
+
+export function hasPromptedForPushPermission(): boolean {
+  return localStorage.getItem(PROMPT_FLAG_KEY) === '1';
+}
+
+export function markPromptedForPushPermission(): void {
+  localStorage.setItem(PROMPT_FLAG_KEY, '1');
+}
+
+export async function safeSetBadge(count: number): Promise<void> {
+  try {
+    const { isSupported } = await Badge.isSupported();
+    if (isSupported) await Badge.set({ count });
+  } catch (err) {
+    console.warn('[push] badge not supported on this device:', err);
+  }
+}
+
+export async function registerDeviceToken(token: string, platform: 'ios' | 'android'): Promise<void> {
+  // TODO: Capacitor has no JS-accessible signal for which provisioning profile
+  // (Development vs Distribution) signed the running native binary — this reflects
+  // the Vite web build mode instead, which is only a proxy and can be wrong for a
+  // Capacitor-wrapped native build (e.g. a `vite build` in PROD mode bundled into a
+  // TestFlight archive is genuinely 'production', but a `vite build` in PROD mode
+  // installed via a local Xcode debug run is not). Verify during the real-device
+  // verification pass (design doc Section 5) that TestFlight/App Store builds
+  // actually register as 'production' — not just that local dev builds don't.
+  const environment = import.meta.env.PROD ? 'production' : 'sandbox';
+  const res = await fetch(apiUrl('/api/push/register'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ token, platform, environment }),
+  });
+  if (res.ok) {
+    try { localStorage.setItem(LAST_TOKEN_KEY, token); } catch { /* ignore */ }
+  }
+}
+
+/** Called from logout() before the session is torn down. Removes this device's
+ *  token row server-side so a subsequent user of the same device never receives
+ *  the previous account's notifications. No-ops (and never throws) when no token
+ *  was ever registered — web-only usage, or permission never granted. */
+export async function unregisterDeviceTokenOnLogout(): Promise<void> {
+  let token: string | null = null;
+  try { token = localStorage.getItem(LAST_TOKEN_KEY); } catch { /* ignore */ }
+  if (!token) return;
+
+  try {
+    await fetch(apiUrl('/api/push/unregister'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+      body: JSON.stringify({ token }),
+    });
+  } catch { /* best-effort — never block logout */ }
+
+  try { localStorage.removeItem(LAST_TOKEN_KEY); } catch { /* ignore */ }
+}
+
+/** Re-fetches the current user's pending-action count from the server —
+ *  used by the resume-time badge self-heal so the badge stays correct even
+ *  if a push notification was missed/coalesced by the OS while backgrounded.
+ *  Role-aware server-side: parents get awaiting-review + give-request counts,
+ *  children get new-chore + needs-redo counts (`getParentPendingCount` /
+ *  `getChildPendingCount`, `worker/src/lib/push/pendingCount.ts`). */
+export async function fetchCurrentPendingCount(): Promise<number> {
+  const res = await fetch(apiUrl('/api/push/pending-count'), { headers: await authHeaders() });
+  if (!res.ok) throw new Error(`pending-count request failed: ${res.status}`);
+  const data = (await res.json()) as { pending_count: number };
+  return data.pending_count;
+}
+
+export async function requestPushPermission(): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) return false;
+
+  const permStatus = await PushNotifications.checkPermissions();
+  let granted = permStatus.receive === 'granted';
+
+  if (!granted && permStatus.receive !== 'denied') {
+    const requested = await PushNotifications.requestPermissions();
+    granted = requested.receive === 'granted';
+  }
+
+  markPromptedForPushPermission();
+  if (!granted) return false;
+
+  await PushNotifications.register();
+  return true;
+}
