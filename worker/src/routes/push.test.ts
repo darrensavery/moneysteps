@@ -47,12 +47,27 @@ describe('handleUnregisterDeviceToken', () => {
 });
 
 describe('handleGetPendingCount', () => {
-  function makeCountEnv(counts: number[]) {
-    let call = 0;
-    const first = vi.fn().mockImplementation(() => Promise.resolve({ count: counts[call++] ?? 0 }));
-    const bind = vi.fn().mockReturnValue({ first });
-    const prepare = vi.fn().mockReturnValue({ bind });
-    return { env: { DB: { prepare } } as any };
+  // Dispatches the returned count — and records the bind() args — by
+  // inspecting the SQL text passed to prepare(), rather than by call order.
+  // This means a broken auth.role branch (e.g. always calling
+  // getParentPendingCount) shows up as either the wrong SQL never being
+  // prepared, or the wrong bind() args being used — not just a wrong total,
+  // which a same-order-different-value mock would silently launder into a
+  // passing test if the two role paths ever summed to the same number.
+  function makeCountEnv() {
+    const bindCalls: Array<{ sql: string; args: unknown[] }> = [];
+    const prepare = vi.fn().mockImplementation((sql: string) => ({
+      bind: vi.fn().mockImplementation((...args: unknown[]) => {
+        bindCalls.push({ sql, args });
+        let count = 0;
+        if (/FROM completions WHERE family_id = \? AND status = 'awaiting_review'/.test(sql)) count = 3;
+        else if (/FROM give_requests/.test(sql)) count = 2;
+        else if (/FROM chores c/.test(sql)) count = 4;
+        else if (/FROM completions WHERE family_id = \? AND child_id = \?/.test(sql)) count = 1;
+        return { first: vi.fn().mockResolvedValue({ count }) };
+      }),
+    }));
+    return { env: { DB: { prepare } } as any, bindCalls };
   }
 
   function roleRequest(role: 'parent' | 'child') {
@@ -61,17 +76,31 @@ describe('handleGetPendingCount', () => {
     return req;
   }
 
-  it('returns getParentPendingCount for a parent', async () => {
-    const { env } = makeCountEnv([3, 2]); // awaiting_review + give_requests
+  it('returns getParentPendingCount for a parent, scoped to family_id only', async () => {
+    const { env, bindCalls } = makeCountEnv();
     const res = await handleGetPendingCount(roleRequest('parent'), env);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ pending_count: 5 });
+    expect(await res.json()).toEqual({ pending_count: 5 }); // awaiting_review(3) + give_requests(2)
+
+    // Both parent-side queries ran, each bound to family_id alone — never
+    // the child-scoped chores/completions queries, and never a child_id arg.
+    expect(bindCalls.some(c => /status = 'awaiting_review'/.test(c.sql) && c.args.length === 1 && c.args[0] === 'fam_1')).toBe(true);
+    expect(bindCalls.some(c => /FROM give_requests/.test(c.sql) && c.args.length === 1 && c.args[0] === 'fam_1')).toBe(true);
+    expect(bindCalls.some(c => /FROM chores c/.test(c.sql))).toBe(false);
+    expect(bindCalls.some(c => c.args.includes('child_1'))).toBe(false);
   });
 
-  it('returns getChildPendingCount for a child', async () => {
-    const { env } = makeCountEnv([4, 1]); // new chores + needs-redo
+  it('returns getChildPendingCount for a child, scoped to family_id + child_id', async () => {
+    const { env, bindCalls } = makeCountEnv();
     const res = await handleGetPendingCount(roleRequest('child'), env);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ pending_count: 5 });
+    expect(await res.json()).toEqual({ pending_count: 5 }); // new chores(4) + needs-redo(1)
+
+    // Both child-side queries ran, each bound to (family_id, child_id) —
+    // never the family-wide parent completions/give_requests queries.
+    expect(bindCalls.some(c => /FROM chores c/.test(c.sql) && c.args.join(',') === 'fam_1,child_1')).toBe(true);
+    expect(bindCalls.some(c => /child_id = \?/.test(c.sql) && c.args.join(',') === 'fam_1,child_1')).toBe(true);
+    expect(bindCalls.some(c => /FROM give_requests/.test(c.sql))).toBe(false);
+    expect(bindCalls.some(c => /status = 'awaiting_review'/.test(c.sql))).toBe(false);
   });
 });
