@@ -45,6 +45,14 @@ export interface Env {
   STRIPE_SUPPORT_AGENT_WEBHOOK_SECRET: string;
   SENTRY_WEBHOOK_SECRET: string;
   INCIDENT_QUEUE: Queue<IncidentQueueMessage>;
+  // ── Push notifications (Section 1, docs/superpowers/specs/2026-08-11-push-notifications-design.md) ──
+  FCM_PROJECT_ID: string;
+  FCM_CLIENT_EMAIL: string;
+  FCM_PRIVATE_KEY: string;
+  APNS_KEY_ID: string;
+  APNS_TEAM_ID: string;
+  APNS_PRIVATE_KEY: string;
+  APNS_BUNDLE_ID: string;
 }
 
 /** Message shape enqueued by every support-agent ingest route (Tasks 16–19). */
