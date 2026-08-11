@@ -200,6 +200,7 @@ import { handleConsentPost, handleConsentGet, handleAnalyticsConsentPost, handle
 import { handlePublicInterest } from './routes/public-interest.js';
 import { handleGetJars, handlePutJarConfig, handlePostJarMove, handleGetJarMovements } from './routes/jars.js';
 import { handleGetChildNudges, handleDismissChildNudge, handleImpulseOutcome, runChildNudgeBackgroundChecks } from './routes/child-nudges.js';
+import { handleRegisterDeviceToken, handleUnregisterDeviceToken } from './routes/push.js';
 import { handleGetFamilyAudit } from './routes/family-audit.js';
 import { handlePostGiveRequest, handleGetGiveRequests, handlePatchGiveRequest } from './routes/give-requests.js';
 import { json, error } from './lib/response.js';
@@ -800,6 +801,8 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (path === '/api/child-nudges'         && method === 'GET')  return withAuth(request, auth, env, handleGetChildNudges);
   if (path === '/api/child-nudges/dismiss' && method === 'POST') return withAuth(request, auth, env, handleDismissChildNudge);
   if (path === '/api/child-nudges/impulse-outcome' && method === 'POST') return withAuth(request, auth, env, handleImpulseOutcome);
+  if (path === '/api/push/register'   && method === 'POST') return withAuth(request, auth, env, handleRegisterDeviceToken);
+  if (path === '/api/push/unregister' && method === 'POST') return withAuth(request, auth, env, handleUnregisterDeviceToken);
 
   // Streaks — child or parent (child restricted to own data, enforced in handler)
   const streaksMatch = path.match(/^\/api\/streaks\/([^/]+)$/)
