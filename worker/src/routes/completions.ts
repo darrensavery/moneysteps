@@ -31,6 +31,8 @@ import { evaluateOnChoreApproval, evaluatePassive } from '../lib/labTriggers.js'
 import { nanoid } from '../lib/nanoid.js';
 import { getJarConfig } from '../lib/jar-balance.js'
 import { generateChildNudge, generateOnceChildNudge } from './child-nudges.js';
+import { sendPushNotification } from '../lib/push/send.js';
+import { getChildPendingCount } from '../lib/push/pendingCount.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -452,6 +454,7 @@ const completionRejectSchema = z.object({
 export async function handleCompletionReject(
   request: Request,
   env: Env,
+  ctx: ExecutionContext,
   completionId: string,
 ): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
@@ -481,6 +484,17 @@ export async function handleCompletionReject(
 
   // Child nudge — honest feedback prompt after rejection
   generateChildNudge(env.DB, comp.child_id, comp.family_id, 'task_rejected').catch(() => {})
+
+  ctx.waitUntil(
+    getChildPendingCount(env.DB, comp.family_id, comp.child_id).then(pendingCount =>
+      sendPushNotification(env, comp.child_id, {
+        title: 'Needs a re-do',
+        body: parent_notes ? `Tap to see the note: "${parent_notes}"` : 'Tap to check what to fix',
+        route: `/chores/${completionId}`,
+        badgeCount: pendingCount,
+      }),
+    ),
+  );
 
   return json({ ok: true, parent_notes });
 }

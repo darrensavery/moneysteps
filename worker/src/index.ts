@@ -255,7 +255,7 @@ const sentryOptions = (env: Env) => ({
 export default Sentry.withSentry<Env, IncidentQueueMessage>(
   sentryOptions,
   {
-    async fetch(request: Request, env: Env): Promise<Response> {
+    async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
       const url    = new URL(request.url);
       const path   = url.pathname;
       const method = request.method.toUpperCase();
@@ -266,7 +266,7 @@ export default Sentry.withSentry<Env, IncidentQueueMessage>(
 
       let response: Response;
       try {
-        response = await route(request, env, method, path);
+        response = await route(request, env, ctx, method, path);
       } catch (err) {
         // D1 Durable Object reset — transient platform error, not a code bug.
         // Return 503 so clients can retry; suppress from Sentry to avoid noise.
@@ -551,7 +551,7 @@ async function runPaydaySweep(env: Env, nowEpoch: number): Promise<void> {
 }
 
 // ----------------------------------------------------------------
-async function route(request: Request, env: Env, method: string, path: string): Promise<Response> {
+async function route(request: Request, env: Env, ctx: ExecutionContext, method: string, path: string): Promise<Response> {
 
   // ── Public ──────────────────────────────────────────────────
   // Touches D1 (not just process liveness) so an Uptime Monitor pinging
@@ -659,46 +659,46 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (csrfCheck) return csrfCheck;
 
   // ── Authenticated — any role ──────────────────────────────────
-  if (path === '/auth/demo/enter'  && method === 'POST') return withAuth(request, auth, env, handleDemoEnter);
-  if (path === '/auth/demo/notify' && method === 'POST') return withAuth(request, auth, env, handleDemoNotify);
-  if (path === '/auth/demo/active' && method === 'GET')  return withAuth(request, auth, env, handleDemoActive);
+  if (path === '/auth/demo/enter'  && method === 'POST') return withAuth(request, auth, env, ctx, handleDemoEnter);
+  if (path === '/auth/demo/notify' && method === 'POST') return withAuth(request, auth, env, ctx, handleDemoNotify);
+  if (path === '/auth/demo/active' && method === 'GET')  return withAuth(request, auth, env, ctx, handleDemoActive);
 
-  if (path === '/auth/me'           && method === 'GET')  return withAuth(request, auth, env, handleMe);
-  if (path === '/auth/me'           && method === 'PATCH') return withAuth(request, auth, env, handleMePatch);
-  if (path === '/auth/webauthn/register/options' && method === 'POST') return withAuth(request, auth, env, handleWebauthnRegisterOptions);
-  if (path === '/auth/webauthn/register/verify' && method === 'POST') return withAuth(request, auth, env, handleWebauthnRegisterVerify);
+  if (path === '/auth/me'           && method === 'GET')  return withAuth(request, auth, env, ctx, handleMe);
+  if (path === '/auth/me'           && method === 'PATCH') return withAuth(request, auth, env, ctx, handleMePatch);
+  if (path === '/auth/webauthn/register/options' && method === 'POST') return withAuth(request, auth, env, ctx, handleWebauthnRegisterOptions);
+  if (path === '/auth/webauthn/register/verify' && method === 'POST') return withAuth(request, auth, env, ctx, handleWebauthnRegisterVerify);
   if (path === '/auth/verify-email' && method === 'GET')  return handleVerifyEmail(request, env);
-  if (path === '/auth/logout'       && method === 'POST') return withAuth(request, auth, env, handleLogout);
+  if (path === '/auth/logout'       && method === 'POST') return withAuth(request, auth, env, ctx, handleLogout);
 
   // Co-parent-aware account deletion — placed before trial check so expired-trial users can still delete
-  if (path === '/auth/family/leads'       && method === 'GET')    return withAuth(request, auth, env, handleFamilyLeads);
-  if (path === '/auth/family/co-parents'  && method === 'GET')    return withAuth(request, auth, env, handleGetCoParents);
-  if (path === '/auth/me/leave'           && method === 'DELETE') return withAuth(request, auth, env, handleLeaveFamily);
-  if (path === '/auth/family'             && method === 'DELETE') return withAuth(request, auth, env, handleDeleteFamily);
+  if (path === '/auth/family/leads'       && method === 'GET')    return withAuth(request, auth, env, ctx, handleFamilyLeads);
+  if (path === '/auth/family/co-parents'  && method === 'GET')    return withAuth(request, auth, env, ctx, handleGetCoParents);
+  if (path === '/auth/me/leave'           && method === 'DELETE') return withAuth(request, auth, env, ctx, handleLeaveFamily);
+  if (path === '/auth/family'             && method === 'DELETE') return withAuth(request, auth, env, ctx, handleDeleteFamily);
 
   const removeCoParentMatch = path.match(/^\/auth\/family\/co-parent\/([^/]+)$/);
-  if (removeCoParentMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleRemoveCoParent(req, e, removeCoParentMatch[1]));
+  if (removeCoParentMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handleRemoveCoParent(req, e, removeCoParentMatch[1]));
 
   // In-app support request — placed before trial check so expired-trial users can still get help
-  if (path === '/api/support-agent/request' && method === 'POST') return withAuth(request, auth, env, handleSupportAgentRequest);
+  if (path === '/api/support-agent/request' && method === 'POST') return withAuth(request, auth, env, ctx, handleSupportAgentRequest);
 
   // Settings (any role — children can update their own avatar/theme)
-  if (path === '/api/consent/marketing' && method === 'POST') return withAuth(request, auth, env, handleConsentPost)
-  if (path === '/api/consent/marketing' && method === 'GET')  return withAuth(request, auth, env, handleConsentGet)
-  if (path === '/api/consent/analytics' && method === 'POST') return withAuth(request, auth, env, handleAnalyticsConsentPost)
-  if (path === '/api/consent/analytics/effective' && method === 'GET') return withAuth(request, auth, env, handleAnalyticsEffectiveGet)
+  if (path === '/api/consent/marketing' && method === 'POST') return withAuth(request, auth, env, ctx, handleConsentPost)
+  if (path === '/api/consent/marketing' && method === 'GET')  return withAuth(request, auth, env, ctx, handleConsentGet)
+  if (path === '/api/consent/analytics' && method === 'POST') return withAuth(request, auth, env, ctx, handleAnalyticsConsentPost)
+  if (path === '/api/consent/analytics/effective' && method === 'GET') return withAuth(request, auth, env, ctx, handleAnalyticsEffectiveGet)
 
-  if (path === '/api/settings' && method === 'GET')   return withAuth(request, auth, env, handleSettingsGet);
-  if (path === '/api/settings' && method === 'PATCH')  return withAuth(request, auth, env, handleSettingsUpdate);
+  if (path === '/api/settings' && method === 'GET')   return withAuth(request, auth, env, ctx, handleSettingsGet);
+  if (path === '/api/settings' && method === 'PATCH')  return withAuth(request, auth, env, ctx, handleSettingsUpdate);
 
   // Family info (read — any authenticated role)
-  if (path === '/api/family'   && method === 'GET')   return withAuth(request, auth, env, handleFamilyGet);
-  if (path === '/api/children' && method === 'GET')   return withAuth(request, auth, env, handleChildrenList);
+  if (path === '/api/family'   && method === 'GET')   return withAuth(request, auth, env, ctx, handleFamilyGet);
+  if (path === '/api/children' && method === 'GET')   return withAuth(request, auth, env, ctx, handleChildrenList);
 
   // Child growth path (parent only)
   const childGrowthMatch = path.match(/^\/api\/child-growth\/([^/]+)$/);
-  if (childGrowthMatch && method === 'GET')   return withAuth(request, auth, env, (req, e) => handleChildGrowthGet(req, e, childGrowthMatch[1]));
-  if (childGrowthMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleChildGrowthUpdate(req, e, childGrowthMatch[1]));
+  if (childGrowthMatch && method === 'GET')   return withAuth(request, auth, env, ctx, (req, e) => handleChildGrowthGet(req, e, childGrowthMatch[1]));
+  if (childGrowthMatch && method === 'PATCH') return withAuth(request, auth, env, ctx, (req, e) => handleChildGrowthUpdate(req, e, childGrowthMatch[1]));
 
   // Child settings via /api/child/:id/settings — parent only, family-ownership verified
   const childSettingsMatch = path.match(/^\/api\/child\/([^/]+)\/settings$/);
@@ -714,128 +714,128 @@ async function route(request: Request, env: Env, method: string, path: string): 
       new URL(`/api/settings?user_id=${childId}`, new URL(request.url).origin),
       request,
     );
-    if (method === 'GET')   return withAuth(rewritten, auth, env, handleSettingsGet);
-    if (method === 'PATCH') return withAuth(rewritten, auth, env, handleSettingsUpdate);
+    if (method === 'GET')   return withAuth(rewritten, auth, env, ctx, handleSettingsGet);
+    if (method === 'PATCH') return withAuth(rewritten, auth, env, ctx, handleSettingsUpdate);
   }
 
   // Child rename + login history (parent only — placed before trial gate intentionally)
   const childIdMatch = path.match(/^\/api\/child\/([^/]+)\/display-name$/);
-  if (childIdMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleChildRename(req, e, childIdMatch[1]));
+  if (childIdMatch && method === 'PATCH') return withAuth(request, auth, env, ctx, (req, e) => handleChildRename(req, e, childIdMatch[1]));
 
   const childHistoryMatch = path.match(/^\/api\/child\/([^/]+)\/login-history$/);
-  if (childHistoryMatch && method === 'GET') return withAuth(request, auth, env, (req, e) => handleChildLoginHistory(req, e, childHistoryMatch[1]));
+  if (childHistoryMatch && method === 'GET') return withAuth(request, auth, env, ctx, (req, e) => handleChildLoginHistory(req, e, childHistoryMatch[1]));
 
   const childHandlesMatch = path.match(/^\/api\/child\/([^/]+)\/payment-handles$/);
-  if (childHandlesMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleSetPaymentHandles(req, e, childHandlesMatch[1]));
+  if (childHandlesMatch && method === 'PATCH') return withAuth(request, auth, env, ctx, (req, e) => handleSetPaymentHandles(req, e, childHandlesMatch[1]));
 
   const birthDateMatch = path.match(/^\/api\/children\/([^/]+)\/birth-date$/);
-  if (birthDateMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handleSetChildBirthDate(req, e, birthDateMatch[1]));
+  if (birthDateMatch && method === 'PATCH') return withAuth(request, auth, env, ctx, (req, e) => handleSetChildBirthDate(req, e, birthDateMatch[1]));
 
   // Teen Mentor Chat — gated by MENTOR_CHAT_ENABLED until the consent UI ships (Track 2 final task)
   if (path === '/api/mentor-chat/messages' && method === 'POST') {
-    return withAuth(request, auth, env, handlePostMentorChatMessage);
+    return withAuth(request, auth, env, ctx, handlePostMentorChatMessage);
   }
   if (path === '/api/mentor-chat/messages' && method === 'GET') {
-    return withAuth(request, auth, env, handleGetMentorChatHistory);
+    return withAuth(request, auth, env, ctx, handleGetMentorChatHistory);
   }
 
   // Chores — children can list & submit
-  if (path === '/api/chores' && method === 'GET')     return withAuth(request, auth, env, handleChoreList);
+  if (path === '/api/chores' && method === 'GET')     return withAuth(request, auth, env, ctx, handleChoreList);
   const choreSubmitMatch = path.match(/^\/api\/chores\/([^/]+)\/submit$/);
-  if (choreSubmitMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleChoreSubmit(req, e, choreSubmitMatch[1]));
+  if (choreSubmitMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e, c) => handleChoreSubmit(req, e, c, choreSubmitMatch[1]));
   const choreClaimMatch = path.match(/^\/api\/chores\/([^/]+)\/claim$/);
-  if (choreClaimMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleChoreClaim(req, e, choreClaimMatch[1]));
+  if (choreClaimMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleChoreClaim(req, e, choreClaimMatch[1]));
 
   // Completions — children can list their own & rate
-  if (path === '/api/completions'         && method === 'GET')  return withAuth(request, auth, env, handleCompletionList);
-  if (path === '/api/completions/count'   && method === 'GET')  return withAuth(request, auth, env, handleCompletionCount);
-  if (path === '/api/completions/history' && method === 'GET')  return withAuth(request, auth, env, handleCompletionHistory);
+  if (path === '/api/completions'         && method === 'GET')  return withAuth(request, auth, env, ctx, handleCompletionList);
+  if (path === '/api/completions/count'   && method === 'GET')  return withAuth(request, auth, env, ctx, handleCompletionCount);
+  if (path === '/api/completions/history' && method === 'GET')  return withAuth(request, auth, env, ctx, handleCompletionHistory);
   const compRateMatch = path.match(/^\/api\/completions\/([^/]+)\/rate$/);
-  if (compRateMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleCompletionRate(req, e, compRateMatch[1]));
+  if (compRateMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleCompletionRate(req, e, compRateMatch[1]));
   // Proof upload/view — child uploads, both roles view
   const compProofMatch = path.match(/^\/api\/completions\/([^/]+)\/proof$/);
-  if (compProofMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleProofUpload(req, e, compProofMatch[1]));
-  if (compProofMatch && method === 'GET')  return withAuth(request, auth, env, (req, e) => handleProofGet(req, e, compProofMatch[1]));
+  if (compProofMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleProofUpload(req, e, compProofMatch[1]));
+  if (compProofMatch && method === 'GET')  return withAuth(request, auth, env, ctx, (req, e) => handleProofGet(req, e, compProofMatch[1]));
 
   // Goals — children & parents can read and write their own goals
-  if (path === '/api/goals' && method === 'GET')  return withAuth(request, auth, env, handleGoalList);
-  if (path === '/api/goals' && method === 'POST') return withAuth(request, auth, env, handleGoalCreate);
+  if (path === '/api/goals' && method === 'GET')  return withAuth(request, auth, env, ctx, handleGoalList);
+  if (path === '/api/goals' && method === 'POST') return withAuth(request, auth, env, ctx, handleGoalCreate);
   const goalIdMatch = path.match(/^\/api\/goals\/([^/]+)$/);
-  if (goalIdMatch && method === 'PATCH')  return withAuth(request, auth, env, (req, e) => handleGoalUpdate(req, e, goalIdMatch[1]));
-  if (goalIdMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleGoalDelete(req, e, goalIdMatch[1]));
+  if (goalIdMatch && method === 'PATCH')  return withAuth(request, auth, env, ctx, (req, e) => handleGoalUpdate(req, e, goalIdMatch[1]));
+  if (goalIdMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handleGoalDelete(req, e, goalIdMatch[1]));
   const goalReorderMatch = path.match(/^\/api\/goals\/([^/]+)\/reorder$/);
-  if (goalReorderMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleGoalReorder(req, e, goalReorderMatch[1]));
+  if (goalReorderMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleGoalReorder(req, e, goalReorderMatch[1]));
   const goalPurchaseMatch = path.match(/^\/api\/goals\/([^/]+)\/purchase$/);
-  if (goalPurchaseMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleGoalPurchase(req, e, goalPurchaseMatch[1]));
+  if (goalPurchaseMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleGoalPurchase(req, e, goalPurchaseMatch[1]));
 
   // Plans — both roles
-  if (path === '/api/plans' && method === 'GET')      return withAuth(request, auth, env, handlePlanList);
-  if (path === '/api/plans' && method === 'POST')     return withAuth(request, auth, env, handlePlanCreate);
+  if (path === '/api/plans' && method === 'GET')      return withAuth(request, auth, env, ctx, handlePlanList);
+  if (path === '/api/plans' && method === 'POST')     return withAuth(request, auth, env, ctx, handlePlanCreate);
   const planDeleteMatch = path.match(/^\/api\/plans\/([^/]+)$/);
-  if (planDeleteMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handlePlanDelete(req, e, planDeleteMatch[1]));
+  if (planDeleteMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handlePlanDelete(req, e, planDeleteMatch[1]));
 
   // Suggestions — children create, both roles can read
-  if (path === '/api/suggestions' && method === 'GET')  return withAuth(request, auth, env, handleSuggestionList);
-  if (path === '/api/suggestions' && method === 'POST') return withAuth(request, auth, env, handleSuggestionCreate);
+  if (path === '/api/suggestions' && method === 'GET')  return withAuth(request, auth, env, ctx, handleSuggestionList);
+  if (path === '/api/suggestions' && method === 'POST') return withAuth(request, auth, env, ctx, handleSuggestionCreate);
 
   // Balance — any role
-  if (path === '/api/balance'   && method === 'GET')  return withAuth(request, auth, env, handleBalance);
+  if (path === '/api/balance'   && method === 'GET')  return withAuth(request, auth, env, ctx, handleBalance);
 
   // Jars — child configures own; parent/child can read
   const giveReqMatch = path.match(/^\/api\/give-requests\/(\d+)$/);
-  if (path === '/api/jars'            && method === 'GET')   return withAuth(request, auth, env, handleGetJars);
-  if (path === '/api/jars/config'     && method === 'PUT')   return withAuth(request, auth, env, handlePutJarConfig);
-  if (path === '/api/jars/move'       && method === 'POST')  return withAuth(request, auth, env, handlePostJarMove);
-  if (path === '/api/jars/movements'  && method === 'GET')   return withAuth(request, auth, env, handleGetJarMovements);
-  if (path === '/api/give-requests'   && method === 'POST')  return withAuth(request, auth, env, handlePostGiveRequest);
-  if (path === '/api/give-requests'   && method === 'GET')   return withAuth(request, auth, env, handleGetGiveRequests);
-  if (giveReqMatch && method === 'PATCH') return withAuth(request, auth, env, (req, e) => handlePatchGiveRequest(req, e, giveReqMatch[1]));
+  if (path === '/api/jars'            && method === 'GET')   return withAuth(request, auth, env, ctx, handleGetJars);
+  if (path === '/api/jars/config'     && method === 'PUT')   return withAuth(request, auth, env, ctx, handlePutJarConfig);
+  if (path === '/api/jars/move'       && method === 'POST')  return withAuth(request, auth, env, ctx, handlePostJarMove);
+  if (path === '/api/jars/movements'  && method === 'GET')   return withAuth(request, auth, env, ctx, handleGetJarMovements);
+  if (path === '/api/give-requests'   && method === 'POST')  return withAuth(request, auth, env, ctx, handlePostGiveRequest);
+  if (path === '/api/give-requests'   && method === 'GET')   return withAuth(request, auth, env, ctx, handleGetGiveRequests);
+  if (giveReqMatch && method === 'PATCH') return withAuth(request, auth, env, ctx, (req, e) => handlePatchGiveRequest(req, e, giveReqMatch[1]));
 
   // Insights — parent or child (child sees own data only, enforced in handler)
-  if (path === '/api/insights'  && method === 'GET')  return withAuth(request, auth, env, handleInsights);
+  if (path === '/api/insights'  && method === 'GET')  return withAuth(request, auth, env, ctx, handleInsights);
 
   // Family Audit — monthly family-wide rollup for parents (Phase 5)
-  if (path === '/api/family-audit' && method === 'GET') return withAuth(request, auth, env, handleGetFamilyAudit);
+  if (path === '/api/family-audit' && method === 'GET') return withAuth(request, auth, env, ctx, handleGetFamilyAudit);
 
   // Child nudges — AI Mentor inline coaching cards
-  if (path === '/api/child-nudges'         && method === 'GET')  return withAuth(request, auth, env, handleGetChildNudges);
-  if (path === '/api/child-nudges/dismiss' && method === 'POST') return withAuth(request, auth, env, handleDismissChildNudge);
-  if (path === '/api/child-nudges/impulse-outcome' && method === 'POST') return withAuth(request, auth, env, handleImpulseOutcome);
-  if (path === '/api/push/register'   && method === 'POST') return withAuth(request, auth, env, handleRegisterDeviceToken);
-  if (path === '/api/push/unregister' && method === 'POST') return withAuth(request, auth, env, handleUnregisterDeviceToken);
+  if (path === '/api/child-nudges'         && method === 'GET')  return withAuth(request, auth, env, ctx, handleGetChildNudges);
+  if (path === '/api/child-nudges/dismiss' && method === 'POST') return withAuth(request, auth, env, ctx, handleDismissChildNudge);
+  if (path === '/api/child-nudges/impulse-outcome' && method === 'POST') return withAuth(request, auth, env, ctx, handleImpulseOutcome);
+  if (path === '/api/push/register'   && method === 'POST') return withAuth(request, auth, env, ctx, handleRegisterDeviceToken);
+  if (path === '/api/push/unregister' && method === 'POST') return withAuth(request, auth, env, ctx, handleUnregisterDeviceToken);
 
   // Streaks — child or parent (child restricted to own data, enforced in handler)
   const streaksMatch = path.match(/^\/api\/streaks\/([^/]+)$/)
-  if (streaksMatch && method === 'GET') return withAuth(request, auth, env, (req, e) => handleGetStreaks(req, e, streaksMatch[1]));
+  if (streaksMatch && method === 'GET') return withAuth(request, auth, env, ctx, (req, e) => handleGetStreaks(req, e, streaksMatch[1]));
 
   // Learning Lab
-  if (path === '/api/lab/modules' && method === 'GET') return withAuth(request, auth, env, handleLabModules);
+  if (path === '/api/lab/modules' && method === 'GET') return withAuth(request, auth, env, ctx, handleLabModules);
   const labActMatch = path.match(/^\/api\/lab\/modules\/([^/]+)\/acts\/(\d+)\/complete$/)
   if (labActMatch && method === 'POST')
-    return withAuth(request, auth, env, (req, e) =>
+    return withAuth(request, auth, env, ctx, (req, e) =>
       handleLabActComplete(req, e, labActMatch[1], parseInt(labActMatch[2], 10))
     )
 
   // Market rates — any authenticated role
-  if (path === '/api/market-rates' && method === 'GET')        return withAuth(request, auth, env, handleMarketRateList);
-  if (path === '/api/market-rates/suggest' && method === 'POST') return withAuth(request, auth, env, handleMarketRateSuggest);
+  if (path === '/api/market-rates' && method === 'GET')        return withAuth(request, auth, env, ctx, handleMarketRateList);
+  if (path === '/api/market-rates/suggest' && method === 'POST') return withAuth(request, auth, env, ctx, handleMarketRateSuggest);
 
   // Referrals — parent only (me + stats)
-  if (path === '/api/referrals/me'    && method === 'GET')  return withAuth(request, auth, env, handleReferralMe);
-  if (path === '/api/referrals/stats' && method === 'GET')  return withAuth(request, auth, env, handleReferralStats);
+  if (path === '/api/referrals/me'    && method === 'GET')  return withAuth(request, auth, env, ctx, handleReferralMe);
+  if (path === '/api/referrals/stats' && method === 'GET')  return withAuth(request, auth, env, ctx, handleReferralStats);
 
   // Spending — child logs, both read
-  if (path === '/api/spending' && method === 'GET')   return withAuth(request, auth, env, handleSpendingList);
-  if (path === '/api/spending' && method === 'POST')  return withAuth(request, auth, env, handleSpendingCreate);
+  if (path === '/api/spending' && method === 'GET')   return withAuth(request, auth, env, ctx, handleSpendingList);
+  if (path === '/api/spending' && method === 'POST')  return withAuth(request, auth, env, ctx, handleSpendingCreate);
 
   // Payouts — both read
-  if (path === '/api/payouts'  && method === 'GET')   return withAuth(request, auth, env, handlePayoutList);
+  if (path === '/api/payouts'  && method === 'GET')   return withAuth(request, auth, env, ctx, handlePayoutList);
 
   // Subscriptions — both read
-  if (path === '/api/subscriptions' && method === 'GET') return withAuth(request, auth, env, handleSubscriptionList);
+  if (path === '/api/subscriptions' && method === 'GET') return withAuth(request, auth, env, ctx, handleSubscriptionList);
 
   // Parent message — child reads
-  if (path === '/api/parent-message' && method === 'GET') return withAuth(request, auth, env, handleParentMessageGet);
+  if (path === '/api/parent-message' && method === 'GET') return withAuth(request, auth, env, ctx, handleParentMessageGet);
 
   // ── Trial / paywall gate (all authenticated routes) ──────────
   const trialBlock = await checkTrialStatus(request, env, auth.family_id);
@@ -851,91 +851,91 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (parentCheck) return parentCheck;
 
   // Shared expenses (parent only)
-  if (path === '/api/shared-expenses'           && method === 'GET')    return withAuth(request, auth, env, handleListSharedExpenses);
-  if (path === '/api/shared-expenses'           && method === 'POST')   return withAuth(request, auth, env, handleCreateSharedExpense);
-  if (path === '/api/shared-expenses/reconcile' && method === 'POST')   return withAuth(request, auth, env, handleReconcileSharedExpenses);
+  if (path === '/api/shared-expenses'           && method === 'GET')    return withAuth(request, auth, env, ctx, handleListSharedExpenses);
+  if (path === '/api/shared-expenses'           && method === 'POST')   return withAuth(request, auth, env, ctx, handleCreateSharedExpense);
+  if (path === '/api/shared-expenses/reconcile' && method === 'POST')   return withAuth(request, auth, env, ctx, handleReconcileSharedExpenses);
   const sharedExpenseIdMatch = path.match(/^\/api\/shared-expenses\/(\d+)$/);
-  if (sharedExpenseIdMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleDeleteSharedExpense(req, e, sharedExpenseIdMatch[1]));
+  if (sharedExpenseIdMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handleDeleteSharedExpense(req, e, sharedExpenseIdMatch[1]));
   const sharedExpApproveMatch = path.match(/^\/api\/shared-expenses\/(\d+)\/approve$/);
-  if (sharedExpApproveMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleApproveSharedExpense(req, e, sharedExpApproveMatch[1]));
+  if (sharedExpApproveMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleApproveSharedExpense(req, e, sharedExpApproveMatch[1]));
   const sharedExpRejectMatch = path.match(/^\/api\/shared-expenses\/(\d+)\/reject$/);
-  if (sharedExpRejectMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleRejectSharedExpense(req, e, sharedExpRejectMatch[1]));
+  if (sharedExpRejectMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleRejectSharedExpense(req, e, sharedExpRejectMatch[1]));
   const sharedExpReceiptMatch = path.match(/^\/api\/shared-expenses\/(\d+)\/receipt$/);
-  if (sharedExpReceiptMatch && method === 'POST')   return withAuth(request, auth, env, (req, e) => handleUploadReceipt(req, e, sharedExpReceiptMatch[1]));
-  if (sharedExpReceiptMatch && method === 'GET')    return withAuth(request, auth, env, (req, e) => handleGetReceiptUrl(req, e, sharedExpReceiptMatch[1]));
-  if (sharedExpReceiptMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleDeleteReceipt(req, e, sharedExpReceiptMatch[1]));
+  if (sharedExpReceiptMatch && method === 'POST')   return withAuth(request, auth, env, ctx, (req, e) => handleUploadReceipt(req, e, sharedExpReceiptMatch[1]));
+  if (sharedExpReceiptMatch && method === 'GET')    return withAuth(request, auth, env, ctx, (req, e) => handleGetReceiptUrl(req, e, sharedExpReceiptMatch[1]));
+  if (sharedExpReceiptMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handleDeleteReceipt(req, e, sharedExpReceiptMatch[1]));
   const sharedExpVoidMatch = path.match(/^\/api\/shared-expenses\/(\d+)\/void$/);
-  if (sharedExpVoidMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleVoidSharedExpense(req, e, sharedExpVoidMatch[1]));
-  if (path === '/api/family/settings'           && method === 'PATCH')  return withAuth(request, auth, env, handleUpdateFamilySettings);
+  if (sharedExpVoidMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleVoidSharedExpense(req, e, sharedExpVoidMatch[1]));
+  if (path === '/api/family/settings'           && method === 'PATCH')  return withAuth(request, auth, env, ctx, handleUpdateFamilySettings);
 
   // Child PIN management
   if (path === '/auth/child/set-pin' && method === 'POST') {
-    return withAuth(request, auth, env, handleSetChildPin);
+    return withAuth(request, auth, env, ctx, handleSetChildPin);
   }
 
   // Family write (parent only)
-  if (path === '/api/family' && method === 'PATCH') return withAuth(request, auth, env, handleFamilyUpdate);
+  if (path === '/api/family' && method === 'PATCH') return withAuth(request, auth, env, ctx, handleFamilyUpdate);
 
   // Chores write (parent only)
-  if (path === '/api/chores' && method === 'POST')  return withAuth(request, auth, env, handleChoreCreate);
+  if (path === '/api/chores' && method === 'POST')  return withAuth(request, auth, env, ctx, handleChoreCreate);
   const choreIdMatch = path.match(/^\/api\/chores\/([^/]+)$/);
-  if (choreIdMatch && method === 'PATCH')  return withAuth(request, auth, env, (req, e) => handleChoreUpdate(req, e, choreIdMatch[1]));
-  if (choreIdMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleChoreArchive(req, e, choreIdMatch[1]));
+  if (choreIdMatch && method === 'PATCH')  return withAuth(request, auth, env, ctx, (req, e) => handleChoreUpdate(req, e, choreIdMatch[1]));
+  if (choreIdMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handleChoreArchive(req, e, choreIdMatch[1]));
   const choreRestoreMatch = path.match(/^\/api\/chores\/([^/]+)\/restore$/);
-  if (choreRestoreMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleChoreRestore(req, e, choreRestoreMatch[1]));
+  if (choreRestoreMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleChoreRestore(req, e, choreRestoreMatch[1]));
 
   // Completions — payment bridge (static paths before :id regex)
-  if (path === '/api/completions/mark-paid-batch'  && method === 'POST') return withAuth(request, auth, env, handleMarkPaidBatch);
-  if (path === '/api/completions/unpaid-summary'   && method === 'GET')  return withAuth(request, auth, env, handleUnpaidSummary);
+  if (path === '/api/completions/mark-paid-batch'  && method === 'POST') return withAuth(request, auth, env, ctx, handleMarkPaidBatch);
+  if (path === '/api/completions/unpaid-summary'   && method === 'GET')  return withAuth(request, auth, env, ctx, handleUnpaidSummary);
   const compMarkPaidMatch = path.match(/^\/api\/completions\/([^/]+)\/mark-paid$/);
-  if (compMarkPaidMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleMarkPaid(req, e, compMarkPaidMatch[1]));
+  if (compMarkPaidMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleMarkPaid(req, e, compMarkPaidMatch[1]));
 
   // Completions — parent approval
   const compApproveMatch = path.match(/^\/api\/completions\/([^/]+)\/approve$/);
-  if (compApproveMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleCompletionApprove(req, e, compApproveMatch[1]));
+  if (compApproveMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleCompletionApprove(req, e, compApproveMatch[1]));
   const compReviseMatch = path.match(/^\/api\/completions\/([^/]+)\/revise$/);
-  if (compReviseMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleCompletionRevise(req, e, compReviseMatch[1]));
+  if (compReviseMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleCompletionRevise(req, e, compReviseMatch[1]));
   const compRejectMatch = path.match(/^\/api\/completions\/([^/]+)\/reject$/);
-  if (compRejectMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleCompletionReject(req, e, compRejectMatch[1]));
-  if (path === '/api/completions/approve-all' && method === 'POST') return withAuth(request, auth, env, handleApproveAll);
+  if (compRejectMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e, c) => handleCompletionReject(req, e, c, compRejectMatch[1]));
+  if (path === '/api/completions/approve-all' && method === 'POST') return withAuth(request, auth, env, ctx, handleApproveAll);
 
-  if (path === '/api/review-prompt/outcome'  && method === 'POST') return withAuth(request, auth, env, handleReviewOutcome);
-  if (path === '/api/review-prompt/feedback' && method === 'POST') return withAuth(request, auth, env, handleReviewFeedback);
+  if (path === '/api/review-prompt/outcome'  && method === 'POST') return withAuth(request, auth, env, ctx, handleReviewOutcome);
+  if (path === '/api/review-prompt/feedback' && method === 'POST') return withAuth(request, auth, env, ctx, handleReviewFeedback);
 
   // Goals — contribute is parent-only (parent tops up child's goal)
   const goalContributeMatch = path.match(/^\/api\/goals\/([^/]+)\/contribute$/);
-  if (goalContributeMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleGoalContribute(req, e, goalContributeMatch[1]));
+  if (goalContributeMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleGoalContribute(req, e, goalContributeMatch[1]));
 
   // Finance write — parent only
-  if (path === '/api/payouts' && method === 'POST')        return withAuth(request, auth, env, handlePayoutCreate);
-  if (path === '/api/bonus'   && method === 'POST')        return withAuth(request, auth, env, handleBonusCreate);
-  if (path === '/api/bonus'   && method === 'GET')         return withAuth(request, auth, env, handleBonusList);
-  if (path === '/api/subscriptions' && method === 'POST')  return withAuth(request, auth, env, handleSubscriptionCreate);
+  if (path === '/api/payouts' && method === 'POST')        return withAuth(request, auth, env, ctx, handlePayoutCreate);
+  if (path === '/api/bonus'   && method === 'POST')        return withAuth(request, auth, env, ctx, handleBonusCreate);
+  if (path === '/api/bonus'   && method === 'GET')         return withAuth(request, auth, env, ctx, handleBonusList);
+  if (path === '/api/subscriptions' && method === 'POST')  return withAuth(request, auth, env, ctx, handleSubscriptionCreate);
   const subIdMatch = path.match(/^\/api\/subscriptions\/([^/]+)$/);
-  if (subIdMatch && method === 'PATCH')  return withAuth(request, auth, env, (req, e) => handleSubscriptionUpdate(req, e, subIdMatch[1]));
-  if (subIdMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleSubscriptionCancel(req, e, subIdMatch[1]));
+  if (subIdMatch && method === 'PATCH')  return withAuth(request, auth, env, ctx, (req, e) => handleSubscriptionUpdate(req, e, subIdMatch[1]));
+  if (subIdMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handleSubscriptionCancel(req, e, subIdMatch[1]));
 
   // Suggestions — parent approves/rejects
   const sugApproveMatch = path.match(/^\/api\/suggestions\/([^/]+)\/approve$/);
-  if (sugApproveMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleSuggestionApprove(req, e, sugApproveMatch[1]));
+  if (sugApproveMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleSuggestionApprove(req, e, sugApproveMatch[1]));
   const sugRejectMatch = path.match(/^\/api\/suggestions\/([^/]+)\/reject$/);
-  if (sugRejectMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleSuggestionReject(req, e, sugRejectMatch[1]));
+  if (sugRejectMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleSuggestionReject(req, e, sugRejectMatch[1]));
 
   // Account lock/unlock
-  if (path === '/api/account-lock' && method === 'POST') return withAuth(request, auth, env, handleAccountLock);
-  if (path === '/api/account-lock/me' && method === 'GET') return withAuth(request, auth, env, handleAccountLockStatusMe);
+  if (path === '/api/account-lock' && method === 'POST') return withAuth(request, auth, env, ctx, handleAccountLock);
+  if (path === '/api/account-lock/me' && method === 'GET') return withAuth(request, auth, env, ctx, handleAccountLockStatusMe);
   const unlockMatch = path.match(/^\/api\/account-lock\/([^/]+)$/);
-  if (unlockMatch && method === 'DELETE') return withAuth(request, auth, env, (req, e) => handleAccountUnlock(req, e, unlockMatch[1]));
+  if (unlockMatch && method === 'DELETE') return withAuth(request, auth, env, ctx, (req, e) => handleAccountUnlock(req, e, unlockMatch[1]));
 
   // Parent message
-  if (path === '/api/parent-message' && method === 'POST') return withAuth(request, auth, env, handleParentMessageSet);
+  if (path === '/api/parent-message' && method === 'POST') return withAuth(request, auth, env, ctx, handleParentMessageSet);
 
   // Invite code generation + child onboarding + registration persistence
-  if (path === '/auth/invite/generate'        && method === 'POST') return withAuth(request, auth, env, handleGenerateInvite);
-  if (path === '/auth/child/add'               && method === 'POST') return withAuth(request, auth, env, handleAddChild);
+  if (path === '/auth/invite/generate'        && method === 'POST') return withAuth(request, auth, env, ctx, handleGenerateInvite);
+  if (path === '/auth/child/add'               && method === 'POST') return withAuth(request, auth, env, ctx, handleAddChild);
   const regenChildInviteMatch = path.match(/^\/auth\/child\/([^/]+)\/invite$/);
-  if (regenChildInviteMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleRegenerateChildInvite(req, e, regenChildInviteMatch[1]));
-  if (path === '/auth/registration/save-step'  && method === 'POST') return withAuth(request, auth, env, handleSaveRegistrationStep);
+  if (regenChildInviteMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleRegenerateChildInvite(req, e, regenChildInviteMatch[1]));
+  if (path === '/auth/registration/save-step'  && method === 'POST') return withAuth(request, auth, env, ctx, handleSaveRegistrationStep);
 
   // Ledger
   if (path === '/api/ledger') {
@@ -957,17 +957,17 @@ async function route(request: Request, env: Env, method: string, path: string): 
   if (verifyMatch && method === 'POST') {
     const parentCheck = requireRole(auth, 'parent');
     if (parentCheck) return parentCheck;
-    return withAuth(request, auth, env, (req, e) => handleLedgerVerify(req, e, verifyMatch[1]));
+    return withAuth(request, auth, env, ctx, (req, e) => handleLedgerVerify(req, e, verifyMatch[1]));
   }
 
   const raiseDisputeMatch = path.match(/^\/api\/ledger\/(\d+)\/raise-dispute$/);
-  if (raiseDisputeMatch && method === 'POST') return withAuth(request, auth, env, (req, e) => handleRaiseDispute(req, e, raiseDisputeMatch[1]));
+  if (raiseDisputeMatch && method === 'POST') return withAuth(request, auth, env, ctx, (req, e) => handleRaiseDispute(req, e, raiseDisputeMatch[1]));
 
   const disputeMatch = path.match(/^\/api\/ledger\/(\d+)\/dispute$/);
   if (disputeMatch && method === 'POST') {
     const parentCheck = requireRole(auth, 'parent');
     if (parentCheck) return parentCheck;
-    return withAuth(request, auth, env, (req, e) => handleLedgerDispute(req, e, disputeMatch[1]));
+    return withAuth(request, auth, env, ctx, (req, e) => handleLedgerDispute(req, e, disputeMatch[1]));
   }
 
   // Export
@@ -1028,37 +1028,37 @@ async function route(request: Request, env: Env, method: string, path: string): 
   }
 
   // Governance — mutual consent handshake for verify_mode changes
-  if (path === '/api/governance/request' && method === 'POST') return withAuth(request, auth, env, handleGovernanceRequest);
+  if (path === '/api/governance/request' && method === 'POST') return withAuth(request, auth, env, ctx, handleGovernanceRequest);
   if (path === '/api/governance/expire'  && method === 'POST') {
     const adminCheck = requireAdmin(request, env);
     if (adminCheck) return adminCheck;
     return handleGovernanceExpire(request, env);
   }
-  if (path === '/api/governance'         && method === 'GET')  return withAuth(request, auth, env, handleGovernanceGet);
+  if (path === '/api/governance'         && method === 'GET')  return withAuth(request, auth, env, ctx, handleGovernanceGet);
 
   const govActionMatch = path.match(/^\/api\/governance\/(\d+)\/(confirm|reject)$/);
   if (govActionMatch && method === 'POST') {
     const [, id, action] = govActionMatch;
-    if (action === 'confirm') return withAuth(request, auth, env, (req, e) => handleGovernanceConfirm(req, e, id));
-    if (action === 'reject')  return withAuth(request, auth, env, (req, e) => handleGovernanceReject(req, e, id));
+    if (action === 'confirm') return withAuth(request, auth, env, ctx, (req, e) => handleGovernanceConfirm(req, e, id));
+    if (action === 'reject')  return withAuth(request, auth, env, ctx, (req, e) => handleGovernanceReject(req, e, id));
   }
 
   // ── Security / PIN ────────────────────────────────────────────────
   if (method === 'POST' && path === '/auth/pin/set')
-    return withAuth(request, auth, env, handlePinSet);
+    return withAuth(request, auth, env, ctx, handlePinSet);
   // Same handler — distinct route name lets the frontend show different copy ("Forgot PIN?")
   if (method === 'POST' && path === '/auth/pin/reset-with-password')
-    return withAuth(request, auth, env, handlePinSet);
+    return withAuth(request, auth, env, ctx, handlePinSet);
   if (method === 'POST' && path === '/auth/verify-pin')
-    return withAuth(request, auth, env, handleVerifyPin);
+    return withAuth(request, auth, env, ctx, handleVerifyPin);
 
   // ── Sessions ──────────────────────────────────────────────────────
   if (method === 'GET' && path === '/auth/sessions')
-    return withAuth(request, auth, env, handleGetSessions);
+    return withAuth(request, auth, env, ctx, handleGetSessions);
   if (method === 'DELETE' && path === '/auth/sessions' && new URL(request.url).searchParams.get('others') === 'true')
-    return withAuth(request, auth, env, handleRevokeOtherSessions);
+    return withAuth(request, auth, env, ctx, handleRevokeOtherSessions);
   if (method === 'DELETE' && path.startsWith('/auth/sessions/'))
-    return withAuth(request, auth, env, handleRevokeSession);
+    return withAuth(request, auth, env, ctx, handleRevokeSession);
 
   // Dev endpoints — only active when ENVIRONMENT === 'development'
   if (path.startsWith('/dev/')) {
@@ -1075,10 +1075,11 @@ function withAuth(
   request: Request,
   auth: JwtPayload,
   env: Env,
-  handler: (req: Request, env: Env) => Promise<Response>,
+  ctx: ExecutionContext,
+  handler: (req: Request, env: Env, ctx: ExecutionContext) => Promise<Response>,
 ): Promise<Response> {
   const augmented = Object.assign(request, { auth });
-  return handler(augmented, env);
+  return handler(augmented, env, ctx);
 }
 
 // Peek at body's family_id to enforce family match — then re-inject body

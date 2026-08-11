@@ -22,6 +22,8 @@ import { getJarConfig } from '../lib/jar-balance.js';
 import { getStreakState, buildStreakEvent, saveStreakEvent, allScheduledChoresDone } from '../lib/streaks.js';
 import { getBadgeStats, badgesToAward, insertBadges } from '../lib/badges.js';
 import { evaluateOnChoreApproval, evaluatePassive } from '../lib/labTriggers.js';
+import { sendPushNotification } from '../lib/push/send.js';
+import { getChildPendingCount, getParentPendingCount } from '../lib/push/pendingCount.js';
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
@@ -56,7 +58,7 @@ const choreCreateSchema = z.object({
   auto_approve:   z.unknown().optional(),
 });
 
-export async function handleChoreCreate(request: Request, env: Env): Promise<Response> {
+export async function handleChoreCreate(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   const parsed = await parseValidatedBody(request, choreCreateSchema);
   if (parsed instanceof Response) return parsed;
@@ -120,6 +122,22 @@ export async function handleChoreCreate(request: Request, env: Env): Promise<Res
   ).run();
 
   const chore = await env.DB.prepare('SELECT * FROM chores WHERE id = ?').bind(id).first();
+
+  // Fire-and-forget push to the assigned child — skip the 'anyone'/'everyone'
+  // sentinel values, which aren't a real user id to notify.
+  if (!isSentinel) {
+    ctx.waitUntil(
+      getChildPendingCount(env.DB, family_id, assigned_to).then(pendingCount =>
+        sendPushNotification(env, assigned_to, {
+          title: 'New chore',
+          body: title.trim(),
+          route: `/chores/${id}`,
+          badgeCount: pendingCount,
+        }),
+      ),
+    );
+  }
+
   return json(chore, 201);
 }
 
@@ -412,7 +430,7 @@ const choreSubmitSchema = z.object({
   note: z.string().optional(),
 });
 
-export async function handleChoreSubmit(request: Request, env: Env, id: string): Promise<Response> {
+export async function handleChoreSubmit(request: Request, env: Env, ctx: ExecutionContext, id: string): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   if (auth.role !== 'child') return error('Only children can submit chores', 403);
 
@@ -614,6 +632,37 @@ export async function handleChoreSubmit(request: Request, env: Env, id: string):
   //   2. available record → lazy-gen transition (child tapped Done)
   //   3. neither → fresh INSERT
 
+  // Fire-and-forget: notify every parent in the family that a completion is
+  // ready to approve. Shared by both the resubmission and fresh-insert paths
+  // below, since both land the completion in 'awaiting_review'.
+  const notifyParentsAwaitingReview = (completionId: string): void => {
+    ctx.waitUntil((async () => {
+      const childRow = await env.DB
+        .prepare('SELECT display_name FROM users WHERE id = ?')
+        .bind(auth.sub)
+        .first<{ display_name: string }>();
+      const childName = childRow?.display_name ?? 'Your child';
+
+      // Note: 'role' lives on family_roles, not users — users has no role column.
+      const parents = await env.DB
+        .prepare(`SELECT u.id FROM users u JOIN family_roles fr ON fr.user_id = u.id
+                  WHERE fr.family_id = ? AND fr.role = 'parent'`)
+        .bind(chore.family_id)
+        .all<{ id: string }>();
+      const pendingCount = await getParentPendingCount(env.DB, chore.family_id);
+      await Promise.allSettled(
+        (parents.results ?? []).map(p =>
+          sendPushNotification(env, p.id, {
+            title: 'Ready to approve',
+            body: `${childName} finished ${chore.title}`,
+            route: `/chores/approvals/${completionId}`,
+            badgeCount: pendingCount,
+          }),
+        ),
+      );
+    })());
+  };
+
   const existingRecord = await env.DB
     .prepare(`SELECT id, status, attempt_count FROM completions
               WHERE chore_id = ? AND child_id = ? AND status IN ('needs_revision','available')
@@ -636,6 +685,7 @@ export async function handleChoreSubmit(request: Request, env: Env, id: string):
     const updated = await env.DB
       .prepare('SELECT * FROM completions WHERE id = ?')
       .bind(existingRecord.id).first();
+    notifyParentsAwaitingReview(existingRecord.id);
     return json(updated, 200);
   }
 
@@ -646,6 +696,8 @@ export async function handleChoreSubmit(request: Request, env: Env, id: string):
     INSERT INTO completions (id, family_id, chore_id, child_id, note, status, submitted_at)
     VALUES (?,?,?,?,?,'awaiting_review',?)
   `).bind(completionId, chore.family_id, id, auth.sub, note, now).run();
+
+  notifyParentsAwaitingReview(completionId);
 
   return json({
     id: completionId,
