@@ -1,0 +1,21 @@
+# Gitleaks config for morechard.
+#
+# Extends the default ruleset (do not disable secret scanning) and adds a
+# narrow allowlist for one known false positive: an already-pushed historical
+# commit that added a documentation/plan file containing a fabricated,
+# truncated PEM private-key block used purely to illustrate test code (never
+# a real secret — the body is literally "...TRUNCATED_TEST_KEY..."). The
+# current version of that file has since been fixed to describe generating
+# test keys at runtime instead (see worker/src/lib/push/{apns,fcm}.test.ts for
+# the real pattern), but gitleaks re-scans full git history on every run
+# (fetch-depth: 0), so the already-pushed historical commit needs an explicit
+# allowlist entry — rewriting shared `main` history is not an option here.
+
+[extend]
+useDefault = true
+
+[[allowlist]]
+description = "Fabricated/truncated PEM test-key fixture in docs/superpowers/plans/2026-08-11-push-notifications.md — not a real secret"
+commits = [
+  "eb232dcbbc5b1aaead56e79bda3ab0bb1194284f",
+]

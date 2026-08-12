@@ -407,11 +407,12 @@ function makeEnv(overrides: Partial<{ kvGet: unknown; fetchImpl: typeof fetch }>
   } as any;
 }
 
-// A real PKCS8 RSA test key, generated solely for this test suite (not a production secret).
-const TEST_PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKj
-...TRUNCATED_TEST_KEY...
------END PRIVATE KEY-----`;
+// Generated fresh at test runtime (RSA keypair via crypto.subtle, exported to
+// PKCS8 PEM) rather than checked in as a literal string — this file must never
+// contain a literal "-----BEGIN PRIVATE KEY-----" block for secret scanners
+// (gitleaks et al.) to flag. See worker/src/lib/push/fcm.test.ts for the
+// generation helper this plan expects the implementer to write.
+let TEST_PRIVATE_KEY_PEM = '';
 
 describe('sendFcmPush', () => {
   beforeEach(() => vi.restoreAllMocks());
@@ -617,10 +618,12 @@ git commit -m "feat(push): add FCM sender with cached OAuth token exchange"
 import { describe, it, expect, vi } from 'vitest';
 import { sendApnsPush } from './apns.js';
 
-// A real PKCS8 EC (P-256) test key, generated solely for this test suite.
-const TEST_APNS_KEY_PEM = `-----BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg...TRUNCATED_TEST_KEY...
------END PRIVATE KEY-----`;
+// Generated fresh at test runtime (EC P-256 keypair via crypto.subtle,
+// exported to PKCS8 PEM) rather than checked in as a literal string — this
+// file must never contain a literal "-----BEGIN PRIVATE KEY-----" block for
+// secret scanners (gitleaks et al.) to flag. See worker/src/lib/push/apns.test.ts
+// for the generation helper this plan expects the implementer to write.
+let TEST_APNS_KEY_PEM = '';
 
 function makeEnv() {
   return {
