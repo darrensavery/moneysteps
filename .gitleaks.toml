@@ -14,7 +14,7 @@
 [extend]
 useDefault = true
 
-[[allowlist]]
+[allowlist]
 description = "Fabricated/truncated PEM test-key fixture in docs/superpowers/plans/2026-08-11-push-notifications.md — not a real secret"
 commits = [
   "eb232dcbbc5b1aaead56e79bda3ab0bb1194284f",
