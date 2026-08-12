@@ -18,13 +18,14 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import type { ChildRecord, InsightsData, MentorBriefing } from '../../lib/api'
+import type { ChildRecord, InsightsData, MentorBriefing, TrialStatus } from '../../lib/api'
 import { getInsights, formatCurrency, getChildNudges } from '../../lib/api'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { PremiumShell, MentorAvatar, ProBadge, AiDisclosurePill, injectPremiumStyles } from '../ui/PremiumShell'
 import { SparklineCard } from './SparklineCard'
 import { SparklineExpanded } from './SparklineExpanded'
 import { LabSection } from './LabSection'
+import { LearningLabUpsellCard } from './LearningLabUpsellCard'
 import { AnimatedStat } from './AnimatedStat'
 import { FamilyAuditCard } from './FamilyAuditCard'
 import { tick } from '../../lib/haptics'
@@ -32,9 +33,11 @@ import { tick } from '../../lib/haptics'
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  familyId: string
-  child:    ChildRecord
-  children: ChildRecord[]
+  familyId:    string
+  child:       ChildRecord
+  children:    ChildRecord[]
+  trialStatus: TrialStatus | null
+  onUpgrade:   () => void
 }
 
 type Period = 'week' | 'month' | 'all'
@@ -47,7 +50,7 @@ const PERIOD_LABELS: Record<Period, string> = {
 
 // ── Root component ────────────────────────────────────────────────────────────
 
-export function InsightsTab({ familyId, child }: Props) {
+export function InsightsTab({ familyId, child, trialStatus, onUpgrade }: Props) {
   const [selectedChild, setSelectedChild] = useState<ChildRecord>(child)
   const [period,        setPeriod]        = useState<Period>('month')
   const [data,          setData]          = useState<InsightsData | null>(null)
@@ -109,7 +112,7 @@ export function InsightsTab({ familyId, child }: Props) {
       ) : error ? (
         <ErrorState onRetry={load} />
       ) : data ? (
-        <InsightsDashboard data={data} child={selectedChild} currency={currency} period={period} />
+        <InsightsDashboard data={data} child={selectedChild} currency={currency} period={period} trialStatus={trialStatus} onUpgrade={onUpgrade} />
       ) : null}
     </div>
   )
@@ -118,8 +121,8 @@ export function InsightsTab({ familyId, child }: Props) {
 // ── InsightsDashboard ─────────────────────────────────────────────────────────
 
 function InsightsDashboard({
-  data, child, currency, period,
-}: { data: InsightsData; child: ChildRecord; currency: string; period: 'week' | 'month' | 'all' }) {
+  data, child, currency, period, trialStatus, onUpgrade,
+}: { data: InsightsData; child: ChildRecord; currency: string; period: 'week' | 'month' | 'all'; trialStatus: TrialStatus | null; onUpgrade: () => void }) {
   const [expandedMetric, setExpandedMetric] = useState<'responsibility' | 'consistency' | 'savings' | null>(null)
   const [childNudgeSummary, setChildNudgeSummary] = useState<string | null>(null)
   const childFirstName = child.display_name.split(' ')[0]
@@ -228,7 +231,7 @@ function InsightsDashboard({
       )}
 
       {/* 6. Learning Lab section (paid add-on only) */}
-      {data.learning_lab_enabled && (
+      {data.learning_lab_enabled ? (
         <LabSection
           childName={child.display_name.split(' ')[0]}
           currentModule={data.current_module}
@@ -239,6 +242,13 @@ function InsightsDashboard({
           retentionScore={data.retention_score}
           completedSlugs={data.completed_module_slugs}
         />
+      ) : (
+        trialStatus?.is_expired && !trialStatus.has_ai_mentor && !trialStatus.has_shield && (
+          <LearningLabUpsellCard
+            childName={child.display_name.split(' ')[0]}
+            onUpgrade={onUpgrade}
+          />
+        )
       )}
 
       {/* 6. Period stats */}

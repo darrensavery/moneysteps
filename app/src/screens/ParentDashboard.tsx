@@ -10,7 +10,7 @@ import { AvatarSVG } from '../lib/avatars'
 import { ChoresTab }   from '../components/dashboard/JobsTab'
 import { ActivityTab } from '../components/dashboard/HistoryTab'
 import { InsightsTab } from '../components/dashboard/InsightsTab'
-import { ParentSettingsTab } from '../components/dashboard/ParentSettingsTab'
+import { ParentSettingsTab, type View as SettingsView } from '../components/dashboard/ParentSettingsTab'
 import { PoolTab }         from '../components/dashboard/PoolTab'
 import { AddExpenseSheet } from '../components/dashboard/AddExpenseSheet'
 import { SettlementCard }  from '../components/dashboard/SettlementCard'
@@ -69,6 +69,17 @@ export function ParentDashboard() {
     localStorage.setItem('mc_parent_tab', tab)
   }, [tab])
   const [showSettings, setShowSettings] = useState(false)
+  const [settingsJump, setSettingsJump] = useState<{ view: SettingsView; token: number }>({
+    view:  { type: 'menu' },
+    token: 0,
+  })
+  function openBillingUpgrade() {
+    setSettingsJump(j => ({
+      view:  { type: 'section', section: 'billing', billingSubView: 'plan' },
+      token: j.token + 1,
+    }))
+    setShowSettings(true)
+  }
   const settingsPanelRef = useRef<HTMLDivElement>(null)
   useFocusTrap(settingsPanelRef, showSettings)
   useEffect(() => {
@@ -406,6 +417,8 @@ export function ParentDashboard() {
           online={online}
           onChildrenChange={setChildren}
           onClose={() => setShowSettings(false)}
+          settingsJumpView={settingsJump.view}
+          settingsJumpToken={settingsJump.token}
         />
         <p className="text-center text-[10px] text-[var(--color-text-muted)] opacity-40 tracking-wide pb-3">
           v{__APP_VERSION__}
@@ -431,7 +444,7 @@ export function ParentDashboard() {
                 onReconcileClick={() => setShowSettlement(true)}
               />
             </div>
-            <div className={tab === 'insights' ? 'tab-panel' : 'tab-panel hidden'}><InsightsTab     familyId={familyId} child={activeChild} children={children} /></div>
+            <div className={tab === 'insights' ? 'tab-panel' : 'tab-panel hidden'}><InsightsTab     familyId={familyId} child={activeChild} children={children} trialStatus={trialStatus} onUpgrade={openBillingUpgrade} /></div>
             <div className={tab === 'goals'    ? 'tab-panel' : 'tab-panel hidden'}><GoalBoostingTab familyId={familyId} child={activeChild} /></div>
           </>
         ) : (

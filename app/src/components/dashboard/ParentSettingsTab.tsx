@@ -107,17 +107,19 @@ type TopSection =
   | 'referrals'
   | 'about'
 
-type View =
+export type View =
   | { type: 'menu' }
   | { type: 'section'; section: TopSection; billingSubView?: 'plan' }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  familyId:         string
-  online:           boolean
-  onChildrenChange: (children: ChildRecord[]) => void
-  onClose:          () => void
+  familyId:          string
+  online:            boolean
+  onChildrenChange:  (children: ChildRecord[]) => void
+  onClose:           () => void
+  settingsJumpView?:  View
+  settingsJumpToken?: number
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -151,13 +153,23 @@ function SectionCard({ children }: { children: React.ReactNode }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose }: Props) {
+export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose, settingsJumpView, settingsJumpToken }: Props) {
   const identity        = getDeviceIdentity()
   // Treat as co-parent (less privileged) if identity is missing — never default to lead without identity
   const isLead          = identity != null && identity.parenting_role !== 'CO_PARENT'
   const { locale, setLocale } = useLocale()
 
   const [view,          setView]          = useState<View>({ type: 'menu' })
+
+  // Deep-link support: ParentSettingsTab stays mounted while the drawer is
+  // closed (it's a CSS transform, not an unmount), so a plain initial-state
+  // prop wouldn't fire on a second open. Callers bump settingsJumpToken to
+  // force a jump even if settingsJumpView is unchanged from last time.
+  useEffect(() => {
+    if (settingsJumpView) setView(settingsJumpView)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settingsJumpToken])
+
   useAndroidBack(true, () => {
     if (view.type === 'section') setView({ type: 'menu' })
     else onClose()
