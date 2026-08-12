@@ -9,7 +9,7 @@
 > - **§11 backlog rewritten:** reflects the split-product paywall logic at Day 15.
 > - **§16 Sovereign Ledger language refined:** no "Total Equity" — now "Total Funds / Available Balance."
 > - **§17 brand rules clarified:** empty states and copy updated for a chore-tracker-first product.
-> - **§18 NEW:** Subscription Cancellation & Refund Compliance (Consumer Rights Act 2015, CCRs 2013, new UK subscription regulations 2025–26).
+> - **§18 retired then rewritten:** was "Subscription Cancellation & Refund Compliance"; pricing model moved to one-time payments only (2026-08-06), so §18 is now "Refund Compliance (No Subscriptions)" — covers the 14-day cooling-off refund only, no renewal/subscription language.
 > - **§19 NEW:** Curriculum Tier Naming — four-tier structure with Level 1 (Seed · 6–9) reserved for Phase 2. Defines the Child `experience_level` toggle (Orchard vs. Clean) controlling how curriculum tiers are displayed.
 > - **Licensing model decisions locked:** AI Mentor active during 14-day trial; if user buys lifetime-only at Day 15, AI features lock immediately (Option A); Pro Coach Bundle is offered at Day 15 checkout, not before.
 
@@ -390,12 +390,14 @@ Want to give it a try?
 
 ---
 
-### 17.7) Allowance Day Push Notification
+### 17.7) Push Notification Copy
 
 ```
 🌧 Your allowance has arrived.
 £[X] landed in your account — a fresh start for the week. Open the app to see it grow.
 ```
+
+This was the original illustrative example. Shipped v1 (native iOS/Android push, see `docs/superpowers/specs/2026-08-11-push-notifications-design.md`) covers six real trigger events instead — chore submitted (to parents), chore approved & paid, chore needs a re-do, new chore assigned, goal boosted, and gift/contribution received — and the actual copy is plain and direct with no Orchard metaphor, e.g. `"{chore} approved! +{amount} added"`, matching the child-facing-language rule that child-facing UI copy skips the metaphor layer. Treat the table below as the general house-style default; push notifications are the one row where the shipped implementation is plainer than the rule.
 
 ---
 
@@ -416,35 +418,26 @@ Want to give it a try?
 
 ---
 
-## 18) Subscription Cancellation & Refund Compliance
+## 18) Refund Compliance (No Subscriptions)
 
-> **Statutory basis:** Consumer Rights Act 2015; Consumer Contracts (Information, Cancellation and Additional Charges) Regulations 2013; 2025–26 UK subscription contract regulations. Applies to UK users; PL users covered by equivalent EU distance-selling rules; US users subject to state-level auto-renewal laws (notably California ARL, FTC Click-to-Cancel Rule).
+> **Statutory basis:** Consumer Rights Act 2015; Consumer Contracts (Information, Cancellation and Additional Charges) Regulations 2013. Applies to UK users; PL users covered by equivalent EU distance-selling rules.
+>
+> **All products are ONE-TIME payments.** There are no subscriptions, no auto-renewal, and nothing to "cancel" in the recurring sense — see `project_pricing` (Complete £44.99, Complete AI £64.99, Shield AI £149.99, AI Mentor upgrade £29.99, all one-off). The former "AI Mentor Annual Subscription" model, its renewal notifications, and its dedicated "Cancel AI Mentor" UX requirement are retired; the sections below described that model and have been removed. The only "cancellation" that exists today is the 14-day cooling-off refund (§18.1), already shipped in `app/src/components/settings/sections/BillingSettings.tsx` and `worker/src/routes/stripe.ts` (`handleCancelPlan`, `DELETE /api/billing/cancel`).
 
 ### 18.1 14-Day Cooling-Off Period
-- **Essential Lifetime License:** A UK user who purchases the Essential Lifetime License has a **statutory 14-day right to cancel** and obtain a full refund, provided they have not consented to the supply of digital content starting within the cooling-off period AND acknowledged that doing so waives the right to cancel. Implementation: the paywall checkout must present a clear "I want immediate access and understand I waive my 14-day refund right" checkbox. If the user declines, the app remains locked until Day 14 has passed OR they change their mind in the cancellation flow.
-- **AI Mentor Annual Subscription:** Same 14-day cooling-off right applies at initial purchase and at each annual renewal. The renewal cooling-off period begins on the renewal date.
-- **Refund mechanics:** Full refund issued via Stripe refund API within 14 days of cancellation request. `payment_audit_log` records both the original charge and the refund as separate immutable rows.
+- **Any paid plan (Complete / Complete AI / Shield AI):** A UK user has a **statutory 14-day right to cancel** and obtain a full refund from the date of purchase, provided they have not consented to the supply of digital content starting within the cooling-off period AND acknowledged that doing so waives the right to cancel. Implementation: the paywall checkout must present a clear "I want immediate access and understand I waive my 14-day refund right" checkbox. If the user declines, the app remains locked until Day 14 has passed OR they cancel via the refund flow.
+- **Refund mechanics:** Full refund issued via Stripe refund API within 14 days of cancellation request. `payment_audit_log` records both the original charge and the refund as separate immutable rows. Since every plan is one-off, there is no "renewal" cooling-off window to track — the 14 days run once, from the single purchase date.
+- **No dark patterns:** Cancellation takes no more steps than purchase — one confirmation dialogue is the maximum allowed. A user emailing the designated support address stating they wish to cancel is legally binding; the support system must treat such emails as cancellation requests, not support tickets.
 
-### 18.2 Cancellation UX Requirements
-- **Easy-exit rule:** Cancellation must take no more steps than signup. The dashboard must have a visible "Cancel AI Mentor" option under Settings, accessible in ≤ 3 taps from any screen.
-- **No dark patterns:** No confirm-shaming, no hidden cancellation paths, no "call to cancel" requirements, no sequential friction screens. One confirmation dialogue is the maximum allowed.
-- **Cancellation via clear statement:** A user sending an email to a designated support address stating they wish to cancel is legally binding. The support system must treat such emails as cancellation requests, not support tickets.
-
-### 18.3 Renewal Notifications (AI Mentor only)
-- **14 days before auto-renewal:** Push notification + email: *"Your Morechard AI Mentor subscription renews on [date] for £[amount]. To cancel, go to Settings → Plan Management."*
-- **3 days before auto-renewal:** Second reminder, same content.
-- **On renewal day:** Confirmation email with: renewed amount, new renewal date, 14-day cooling-off right statement, cancellation link.
-- **Six-monthly reminder:** After 6 months of active subscription, send a reminder email confirming the subscription is active and detailing cancellation options. Repeats every 6 months.
-
-### 18.4 Data Export
+### 18.2 Data Export
 - All users — including those whose trial has expired without purchase — have access to `/export`. Export includes:
     - Full chore ledger (CSV).
     - All goals created and their outcomes (CSV).
     - Child display names and associated transactions (JSON).
-- Export is always free, always available, never gated behind active subscription.
+- Export is always free, always available, never gated behind purchase.
 - GDPR / UK-GDPR data portability compliance: export must be machine-readable and include all personal data Morechard holds on the family.
 
-### 18.5 Account Deletion
+### 18.3 Account Deletion
 - Account deletion available via Settings → Account → Delete Account.
 - Deletion is a soft delete followed by hard delete after 30-day grace period (allows accidental-deletion recovery).
 - Hard delete removes all PII. Ledger records are anonymised (replace `parent_id` / `child_id` with hashed identifiers) but not deleted — preserves the SHA-256 chain and satisfies §3's no-deletion constraint.

@@ -8,14 +8,17 @@ _Tone: Professional, precise, concise. Bank-grade authority. Technical terms exp
 
 **What this is:** How to fix missing notifications for chore completions and approvals.
 
+**Things to know first:** Push notifications only work on the native app — installed from the App Store or Google Play — not on the browser-installed PWA. If you're using the PWA, this is expected: there's no push support there.
+
 **How to do it:**
-1. On your device, go to **Settings** → **Notifications** → **Morechard** and ensure notifications are enabled.
-2. In the Morechard app, go to **Settings** → **Notifications** and check that approval alerts are turned on.
-3. If notifications are enabled but not arriving, try logging out and back in.
+1. Confirm you're on the native app, not the PWA.
+2. On your device, go to **Settings** → **Notifications** → **Morechard** and ensure notifications are enabled.
+3. If you didn't grant permission the first time you were asked (right after creating your first chore, or your child's first chore being assigned), the app won't automatically ask again — you'll need to turn it on manually in device Settings.
+4. If notifications are enabled but not arriving, try logging out and back in.
 
 **Things to know:**
-- iOS requires explicit notification permission — if you denied it at install, re-enable via device Settings.
-- PWA notifications on Android require the app to be installed to the home screen (not just opened in a browser).
+- The home-screen app icon badge is a useful fallback: it shows how many things need your attention and corrects itself every time you open or return to the app, even if a push notification was missed.
+- iOS requires explicit notification permission — if you denied it, re-enable via device Settings.
 - Notification delivery is not guaranteed on low-battery or Do Not Disturb modes.
 
 **Still need help?** Use the **Contact Support** option in Settings → Help & Support within the app, or [browse the help desk](https://support.morechard.com).

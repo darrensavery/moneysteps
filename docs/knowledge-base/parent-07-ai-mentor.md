@@ -13,7 +13,7 @@ The Mentor is activated via Billing (see: Activating the AI Mentor). Once active
 
 **Things to know:**
 - The Mentor is an add-on (£19.99/year) available on both the Complete and Shield plans.
-- It communicates with your child through the Learning Lab in the app only. It does not send emails, push notifications, or messages outside the app.
+- It communicates with your child through the Learning Lab in the app only. It does not send emails or messages outside the app. (Separately, the app does send push notifications for chore and goal activity on the native app — see "Notifications are not showing up" — but these come from the core chore/goal system, not the Mentor itself.)
 - The Mentor uses your child's earning, saving, and spending history to make lessons relevant. It does not access data outside of Morechard.
 
 **Still need help?** Use the **Contact Support** option in Settings → Help & Support within the app, or [browse the help desk](https://support.morechard.com).

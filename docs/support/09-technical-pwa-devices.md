@@ -41,13 +41,14 @@ Covers installing the app (PWA/Android), cross-device behaviour, offline/sync, p
 
 ## Push notifications
 
-**Facts:** Push (allowance-day notifications, etc.) is part of the PWA optimisation track and depends on the user granting browser/OS notification permission. (Full offline caching + push is still being hardened — Phase 8.)
+**Facts:** Push notifications are live on the native iOS and Android builds only — not on the browser-installed PWA (no web push in v1). The Worker sends directly to Apple (APNs) and Google (FCM), no third-party push vendor. Six events trigger a push: a chore is submitted (parents), approved & paid (child), needs a re-do (child), a new chore is assigned (child), a goal is boosted (child), and a gift/contribution is received (parents). Each push also updates the home-screen app icon badge. Permission is asked contextually — a parent is prompted right after creating their first chore, a child right after their first chore is assigned — not on first launch.
 
 ### Symptom: "I'm not getting notifications"
 **Diagnose:**
-1. Did they grant notification permission when prompted? (Browser/OS setting.)
-2. iOS PWAs historically restrict web push — behaviour varies by iOS version and requires the app be installed to the home screen.
-**Resolve:** Have them enable notifications in the OS/browser settings for Morechard and ensure the PWA is installed (not just open in a tab). If permissions are granted and still nothing arrives, note the platform/OS version and escalate.
+1. Are they on the native app (App Store/Play Store install), not just the browser-installed PWA? Push is native-only — a PWA user will never receive one, by design, not a bug.
+2. Did they grant notification permission when the in-app prompt appeared? (Check device Settings → Notifications → Morechard.)
+3. If permission was denied at that first prompt, the app doesn't currently re-ask automatically — they need to enable it manually in device Settings.
+**Resolve:** Confirm they're on the native app. Have them check/enable notification permission for Morechard in device Settings. The in-app badge count is a reliable fallback even if a push was missed — it self-corrects every time the app is opened or resumed, so "nothing showing up" for the badge itself (as opposed to the tray notification) is a stronger signal something's actually wrong. If permission is granted, the app is native, and still nothing arrives, note the platform/OS version and escalate — full real-device verification of this feature is still an open engineering item (see `CLAUDE.md`).
 
 ---
 

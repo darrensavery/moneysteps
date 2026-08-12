@@ -4,6 +4,17 @@ A running log of notable engineering work, grouped by day, for future reference.
 
 ---
 
+## 2026-08-11
+
+### Push notifications + app icon badge — native iOS/Android, direct to FCM/APNs
+Brainstormed and spec'd (`docs/superpowers/specs/2026-08-11-push-notifications-design.md`), then built via 15 plan tasks plus one mid-implementation amendment. Worker signs its own JWTs and talks to Apple/Google directly — no OneSignal, no Firebase Admin SDK. `device_tokens` (migration 0093) is keyed on the token itself, not `user_id`, so a shared family tablet self-corrects across account switches without needing an explicit logout. Six trigger events (chore submitted/approved/needing-redo, new chore assigned, goal boosted, gift received) fire from `ctx.waitUntil(...)`, fanned out to every device a user owns via `Promise.allSettled`.
+
+Task-review loop caught and fixed several real bugs before they shipped: an IDOR on the unregister endpoint (any authenticated user could delete another user's token by value alone), a brief-authored FCM cache-expiry check that could never actually reuse a cached OAuth token, and a `users.role` column reference that doesn't exist (role lives on `family_roles`). Mid-implementation, discovered the app has no URL sub-routes at all — only `/parent`/`/child` with internal tab state — so every push route baked into the early trigger-wiring tasks pointed at a dead link; recovered with a plan amendment adding `?tab=` query-param deep-linking to both dashboards and updating all six route strings.
+
+The final whole-branch review (run after all 15 tasks individually passed their own review) caught what per-task review structurally couldn't: two CI-blocking issues (a real `tsc` error in the FCM sender, and real PEM private keys committed in test fixtures — replaced with runtime-generated keys), plus a data-loss risk (APNs was pruning device tokens on *any* 400 response, not just `BadDeviceToken` — a misconfigured bundle ID would have silently wiped every iOS token on the first send), a client-side bug where a warm-start deep link never actually switched tabs (the dashboards only read `?tab=` in a one-time `useState` initializer), a cold-start handler that navigated off whatever was sitting in the whole notification tray rather than the notification that actually launched the app, and a token-lifecycle gap where `PushNotifications.register()` only ever ran once, ever, behind the one-time permission-prompt flag — so token rotation, reinstalls, or a second account on a shared device would silently stop receiving pushes. All fixed in one consolidated pass and re-reviewed clean.
+
+Verified: `worker/` `tsc --noEmit` clean, 488/488 tests. `app/` `tsc --noEmit` clean, 167/167 tests. Real-device verification (a live APNs/FCM round-trip on physical hardware) is still outstanding — same gap this project has hit before with WebAuthn and the JWT cookie migration, for the same reason (no device/emulator, `wrangler dev --remote` 503s in this sandbox). Manual native-portal setup (Apple Developer APNs key, Firebase project, Xcode capability, seven Worker secrets) documented in `CLAUDE.md`'s "Outstanding" section, not yet done.
+
 ## 2026-07-17
 
 ### Sentry data residency confirmed EU — corrected LIA/DPIA transfer language

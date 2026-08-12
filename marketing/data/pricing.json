@@ -8,7 +8,7 @@
     "tagline": "Everything you need to run a fair, structured pocket money system.",
     "summary_mode": true,
     "summary_groups": [
-      { "label": "Chores & Ledger", "detail": "SHA-256 immutable ledger, 64 built-in chores, streak awards, flash chores & photo proof" },
+      { "label": "Chores & Ledger", "detail": "SHA-256 immutable ledger, 64 built-in chores, streak awards, flash chores, photo proof & push notifications" },
       { "label": "Goals & Money", "detail": "Savings Grove goals, Rate Guide benchmarking, payment bridge & overdraft facility" },
       { "label": "Family & Access", "detail": "Unlimited children, 6-digit child codes, multi-household compatible & avatar personalisation" }
     ],
@@ -26,7 +26,8 @@
           "Auto-approve vs parental sign-off",
           "Chore history archive",
           "Streak awards",
-          "'Flash' chores"
+          "'Flash' chores",
+          "Push notifications & app icon badge (iOS/Android)"
         ]
       },
       {
