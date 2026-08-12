@@ -34,6 +34,12 @@ import {
 
 type AuthedRequest = Request & { auth: JwtPayload };
 
+export function computeLearningLabEnabled(
+  row: { has_ai_mentor: number | null; has_shield: number | null } | null,
+): boolean {
+  return Boolean(row?.has_ai_mentor) || Boolean(row?.has_shield);
+}
+
 // ----------------------------------------------------------------
 // GET /api/insights
 // ----------------------------------------------------------------
@@ -470,11 +476,10 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
 
   // ── 11. Learning Lab data ─────────────────────────────────────────────────
   const licenceRow = await env.DB.prepare(`
-    SELECT license_type FROM families WHERE id = ?
-  `).bind(family_id).first<{ license_type: string | null }>().catch(() => null);
+    SELECT has_ai_mentor, has_shield FROM families WHERE id = ?
+  `).bind(family_id).first<{ has_ai_mentor: number | null; has_shield: number | null }>().catch(() => null);
 
-  const licenceType = licenceRow?.license_type ?? 'core';
-  const learningLabEnabled = ['core_ai', 'shield'].includes(licenceType);
+  const learningLabEnabled = computeLearningLabEnabled(licenceRow);
 
   let currentModule: { slug: string; title: string; progress_pct: number; pillar: string } | null = null;
   let completedModuleSlugs: string[] = [];
