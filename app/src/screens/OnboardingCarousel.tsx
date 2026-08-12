@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { markOnboardingSeen } from '@/lib/onboarding'
+import { FullLogo } from '@/components/ui/Logo'
 
 import slide1 from '@/assets/onboarding/slide-1.svg'
 import slide2 from '@/assets/onboarding/slide-2.svg'
@@ -41,13 +42,13 @@ const SLIDES: Slide[] = [
     image:    slide3,
     alt:      'A parent reviewing a glowing ledger held in both hands',
     headline: 'You approve everything',
-    subtext:  "Nothing hits the ledger without your sign-off. You're always in control.",
+    subtext:  "Nothing gets paid or recorded without your sign-off. You're always in control.",
   },
   {
     image:    slide4,
     alt:      'Glowing golden chain links sealed with light, resting in open palms',
     headline: 'A record nothing can quietly change',
-    subtext:  "Every entry is locked the moment it's approved - permanent, tamper-proof, and visible to everyone who needs it.",
+    subtext:  'Once approved, every entry is permanent and visible to everyone who needs it - so there are never any surprises.',
   },
 ]
 
@@ -89,53 +90,98 @@ export function OnboardingCarousel() {
   }, [activeIndex])
 
   return (
-    <div className="h-svh bg-[var(--color-bg)] flex flex-col overflow-hidden">
-      <header className="safe-top px-4 py-3 flex justify-end">
+    <div className="h-svh bg-[#0b1f22] flex flex-col overflow-hidden relative">
+      {/* Full-bleed slide art with a slow Ken Burns drift */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeIndex}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(_e, info) => {
+            if (info.offset.x < -60) goNext()
+            else if (info.offset.x > 60 && activeIndex > 0) goToSlide(activeIndex - 1)
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="absolute inset-0"
+        >
+          <motion.img
+            src={slide.image}
+            alt={slide.alt}
+            className="w-full h-full object-cover"
+            draggable={false}
+            initial={{ scale: 1.08 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 6, ease: 'easeOut' }}
+          />
+          {/* Legibility scrim — dark navy, brand-consistent */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b1f22] via-[#0b1f22cc] to-[#0b1f2233]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0b1f2299] via-transparent to-transparent h-32" />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Top bar — floats over the art, logo pinned top-left as everywhere else in the app */}
+      <header className="safe-top px-4 py-3 flex justify-between items-center relative z-10">
+        <FullLogo iconSize={26} light />
         <button
           onClick={finish}
-          className="text-[13px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+          className="
+            rounded-full px-3 py-1.5 text-[12px] font-semibold
+            border border-white/20 bg-white/10 backdrop-blur-md text-white/90
+            hover:bg-white/20 active:scale-95 transition-all
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60
+          "
         >
           Skip
         </button>
       </header>
 
-      <main className="flex-1 flex flex-col px-5 max-w-md mx-auto w-full overflow-hidden">
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeIndex}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(_e, info) => {
-                if (info.offset.x < -60) goNext()
-                else if (info.offset.x > 60 && activeIndex > 0) goToSlide(activeIndex - 1)
-              }}
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -24 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col items-center gap-6 w-full py-4"
-            >
-              <img
-                src={slide.image}
-                alt={slide.alt}
-                className="w-full max-w-[280px] h-auto rounded-2xl"
-                draggable={false}
-              />
-              <div className="text-center space-y-3">
-                <h1 className="text-[28px] font-extrabold text-[var(--color-text)] tracking-tight leading-[1.15]">
-                  {slide.headline}
-                </h1>
-                <p className="text-[15px] text-[var(--color-text-muted)] leading-relaxed max-w-[300px] mx-auto">
-                  {slide.subtext}
-                </p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      {/* Back — floats at the left edge, mid-height, once there's somewhere to go back to */}
+      {activeIndex > 0 && (
+        <button
+          onClick={goPrevious}
+          aria-label="Previous slide"
+          className="
+            absolute left-3 top-1/2 -translate-y-1/2 z-10
+            w-9 h-9 rounded-full flex items-center justify-center
+            bg-white/10 backdrop-blur-md border border-white/15 text-white
+            hover:bg-white/20 active:scale-95 transition-all
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60
+          "
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+      )}
 
-        <div className="flex items-center justify-center gap-2 py-4" role="tablist" aria-label="Onboarding slides">
+      {/* Content — anchored to the bottom of the art, sits on the scrim */}
+      <main className="flex-1 flex flex-col justify-end px-6 max-w-md mx-auto w-full relative z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`text-${activeIndex}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, delay: 0.05 }}
+            className="space-y-3 pb-2"
+          >
+            <span className="text-[13px] font-bold tracking-wide text-[var(--brand-accent)]">
+              {activeIndex + 1} of {SLIDES.length}
+            </span>
+            <h1 className="text-[28px] font-extrabold text-white tracking-tight leading-[1.15] text-balance">
+              {slide.headline}
+            </h1>
+            <p className="text-[15px] text-white/75 leading-relaxed max-w-[320px]">
+              {slide.subtext}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="flex items-center justify-center gap-2 py-5" role="tablist" aria-label="Onboarding slides">
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -144,39 +190,22 @@ export function OnboardingCarousel() {
               aria-label={`Go to slide ${i + 1}`}
               onClick={() => goToSlide(i)}
               className={`h-2 rounded-full transition-all duration-200 ${
-                i === activeIndex
-                  ? 'w-6 bg-[var(--brand-primary)]'
-                  : 'w-2 bg-[var(--color-border)]'
+                i === activeIndex ? 'w-6 bg-[var(--brand-accent)]' : 'w-2 bg-white/30'
               }`}
             />
           ))}
         </div>
 
-        <div className="w-full pb-6 flex gap-3">
-          {activeIndex > 0 && (
-            <button
-              onClick={goPrevious}
-              aria-label="Previous slide"
-              className="
-                h-14 px-6 rounded-2xl border-2 border-[var(--color-border)] text-[var(--color-text)]
-                font-semibold text-[15px] tracking-tight
-                hover:bg-[var(--color-surface-alt)] active:scale-[0.98]
-                transition-all duration-150
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2
-              "
-            >
-              Back
-            </button>
-          )}
+        <div className="w-full pb-6">
           <button
             onClick={goNext}
             className="
-              flex-1 h-14 rounded-2xl bg-[var(--brand-primary)] text-white
+              w-full h-14 rounded-2xl bg-[var(--brand-primary)] text-white
               font-semibold text-[15px] tracking-tight
               flex items-center justify-center gap-2.5
               hover:opacity-90 active:scale-[0.98]
-              transition-all duration-150 shadow-md hover:shadow-lg
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2
+              transition-all duration-150 shadow-lg shadow-black/30
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1f22]
             "
           >
             {isLast ? 'Get Started' : 'Next'}

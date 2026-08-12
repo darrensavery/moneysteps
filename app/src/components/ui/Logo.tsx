@@ -116,9 +116,11 @@ interface FullLogoProps {
   /** Controls the overall scale. Mark height = iconSize, text scales proportionally. */
   iconSize?: number
   className?: string
+  /** Force white wordmark text — for use over dark/photographic backgrounds that don't track the light/dark theme (e.g. onboarding). */
+  light?: boolean
 }
 
-export function FullLogo({ iconSize = 28, className = '' }: FullLogoProps) {
+export function FullLogo({ iconSize = 28, className = '', light = false }: FullLogoProps) {
   return (
     <span
       className={`inline-flex items-center gap-2 ${className}`}
@@ -126,8 +128,8 @@ export function FullLogo({ iconSize = 28, className = '' }: FullLogoProps) {
     >
       <BrandMark size={iconSize} aria-hidden />
       <span
-        className="font-semibold tracking-tight text-main"
-        style={{ fontSize: Math.round(iconSize * 0.65) }}
+        className={`font-semibold tracking-tight ${light ? '' : 'text-main'}`}
+        style={{ fontSize: Math.round(iconSize * 0.65), color: light ? '#f9f7f2' : undefined }}
       >
         Morechard
       </span>
