@@ -13,10 +13,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { markOnboardingSeen } from '@/lib/onboarding'
 import { FullLogo } from '@/components/ui/Logo'
 
-import slide1 from '@/assets/onboarding/slide-1.svg'
-import slide2 from '@/assets/onboarding/slide-2.svg'
-import slide3 from '@/assets/onboarding/slide-3.svg'
-import slide4 from '@/assets/onboarding/slide-4.svg'
+import slide1 from '@/assets/onboarding/carousel-1.webp'
+import slide2 from '@/assets/onboarding/carousel-2.webp'
+import slide3 from '@/assets/onboarding/carousel-3.webp'
+import slide4 from '@/assets/onboarding/carousel-4.webp'
 
 interface Slide {
   image:    string
@@ -40,15 +40,15 @@ const SLIDES: Slide[] = [
   },
   {
     image:    slide3,
-    alt:      'A parent reviewing a glowing ledger held in both hands',
-    headline: 'You approve everything',
-    subtext:  "Nothing gets paid or recorded without your sign-off. You're always in control.",
+    alt:      'A child walking toward a glowing light beside a wall of books',
+    headline: '25 lessons kids actually finish',
+    subtext:  'The Learning Lab turns saving, spending and earning into short, hands-on lessons - not another course that gets abandoned.',
   },
   {
     image:    slide4,
-    alt:      'Glowing golden chain links sealed with light, resting in open palms',
-    headline: 'A record nothing can quietly change',
-    subtext:  'Once approved, every entry is permanent and visible to everyone who needs it - so there are never any surprises.',
+    alt:      'A parent reading something glowing on a tablet',
+    headline: 'You approve everything',
+    subtext:  "Nothing gets paid or recorded without your sign-off - and once approved, it's locked for good. You're always in control.",
   },
 ]
 
@@ -118,7 +118,7 @@ export function OnboardingCarousel() {
             transition={{ duration: 6, ease: 'easeOut' }}
           />
           {/* Legibility scrim — dark navy, brand-consistent */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0b1f22] via-[#0b1f22cc] to-[#0b1f2233]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b1f22] from-0% via-[#0b1f22b3] via-35% to-transparent to-65%" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0b1f2299] via-transparent to-transparent h-32" />
         </motion.div>
       </AnimatePresence>
