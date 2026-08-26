@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^10.0.0",
-    "@capacitor/android": "^8.3.1",
+    "@capacitor/android": "^8.4.2",
     "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/clipboard": "^8.0.1",
