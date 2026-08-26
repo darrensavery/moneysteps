@@ -20,7 +20,7 @@
     "seed:bootstrap": "cd worker && npx wrangler d1 execute morechard-dev --remote --file=dev/bootstrap_dev_db.sql"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "markdown-it": "^14.1.0",
     "playwright": "^1.58.2",
     "sharp": "^0.34.5"
