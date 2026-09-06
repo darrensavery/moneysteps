@@ -257,18 +257,12 @@ export function ChoresTab({ familyId, child, children }: Props) {
                 {/* Review panel */}
                 {!isReviewing ? (
                   <div className="px-4 pb-4 flex gap-2">
-                    <button
-                      onClick={() => openReview(s, 'edit')}
-                      className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2 text-[0.8125rem] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all"
-                    >
+                    <Button size="sm" className="flex-1 h-9" onClick={() => openReview(s, 'edit')}>
                       Review &amp; approve
-                    </button>
-                    <button
-                      onClick={() => openReview(s, 'decline')}
-                      className="flex-1 border border-[var(--color-border)] rounded-xl py-2 text-[0.8125rem] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer"
-                    >
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => openReview(s, 'decline')}>
                       Decline
-                    </button>
+                    </Button>
                   </div>
                 ) : reviewMode === 'edit' ? (
                   <div className="border-t border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] px-4 pt-3 pb-4 space-y-3">
@@ -316,19 +310,17 @@ export function ChoresTab({ familyId, child, children }: Props) {
                       />
                     </div>
                     <div className="flex gap-2 pt-1">
-                      <button
-                        onClick={closeReview}
-                        className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.8125rem] font-medium text-[var(--color-text-muted)] cursor-pointer"
-                      >
+                      <Button variant="outline" size="sm" className="flex-1 h-10" onClick={closeReview}>
                         Cancel
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 h-10"
                         onClick={handleApprove}
                         disabled={reviewBusy}
-                        className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.8125rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
                       >
                         {reviewBusy ? 'Approving…' : 'Approve →'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -347,19 +339,19 @@ export function ChoresTab({ familyId, child, children }: Props) {
                       className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                     <div className="flex gap-2">
-                      <button
-                        onClick={closeReview}
-                        className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.8125rem] font-medium text-[var(--color-text-muted)] cursor-pointer"
-                      >
+                      <Button variant="outline" size="sm" className="flex-1 h-10" onClick={closeReview}>
                         Cancel
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1 h-10"
                         onClick={handleReject}
                         disabled={reviewBusy || !rejectNote.trim()}
-                        className="flex-1 bg-red-500 text-white rounded-xl py-2.5 text-[0.8125rem] font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer active:scale-[0.98] transition-all"
+                        title={!rejectNote.trim() ? 'Explain why you\'re declining first' : undefined}
                       >
                         {reviewBusy ? 'Declining…' : 'Send decline'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}

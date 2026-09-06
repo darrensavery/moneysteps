@@ -194,7 +194,10 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                   </div>
 
                   <div className="space-y-1">
-                    <div className="w-full h-4 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
+                    {/* Zeigarnik nudge: an almost-finished goal pulses gently so the
+                        near-complete state keeps nagging for attention, same ring
+                        animation already used for badges. */}
+                    <div className={`w-full h-4 bg-[var(--color-surface-alt)] rounded-full overflow-hidden ${pct >= 80 && !isReady ? 'badge-ring-pulse' : ''}`}>
                       <div
                         className="h-full bg-[var(--brand-primary)] rounded-full progress-fill-glow"
                         style={{ width: `${goalBarPct}%`, transition: 'width 1.1s cubic-bezier(0.25, 1, 0.5, 1)' }}

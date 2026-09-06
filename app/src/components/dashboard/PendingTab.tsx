@@ -19,6 +19,7 @@ import {
   approveAll, formatCurrency, getProofUrl,
 } from '../../lib/api'
 import { PaymentBridgeSheet } from '../payment/PaymentBridgeSheet'
+import { Button } from '../ui/button'
 import { useToast, Toast } from '../settings/shared'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { ReviewPromptSheet } from '../review/ReviewPromptSheet'
@@ -46,6 +47,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
   const [reviseId, setReviseId]       = useState<string | null>(null)
   const [reviseNote, setReviseNote]   = useState('')
   const [busy, setBusy]               = useState<string | null>(null)
+  const [approvingId, setApprovingId] = useState<string | null>(null)
   const [approveAllBusy, setApproveAllBusy] = useState(false)
   const [showApproveAllModal, setShowApproveAllModal] = useState(false)
   useAndroidBack(showApproveAllModal, () => setShowApproveAllModal(false))
@@ -80,24 +82,45 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
 
   useEffect(() => { load() }, [load])
 
+  // How long the card's checkmark/fade exit plays before it actually leaves
+  // the list — long enough to read as a confirmed action, short enough to
+  // not feel laggy ("Behind the Button": the button reflects a real step,
+  // not a generic spinner).
+  const APPROVE_EXIT_MS = 260
+
   async function handleApprove(id: string) {
     void tick()
-    setBusy(id)
+    const approved = completions.find((c) => c.id === id)
+    if (!approved) return
+    const indexInList = completions.findIndex((c) => c.id === id)
+
+    // Optimistic: fire the request immediately and let the exit animation
+    // play in parallel rather than waiting on the round trip. `approvingId`
+    // is the "leaving" flag so the card shows its checkmark/fade regardless
+    // of how fast the network responds; a genuine failure cancels the pending
+    // removal and restores the card in its original slot. Deliberately kept
+    // separate from `busy` (revise flow) so a revise-in-progress card never
+    // fades — only a genuine approval does.
+    setApprovingId(id)
+    let removed = false
+    const removeTimer = setTimeout(() => {
+      removed = true
+      setCompletions(prev => prev.filter((c) => c.id !== id))
+      onCountChange(completions.length - 1)
+    }, APPROVE_EXIT_MS)
+
     try {
       const result = await approveCompletion(id)
-      const approved = completions.find((c) => c.id === id)
-      await load()
-      if (approved) {
-        setPendingToastAction({
-          label: `Pay Now (${formatCurrency(approved.reward_amount, approved.currency)})`,
-          onClick: () => setBridgeCtx({
-            completionIds: [approved.id],
-            total: approved.reward_amount,
-            currency: approved.currency,
-          }),
-        })
-        showToast(`Approved ✓`)
-      }
+      setApprovingId(null)
+      setPendingToastAction({
+        label: `Pay Now (${formatCurrency(approved.reward_amount, approved.currency)})`,
+        onClick: () => setBridgeCtx({
+          completionIds: [approved.id],
+          total: approved.reward_amount,
+          currency: approved.currency,
+        }),
+      })
+      showToast(`Approved ✓`)
       if (result.show_review_prompt) {
         setTimeout(() => {
           trackReviewPrompt('shown', { platform: 'web', trigger: 'nth_approval' })
@@ -105,18 +128,31 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
         }, 500)
       }
     } catch (err) {
+      clearTimeout(removeTimer)
+      setApprovingId(null)
       // Co-parent race: both parents can be looking at the same awaiting_review
       // item (e.g. both tapped the "ready to approve" push notification). Whoever
       // taps second gets a 409 from the server — refresh the list instead of
       // leaving a dead card / a raw error on screen.
       if (isAlreadyResolvedError(err)) {
+        // Always refresh here (regardless of whether the exit animation had
+        // finished) — the card is stale either way, and load() replaces the
+        // whole list from the server so there's nothing to reconcile by hand.
         await load()
         showToast('Already actioned by the other parent')
       } else {
+        // Genuine failure — restore the card where it was (if the exit timer
+        // already fired) and let the parent retry.
+        if (removed) {
+          setCompletions(prev => {
+            const next = [...prev]
+            next.splice(Math.min(indexInList, next.length), 0, approved)
+            return next
+          })
+          onCountChange(completions.length)
+        }
         showToast('Something went wrong — please try again.')
       }
-    } finally {
-      setBusy(null)
     }
   }
 
@@ -206,10 +242,11 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
       )}
       {/* Approve-all bulk action */}
       {completions.length > 1 && (
-        <button
+        <Button
           onClick={() => setShowApproveAllModal(true)}
           disabled={approveAllBusy}
-          className="w-full bg-[var(--brand-primary)] text-white font-bold py-3.5 rounded-2xl text-[0.9375rem] hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
+          size="lg"
+          className="w-full"
         >
           {approveAllBusy ? (
             <span className="flex items-center justify-center gap-2">
@@ -217,7 +254,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
               Approving…
             </span>
           ) : `Approve all ${completions.length} submissions`}
-        </button>
+        </Button>
       )}
 
       {completions.map(c => (
@@ -227,7 +264,8 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
           isRevising={reviseId === c.id}
           reviseNote={reviseNote}
           busy={busy === c.id}
-          anyBusy={!!busy || approveAllBusy}
+          isApproving={approvingId === c.id}
+          anyBusy={!!busy || !!approvingId || approveAllBusy}
           onApprove={() => handleApprove(c.id)}
           onStartRevise={() => { setReviseId(c.id); setReviseNote('') }}
           onCancelRevise={() => { setReviseId(null); setReviseNote('') }}
@@ -276,18 +314,12 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
 
             {/* Actions */}
             <div className="flex gap-2.5">
-              <button
-                onClick={() => setShowApproveAllModal(false)}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
-              >
+              <Button variant="outline" size="lg" className="flex-1" onClick={() => setShowApproveAllModal(false)}>
                 Cancel
-              </button>
-              <button
-                onClick={() => challenge(handleConfirmApproveAll)}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[0.875rem] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all shadow-sm"
-              >
+              </Button>
+              <Button size="lg" className="flex-1" onClick={() => challenge(handleConfirmApproveAll)}>
                 Confirm &amp; pay
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -334,6 +366,7 @@ interface AuditCardProps {
   isRevising: boolean
   reviseNote: string
   busy: boolean
+  isApproving: boolean
   anyBusy: boolean
   onApprove: () => void
   onStartRevise: () => void
@@ -343,7 +376,7 @@ interface AuditCardProps {
 }
 
 function AuditCard({
-  completion: c, isRevising, reviseNote, busy, anyBusy,
+  completion: c, isRevising, reviseNote, busy, isApproving, anyBusy,
   onApprove, onStartRevise, onCancelRevise, onReviseNoteChange, onConfirmRevise,
 }: AuditCardProps) {
   const [proofUrl, setProofUrl]     = useState<string | null>(null)
@@ -368,7 +401,10 @@ function AuditCard({
   })
 
   return (
-    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+    <div
+      className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden transition-all duration-[260ms] ease-out"
+      style={isApproving ? { opacity: 0, transform: 'scale(0.97)', pointerEvents: 'none' } : undefined}
+    >
 
       {/* Proof image */}
       {hasProof && (
@@ -440,19 +476,18 @@ function AuditCard({
             autoFocus
           />
           <div className="flex gap-2">
-            <button
-              onClick={onCancelRevise}
-              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
-            >
+            <Button variant="outline" className="flex-1" onClick={onCancelRevise}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="warning"
+              className="flex-1"
               onClick={onConfirmRevise}
               disabled={busy || !reviseNote.trim()}
-              className="flex-1 bg-amber-500 text-white rounded-xl py-2.5 text-[0.875rem] font-bold hover:bg-amber-600 disabled:opacity-50 cursor-pointer transition-colors"
+              title={!reviseNote.trim() ? 'Add feedback so they know what to fix' : undefined}
             >
               {busy ? 'Sending…' : 'Send feedback →'}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -471,10 +506,12 @@ function AuditCard({
             disabled={anyBusy}
             className="flex-1 py-3.5 text-[0.875rem] font-bold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] disabled:opacity-40 cursor-pointer transition-colors"
           >
-            {busy ? (
+            {isApproving ? (
               <span className="flex items-center justify-center gap-1.5">
-                <span className="w-3.5 h-3.5 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin" />
-                Approving…
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Approved
               </span>
             ) : 'Approve ✓'}
           </button>

@@ -13,6 +13,7 @@ interface Props {
 
 export function MicroToast({ event, onDismiss }: Props) {
   const config = CONFIGS[event.type]
+  const stage = config ? (event.appView === 'CLEAN' ? config.clean[0] : config.orchard[0]) : null
   const [visible, setVisible] = useState(false)
   const [paused, setPaused] = useState(false)
 
@@ -21,21 +22,24 @@ export function MicroToast({ event, onDismiss }: Props) {
     setTimeout(onDismiss, 400)
   }
 
+  // Toast duration scales with how much there is to read, instead of a flat
+  // timer that clips longer messages or lingers pointlessly on short ones.
+  const readingMs = stage
+    ? Math.min(6000, Math.max(2500, (stage.heading.length + stage.body.length) * 50))
+    : 3000
+
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
   }, [])
 
   useEffect(() => {
     if (paused) return
-    const t = setTimeout(() => close(), 3000)
+    const t = setTimeout(() => close(), readingMs)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paused, onDismiss])
+  }, [paused, onDismiss, readingMs])
 
-  if (!config) return null
-
-  const stage = event.appView === 'CLEAN' ? config.clean[0] : config.orchard[0]
-  if (!stage) return null
+  if (!config || !stage) return null
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90]">

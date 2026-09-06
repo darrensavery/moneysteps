@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { BaseSheet } from '../BaseSheet'
 
@@ -12,11 +12,13 @@ describe('BaseSheet', () => {
     expect(screen.getByText('Sheet content')).toBeTruthy()
   })
 
-  it('calls onClose when the backdrop is clicked', () => {
+  it('calls onClose when the backdrop is clicked', async () => {
+    // onClose now fires after the exit animation (translate/opacity) plays,
+    // instead of synchronously, so the sheet doesn't vanish mid-transition.
     const onClose = vi.fn()
     render(<BaseSheet onClose={onClose} label="Test sheet"><p>Sheet content</p></BaseSheet>)
     fireEvent.click(screen.getByTestId('sheet-backdrop'))
-    expect(onClose).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
   })
 
   it('does not call onClose when the panel content is clicked', () => {
@@ -32,10 +34,10 @@ describe('BaseSheet', () => {
     expect(dialog.getAttribute('aria-modal')).toBe('true')
   })
 
-  it('calls onClose on Escape', () => {
+  it('calls onClose on Escape', async () => {
     const onClose = vi.fn()
     render(<BaseSheet onClose={onClose} label="Test sheet"><p>Sheet content</p></BaseSheet>)
     fireEvent.keyDown(document, { key: 'Escape' })
-    expect(onClose).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
   })
 })
