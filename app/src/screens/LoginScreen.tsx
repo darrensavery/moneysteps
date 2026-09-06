@@ -35,29 +35,29 @@ export default function LoginScreen() {
   }
 
   return (
-    <div className="h-svh bg-[var(--color-bg)] flex flex-col overflow-y-auto">
+    <div className="h-svh bg-[var(--color-bg)] flex flex-col overflow-hidden">
 
       {/* Header — matches LandingGate exactly */}
-      <header className="safe-top sticky top-0 bg-[var(--color-surface)]/80 backdrop-blur border-b border-[var(--color-border)] px-4 py-3 flex items-center">
+      <header className="safe-top sticky top-0 bg-[var(--color-surface)]/80 backdrop-blur border-b border-[var(--color-border)] px-4 pt-4 pb-3 flex items-center shrink-0">
         <FullLogo iconSize={28} />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-5 max-w-md mx-auto w-full">
+      <main className="flex-1 min-h-0 flex flex-col items-center justify-center px-5 max-w-md mx-auto w-full overflow-y-auto">
         <div className="flex flex-col items-center gap-6 w-full py-4">
 
           {/* Badge */}
           <div className="text-center space-y-3">
-            <p className="text-[11px] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] rounded-full px-3 py-1 tracking-widest uppercase inline-block">
+            <p className="text-[0.6875rem] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] rounded-full px-3 py-1 tracking-widest uppercase inline-block">
               Welcome back
             </p>
-            <h1 className="text-[32px] font-extrabold text-[var(--color-text)] tracking-tight leading-[1.1]">
+            <h1 className="text-[2rem] font-extrabold text-[var(--color-text)] tracking-tight leading-[1.1]">
               Sign in to your<br />Orchard
             </h1>
           </div>
 
           {/* Error banners */}
           {errorCode === 'no_account' && (
-            <div className="w-full rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 text-[13px] text-amber-800">
+            <div className="w-full rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 text-[0.8125rem] text-amber-800">
               We couldn't find an account for{' '}
               <strong>{hint ? decodeURIComponent(hint) : 'this email'}</strong>.{' '}
               <button
@@ -69,12 +69,12 @@ export default function LoginScreen() {
             </div>
           )}
           {errorCode === 'unverified' && (
-            <div className="w-full rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-[13px] text-red-700">
+            <div className="w-full rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-[0.8125rem] text-red-700">
               Google couldn't verify this email address. Try a different account.
             </div>
           )}
           {(errorCode === 'csrf' || errorCode === 'google_exchange') && (
-            <div className="w-full rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-[13px] text-red-700">
+            <div className="w-full rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-[0.8125rem] text-red-700">
               Something went wrong. Please try again.
             </div>
           )}
@@ -87,7 +87,7 @@ export default function LoginScreen() {
               href={`${workerUrl}/auth/google`}
               className="
                 w-full h-14 rounded-2xl bg-[var(--brand-primary)] text-white
-                font-semibold text-[15px] tracking-tight
+                font-semibold text-[0.9375rem] tracking-tight
                 flex items-center justify-center gap-2.5
                 hover:opacity-90 active:scale-[0.98]
                 transition-all duration-150 shadow-md hover:shadow-lg
@@ -103,14 +103,14 @@ export default function LoginScreen() {
             {/* Divider */}
             <div className="flex items-center gap-3 py-1">
               <div className="flex-1 h-px bg-[var(--color-border)]" />
-              <span className="text-[12px] text-[var(--color-text-muted)]">or sign in with email</span>
+              <span className="text-[0.75rem] text-[var(--color-text-muted)]">or sign in with email</span>
               <div className="flex-1 h-px bg-[var(--color-border)]" />
             </div>
 
             {/* Magic link */}
             {magicSent ? (
               <div className="w-full h-14 rounded-2xl border-2 border-[var(--color-border)] flex items-center justify-center">
-                <p className="text-[14px] text-[var(--color-text-muted)]">
+                <p className="text-[0.875rem] text-[var(--color-text-muted)]">
                   Check your email for a sign-in link ✓
                 </p>
               </div>
@@ -127,7 +127,7 @@ export default function LoginScreen() {
                   aria-invalid={!!magicError}
                   aria-describedby={magicError ? 'magic-link-error' : undefined}
                   className="
-                    w-full h-14 rounded-2xl px-4 text-[15px]
+                    w-full h-14 rounded-2xl px-4 text-[0.9375rem]
                     bg-[var(--color-surface)] text-[var(--color-text)]
                     border-2 border-[var(--color-border)]
                     placeholder:text-[var(--color-text-muted)]
@@ -136,7 +136,7 @@ export default function LoginScreen() {
                   "
                 />
                 {magicError && (
-                  <p id="magic-link-error" role="alert" className="text-[12px] text-red-500 px-1">{magicError}</p>
+                  <p id="magic-link-error" role="alert" className="text-[0.75rem] text-red-500 px-1">{magicError}</p>
                 )}
                 <TurnstileWidget onVerify={setTurnstileToken} />
                 <button
@@ -144,7 +144,7 @@ export default function LoginScreen() {
                   disabled={sending || !email.trim()}
                   className="
                     w-full h-14 rounded-2xl bg-[var(--color-surface)] text-[var(--color-text)]
-                    font-semibold text-[15px]
+                    font-semibold text-[0.9375rem]
                     flex items-center justify-center gap-2.5
                     border-2 border-[var(--color-border)]
                     hover:border-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_5%,transparent)]
@@ -158,7 +158,7 @@ export default function LoginScreen() {
               </form>
             )}
 
-            <p className="text-center text-[11px] text-[var(--color-text-muted)]">
+            <p className="text-center text-[0.6875rem] text-[var(--color-text-muted)]">
               New here?{' '}
               <button
                 onClick={() => navigate('/register')}

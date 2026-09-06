@@ -124,12 +124,15 @@ export function OnboardingCarousel() {
       </AnimatePresence>
 
       {/* Top bar — floats over the art, logo pinned top-left as everywhere else in the app */}
-      <header className="safe-top px-4 py-3 flex justify-between items-center relative z-10">
+      <header
+        className="px-4 pb-3 flex justify-between items-center relative z-10"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 20px)' }}
+      >
         <FullLogo iconSize={26} light />
         <button
           onClick={finish}
           className="
-            rounded-full px-3 py-1.5 text-[12px] font-semibold
+            rounded-full px-3 py-1.5 text-[0.75rem] font-semibold
             border border-white/20 bg-white/10 backdrop-blur-md text-white/90
             hover:bg-white/20 active:scale-95 transition-all
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60
@@ -169,13 +172,13 @@ export function OnboardingCarousel() {
             transition={{ duration: 0.25, delay: 0.05 }}
             className="space-y-3 pb-2"
           >
-            <span className="text-[13px] font-bold tracking-wide text-[var(--brand-accent)]">
+            <span className="text-[0.8125rem] font-bold tracking-wide text-[var(--brand-accent)]">
               {activeIndex + 1} of {SLIDES.length}
             </span>
-            <h1 className="text-[28px] font-extrabold text-white tracking-tight leading-[1.15] text-balance">
+            <h1 className="text-[1.75rem] font-extrabold text-white tracking-tight leading-[1.15] text-balance">
               {slide.headline}
             </h1>
-            <p className="text-[15px] text-white/75 leading-relaxed max-w-[320px]">
+            <p className="text-[0.9375rem] text-white/75 leading-relaxed max-w-[320px]">
               {slide.subtext}
             </p>
           </motion.div>
@@ -201,7 +204,7 @@ export function OnboardingCarousel() {
             onClick={goNext}
             className="
               w-full h-14 rounded-2xl bg-[var(--brand-primary)] text-white
-              font-semibold text-[15px] tracking-tight
+              font-semibold text-[0.9375rem] tracking-tight
               flex items-center justify-center gap-2.5
               hover:opacity-90 active:scale-[0.98]
               transition-all duration-150 shadow-lg shadow-black/30

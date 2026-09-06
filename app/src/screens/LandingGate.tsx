@@ -27,21 +27,21 @@ export function LandingGate() {
   const navigate = useNavigate()
 
   return (
-    <div className="h-svh bg-[var(--color-bg)] flex flex-col overflow-y-auto">
+    <div className="h-svh bg-[var(--color-bg)] flex flex-col overflow-hidden">
 
       {/* Header */}
-      <header className="safe-top sticky top-0 bg-[var(--color-surface)]/80 backdrop-blur border-b border-[var(--color-border)] px-4 py-3 flex items-center">
+      <header className="safe-top sticky top-0 bg-[var(--color-surface)]/80 backdrop-blur border-b border-[var(--color-border)] px-4 pt-4 pb-3 flex items-center shrink-0">
         <FullLogo iconSize={28} />
       </header>
 
       {/* Main — true centre with equal flex space above and below */}
-      <main className="flex-1 flex flex-col items-center justify-center px-5 max-w-md mx-auto w-full">
+      <main className="flex-1 min-h-0 flex flex-col items-center justify-center px-5 max-w-md mx-auto w-full">
 
         {/* All content in a single compact column */}
-        <div className="flex flex-col items-center gap-6 w-full py-4">
+        <div className="flex flex-col items-center gap-4 w-full py-2">
 
           {/* Orchard illustration */}
-          <div className="relative flex items-end justify-center gap-3 h-32">
+          <div className="relative flex items-end justify-center gap-3 h-28">
             <Tree size="sm" swayOffset={0}   flip />
             <Tree size="lg" swayOffset={3}        />
             <Tree size="md" swayOffset={1.5}      />
@@ -50,13 +50,13 @@ export function LandingGate() {
 
           {/* Text */}
           <div className="text-center space-y-3">
-            <p className="text-[11px] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] rounded-full px-3 py-1 tracking-widest uppercase inline-block">
+            <p className="text-[0.6875rem] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] rounded-full px-3 py-1 tracking-widest uppercase inline-block">
               Welcome to the Orchard
             </p>
-            <h1 className="text-[32px] font-extrabold text-[var(--color-text)] tracking-tight leading-[1.1]">
+            <h1 className="text-[2rem] font-extrabold text-[var(--color-text)] tracking-tight leading-[1.1]">
               Grow your family's<br />financial future
             </h1>
-            <p className="text-[15px] text-[var(--color-text-muted)] leading-relaxed max-w-[300px] mx-auto">
+            <p className="text-[0.9375rem] text-[var(--color-text-muted)] leading-relaxed max-w-[300px] mx-auto">
               Chores, pocket money, and savings goals — with a transparent record both parents can trust.
             </p>
           </div>
@@ -67,7 +67,7 @@ export function LandingGate() {
               onClick={() => { track.registrationStarted(); navigate('/register') }}
               className="
                 w-full h-14 rounded-2xl bg-[var(--brand-primary)] text-white
-                font-semibold text-[15px] tracking-tight
+                font-semibold text-[0.9375rem] tracking-tight
                 flex items-center justify-center gap-2.5
                 hover:opacity-90 active:scale-[0.98]
                 transition-all duration-150 shadow-md hover:shadow-lg
@@ -85,7 +85,7 @@ export function LandingGate() {
               onClick={() => { track.joinStarted(); navigate('/join') }}
               className="
                 w-full h-14 rounded-2xl bg-[var(--color-surface)] text-[var(--color-text)]
-                font-semibold text-[15px]
+                font-semibold text-[0.9375rem]
                 flex items-center justify-center gap-2.5
                 border-2 border-[var(--color-border)]
                 hover:border-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_5%,transparent)]
@@ -97,8 +97,8 @@ export function LandingGate() {
               Join your Family
             </button>
 
-            <div className="space-y-7">
-              <p className="text-center text-[13px] text-[var(--color-text-muted)]">
+            <div className="space-y-3">
+              <p className="text-center text-[0.8125rem] text-[var(--color-text-muted)]">
                 Already have an account?{' '}
                 <button
                   onClick={() => navigate('/auth/login')}
@@ -108,7 +108,7 @@ export function LandingGate() {
                 </button>
               </p>
 
-              <p className="text-center text-[11px] text-[var(--color-text-muted)]">
+              <p className="text-center text-[0.6875rem] text-[var(--color-text-muted)]">
                 A solicitor or mediator?{' '}
                 <button
                   onClick={() => navigate('/demo-register')}
@@ -119,7 +119,7 @@ export function LandingGate() {
               </p>
             </div>
 
-            <p className="text-center text-[11px] text-[var(--color-text-muted)]">
+            <p className="text-center text-[0.6875rem] text-[var(--color-text-muted)]">
               🔒 Private by design — your data stays on your device and is never sold.
             </p>
           </div>

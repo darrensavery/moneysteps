@@ -34,7 +34,7 @@ export function useDragToClose(onClose: () => void) {
   }
 
   const handleProps = {
-    className: 'flex justify-center pt-3 pb-0 shrink-0 cursor-grab active:cursor-grabbing touch-none',
+    className: 'flex justify-center items-center py-4 shrink-0 cursor-grab active:cursor-grabbing touch-none',
     onMouseDown: (e: React.MouseEvent) => onDragStart(e.clientY),
     onMouseMove: (e: React.MouseEvent) => { if (dragStartY.current !== null) onDragMove(e.clientY); },
     onMouseUp: onDragEnd,
