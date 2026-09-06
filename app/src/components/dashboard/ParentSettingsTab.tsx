@@ -233,7 +233,7 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose,
     try {
       const [c, f, s, p, leads, t, shieldPrice] = await Promise.all([
         getChildren().then(r => r.children).catch(() => []),
-        getFamily().catch(() => ({})),
+        getFamily().catch(() => ({} as Record<string, unknown>)),
         getSettings().catch(() => null),
         getMe().catch(() => null),
         getLeadCount().then(r => r.lead_count).catch(() => 1),
