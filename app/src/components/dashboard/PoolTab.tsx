@@ -190,14 +190,14 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
     <div className="flex flex-col gap-4 pb-36">
 
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
-      <div
-        className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
-        style={{ bottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
-      >
-        <div className="pointer-events-auto w-full max-w-[560px] px-3.5 flex gap-2 pt-3 pb-2 bg-gradient-to-t from-[var(--color-bg)] via-[var(--color-bg)]/90 to-transparent">
+      <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
+        <div
+          className="pointer-events-auto w-full max-w-[560px] mx-3"
+          style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
+        >
           <button
             onClick={onAddClick}
-            className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
+            className="w-full bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
           >
             {isCoParenting ? '+ Log shared expense' : '+ Log household expense'}
           </button>
