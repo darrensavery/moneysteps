@@ -4,6 +4,7 @@ import type { SharedExpense } from '../../lib/api';
 import { apiUrl, authHeaders, getSharedExpenses } from '../../lib/api';
 import { VoidExpenseSheet } from './VoidExpenseSheet';
 import { ExpenseDetailSheet } from './ExpenseDetailSheet';
+import { SkeletonList } from '../ui/Skeleton';
 import { Receipt } from 'lucide-react';
 
 function CategoryIcon({ category, size = 14 }: { category: string; size?: number }) {
@@ -135,7 +136,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
     setTimeout(() => URL.revokeObjectURL(url), 100);
   }
 
-  if (loading) return <div className="p-6 text-center text-[var(--color-text-muted)] text-sm">Loading…</div>;
+  if (loading) return <div className="p-1"><SkeletonList count={4} withIcon={false} /></div>;
   if (error) return <div className="p-6 text-center text-red-500 text-sm">{error}</div>;
 
   const openExpenses = expenses.filter(

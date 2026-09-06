@@ -14,12 +14,17 @@ type Props = {
 
 export function VoidExpenseSheet({ expenseId, description, onClose, onVoided }: Props) {
   const [reason, setReason] = useState('');
+  const [reasonTouched, setReasonTouched] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Touched-on-blur, not onChange — the field only complains once the user
+  // has actually left it empty, not on every keystroke while typing.
+  const reasonError = reasonTouched && !reason.trim() ? 'Please provide a reason.' : null;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!reason.trim()) { setError('Please provide a reason.'); return; }
+    if (!reason.trim()) { setReasonTouched(true); setError('Please provide a reason.'); return; }
 
     setSaving(true);
     setError(null);
@@ -53,14 +58,16 @@ export function VoidExpenseSheet({ expenseId, description, onClose, onVoided }: 
             id="void-expense-reason"
             value={reason}
             onChange={e => setReason(e.target.value)}
+            onBlur={() => setReasonTouched(true)}
             placeholder="e.g. Entered incorrect amount, duplicate entry…"
             rows={3}
             required
             aria-required="true"
-            aria-invalid={!!error}
-            aria-describedby={error ? 'void-expense-error' : undefined}
-            className="mt-1 w-full border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm bg-[var(--color-surface-raised)] resize-none"
+            aria-invalid={!!(error || reasonError)}
+            aria-describedby={[reasonError && 'void-expense-field-error', error && 'void-expense-error'].filter(Boolean).join(' ') || undefined}
+            className={`mt-1 w-full border rounded-xl px-4 py-3 text-sm bg-[var(--color-surface-raised)] resize-none ${reasonError ? 'border-red-400' : 'border-[var(--color-border)]'}`}
           />
+          {reasonError && <p id="void-expense-field-error" className="mt-1 text-xs text-red-500">{reasonError}</p>}
         </div>
 
         <ErrorBox id="void-expense-error" message={error} />

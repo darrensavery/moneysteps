@@ -27,6 +27,7 @@ import { track } from '../../lib/analytics'
 import { ChoreGuideSheet } from './ChoreGuideSheet'
 import { ErrorBox } from '../ui/ErrorBox'
 import { ChoreIcon } from './ChoreIcon'
+import { SkeletonList } from '../ui/Skeleton'
 
 interface Props {
   familyId: string
@@ -190,7 +191,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
+  if (loading) return <SkeletonList count={4} />
 
   const hasAnything = revisions.length > 0 || available.length > 0 || awaiting.length > 0 || openChores.length > 0
 

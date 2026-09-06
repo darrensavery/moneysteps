@@ -702,7 +702,12 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
 
 // ── Chore Detail Sheet ────────────────────────────────────────────────────────
 
-export function ChoreDetailSheet({ completion: c, onClose }: { completion: Completion; onClose: () => void }) {
+export function ChoreDetailSheet({ completion: c, onClose, onRate }: {
+  completion: Completion
+  onClose: () => void
+  /** Child-only: rate how the completed chore felt (thumbs up/down). Omit for the parent's view. */
+  onRate?: (rating: 1 | -1) => void
+}) {
   const [proofUrl, setProofUrl] = useState<string | null>(null)
   const [proofState, setProofState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle')
   const { sheetRef, handleProps } = useDragToClose(onClose)
@@ -794,6 +799,41 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
               />
             )}
           </div>
+
+          {/* Rate this chore — child-only, once it's actually approved */}
+          {onRate && c.status === 'completed' && (
+            <div className="rounded-xl border border-[var(--color-border)] p-3.5 flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-[var(--color-text)]">How did this one feel?</p>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onRate(1)}
+                  aria-pressed={c.rating === 1}
+                  aria-label="Thumbs up"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all active:scale-90 cursor-pointer ${
+                    c.rating === 1
+                      ? 'bg-emerald-500 text-white shadow-sm'
+                      : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:text-emerald-600'
+                  }`}
+                >
+                  👍
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRate(-1)}
+                  aria-pressed={c.rating === -1}
+                  aria-label="Thumbs down"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all active:scale-90 cursor-pointer ${
+                    c.rating === -1
+                      ? 'bg-red-500 text-white shadow-sm'
+                      : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:text-red-500'
+                  }`}
+                >
+                  👎
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Child's note */}
           {c.note && (

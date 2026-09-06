@@ -25,6 +25,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [purchasing, setPurchasing] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [confirmingGoal, setConfirmingGoal] = useState<{ id: string; title: string } | null>(null)
   const [goalBarPct, setGoalBarPct] = useState(0)
   const barTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -107,8 +108,10 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
     }
   }
 
-  async function handleDelete(goalId: string, goalTitle: string) {
-    if (!confirm(`Stop saving for "${goalTitle}"? Any money you've saved goes back to your balance.`)) return
+  async function handleConfirmDelete() {
+    if (!confirmingGoal) return
+    const { id: goalId } = confirmingGoal
+    setConfirmingGoal(null)
     void tick()
     setDeleting(goalId)
     try {
@@ -264,7 +267,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                   )}
 
                   <button
-                    onClick={() => handleDelete(activeTopGoal.id, activeTopGoal.title)}
+                    onClick={() => setConfirmingGoal({ id: activeTopGoal.id, title: activeTopGoal.title })}
                     disabled={deleting === activeTopGoal.id}
                     className="w-full text-center text-[0.6875rem] font-semibold text-[var(--color-text-muted)] hover:text-red-500 disabled:opacity-60 transition-colors cursor-pointer py-1"
                   >
@@ -294,7 +297,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                         </svg>
                       </button>
                       <button
-                        onClick={() => handleDelete(g.id, g.title)}
+                        onClick={() => setConfirmingGoal({ id: g.id, title: g.title })}
                         disabled={deleting === g.id}
                         aria-label={`Stop saving for ${g.title}`}
                         className="shrink-0 text-[var(--color-text-muted)] hover:text-red-500 disabled:opacity-60 transition-colors cursor-pointer px-1"
@@ -334,6 +337,38 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
           onCreated={() => { setShowGrove(false); setEditingGoal(null); load() }}
           onClose={() => { setShowGrove(false); setEditingGoal(null) }}
         />
+      )}
+
+      {/* Confirm goal delete — in-app dialog instead of a native confirm(),
+          so it matches the rest of the app's destructive-action styling. */}
+      {confirmingGoal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmingGoal(null)} />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Stop saving for this goal"
+            tabIndex={-1}
+            className="relative bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4"
+          >
+            <div>
+              <p className="text-[1.125rem] font-extrabold text-[var(--color-text)] tracking-tight">
+                Stop saving for "{confirmingGoal.title}"?
+              </p>
+              <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1 leading-relaxed">
+                Any money you've saved goes back to your balance.
+              </p>
+            </div>
+            <div className="flex gap-2.5">
+              <Button variant="outline" size="lg" className="flex-1" onClick={() => setConfirmingGoal(null)}>
+                Keep goal
+              </Button>
+              <Button variant="destructive" size="lg" className="flex-1" onClick={handleConfirmDelete}>
+                Stop saving
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

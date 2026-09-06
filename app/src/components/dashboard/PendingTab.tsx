@@ -20,6 +20,7 @@ import {
 } from '../../lib/api'
 import { PaymentBridgeSheet } from '../payment/PaymentBridgeSheet'
 import { Button } from '../ui/button'
+import { SkeletonList } from '../ui/Skeleton'
 import { useToast, Toast } from '../settings/shared'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { ReviewPromptSheet } from '../review/ReviewPromptSheet'
@@ -221,7 +222,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
   const approveAllTotal    = isMixedCurrency ? 0 : completions.reduce((s, c) => s + c.reward_amount, 0)
   const approveAllCurrency = completions[0]?.currency ?? 'GBP'
 
-  if (loading) return <div className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
+  if (loading) return <SkeletonList count={3} withIcon={false} />
 
   // Note: even when the list is empty (e.g. the co-parent just resolved the
   // only pending item, or every item was approved), we still render the toast

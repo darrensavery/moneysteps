@@ -75,6 +75,10 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
   const [goals,     setGoals]     = useState<Goal[]>([])
   const [saving,    setSaving]    = useState(false)
   const [error,     setError]     = useState<string | null>(null)
+  // Touched-on-blur, not onChange — so an inline error only appears once the
+  // user has actually left the field, not while they're still typing it.
+  const [titleTouched,  setTitleTouched]  = useState(false)
+  const [amountTouched, setAmountTouched] = useState(false)
 
   useAndroidBack(true, onClose)
   const { sheetRef, handleProps } = useDragToClose(onClose)
@@ -95,6 +99,8 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
 
   const amountPence = Math.round(parseFloat(amountStr || '0') * 100)
   const canSubmit   = title.trim().length > 0 && amountPence > 0
+  const titleError  = titleTouched && title.trim().length === 0 ? 'Tell us what you bought' : null
+  const amountError = amountTouched && amountPence <= 0 ? 'Enter an amount greater than zero' : null
 
   function pickQuick(label: string) {
     setTitle(label)
@@ -102,7 +108,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!canSubmit) return
+    if (!canSubmit) { setTitleTouched(true); setAmountTouched(true); return }
     setSaving(true)
     setError(null)
     try {
@@ -204,9 +210,12 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
+                onBlur={() => setTitleTouched(true)}
                 placeholder="e.g. Roblox, lunch, book…"
-                className="mt-1.5 w-full border border-[var(--color-border)] rounded-xl px-3 py-3 text-[0.9375rem] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                aria-invalid={!!titleError}
+                className={`mt-1.5 w-full border rounded-xl px-3 py-3 text-[0.9375rem] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 ${titleError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
               />
+              {titleError && <p className="mt-1 text-[0.75rem] text-red-500">{titleError}</p>}
             </div>
 
             {/* Amount */}
@@ -225,10 +234,13 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                   min="0.01"
                   value={amountStr}
                   onChange={e => setAmountStr(e.target.value)}
+                  onBlur={() => setAmountTouched(true)}
                   placeholder="0.00"
-                  className="w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-3 text-[1.375rem] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  aria-invalid={!!amountError}
+                  className={`w-full border rounded-xl pl-8 pr-3 py-3 text-[1.375rem] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 ${amountError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
                 />
               </div>
+              {amountError && <p className="mt-1 text-[0.75rem] text-red-500">{amountError}</p>}
             </div>
 
             {/* Optional: link to goal */}

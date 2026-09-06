@@ -81,6 +81,10 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Touched-on-blur, not onChange — an inline error only appears once the
+  // user has left the field, never while they're still typing it.
+  const [descriptionTouched, setDescriptionTouched] = useState(false);
+  const [amountTouched, setAmountTouched] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCategoryOverride, setShowCategoryOverride] = useState(false);
 
@@ -116,6 +120,8 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
 
   // All mandatory fields must be populated to enable submit
   const canSubmit = description.trim().length > 0 && totalPence > 0 && expenseDate.length > 0;
+  const descriptionError = descriptionTouched && description.trim().length === 0 ? 'Add a short description' : null;
+  const amountError = amountTouched && totalPence <= 0 ? 'Enter an amount greater than zero' : null;
 
   function formatP(p: number) {
     return `${symbol}${(p / 100).toFixed(2)}`;
@@ -123,7 +129,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit) { setDescriptionTouched(true); setAmountTouched(true); return; }
 
     setSaving(true);
     setError(null);
@@ -261,9 +267,12 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                 type="text"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
+                onBlur={() => setDescriptionTouched(true)}
                 placeholder="e.g. School trip payment"
-                className="mt-1.5 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                aria-invalid={!!descriptionError}
+                className={`mt-1.5 w-full border rounded-xl px-3 py-2.5 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 ${descriptionError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
               />
+              {descriptionError && <p className="mt-1 text-xs text-red-500">{descriptionError}</p>}
             </div>
 
             {/* Filed under chip */}
@@ -324,9 +333,12 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                   min="0.01"
                   value={amountStr}
                   onChange={e => setAmountStr(e.target.value)}
+                  onBlur={() => setAmountTouched(true)}
                   placeholder="0.00"
-                  className="mt-1.5 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  aria-invalid={!!amountError}
+                  className={`mt-1.5 w-full border rounded-xl px-3 py-2.5 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] tabular-nums focus:outline-none focus:ring-2 ${amountError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
                 />
+                {amountError && <p className="mt-1 text-xs text-red-500">{amountError}</p>}
               </div>
             </div>
 

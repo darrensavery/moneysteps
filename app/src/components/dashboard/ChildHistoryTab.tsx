@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Completion } from '../../lib/api'
-import { getHistory, formatCurrency } from '../../lib/api'
+import { getHistory, formatCurrency, rateCompletion } from '../../lib/api'
 import { ChoreDetailSheet } from './HistoryTab'
 
 const STATUS_STYLES: Record<string, { label: string; bg: string; text: string }> = {
@@ -236,7 +236,20 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
         </div>
       </div>
 
-      {detail && <ChoreDetailSheet completion={detail} onClose={() => setDetail(null)} />}
+      {detail && (
+        <ChoreDetailSheet
+          completion={detail}
+          onClose={() => setDetail(null)}
+          onRate={(rating) => {
+            // Optimistic: reflect the tap immediately in both the open sheet
+            // and the underlying list; rateCompletion() fires in the background
+            // and this is a low-stakes preference, so no rollback on failure.
+            setDetail(d => (d ? { ...d, rating } : d))
+            setHistory(prev => prev.map(h => h.id === detail.id ? { ...h, rating } : h))
+            rateCompletion(detail.id, rating).catch(() => { /* best-effort */ })
+          }}
+        />
+      )}
     </div>
   )
 }

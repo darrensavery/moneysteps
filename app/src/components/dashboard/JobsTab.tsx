@@ -8,6 +8,7 @@ import {
 import { CreateChoreSheet } from './CreateChoreSheet'
 import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles } from '../ui/PremiumShell'
 import { Button } from '../ui/button'
+import { SkeletonList } from '../ui/Skeleton'
 import { useLocale } from '../../lib/locale'
 import { ErrorBox } from '../ui/ErrorBox'
 import { requestPushPermission, hasPromptedForPushPermission } from '../../lib/push.js'
@@ -214,7 +215,7 @@ export function ChoresTab({ familyId, child, children }: Props) {
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
+  if (loading) return <SkeletonList count={4} className="space-y-2.5 pb-28" />
 
   return (
     <div className="space-y-4 pb-28">
@@ -706,7 +707,17 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
         </div>
       </button>
 
-      {expanded && (
+      {/* Grid-rows trick: animates height without knowing content height up
+          front (0fr → 1fr), so the chevron rotation and the panel opening
+          read as one connected motion instead of a rotate + instant pop. */}
+      <div
+        className="grid transition-[grid-template-rows] duration-[220ms] ease-out"
+        style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
+        // Content stays mounted (for the height transition) even while
+        // collapsed, so keep it out of the tab order / a11y tree until open.
+        inert={!expanded}
+      >
+        <div className="overflow-hidden">
         <div className="px-4 pb-4 space-y-3 border-t border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] pt-3">
           {chore.description && (
             <p className="text-[0.8125rem] text-[var(--color-text-muted)]">{chore.description}</p>
@@ -770,7 +781,8 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
             </button>
           </div>
         </div>
-      )}
+        </div>
+      </div>
     </div>
   )
 }
