@@ -119,7 +119,7 @@ export function DataSettings({
       {/* Privacy — analytics consent (withdraw as easily as it was given) */}
       <SectionCard>
         <div className="px-3 pt-3 pb-1">
-          <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+          <p className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
             Privacy
           </p>
         </div>
@@ -128,8 +128,8 @@ export function DataSettings({
             <BarChart3 size={15} />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-[var(--color-text)]">Usage analytics</p>
-            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+            <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">Usage analytics</p>
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
               Share anonymous usage data to help improve Morechard. No ads, never sold,
               and your children's screens are never recorded.
             </p>
@@ -158,7 +158,7 @@ export function DataSettings({
       {/* Family Summary — always available */}
       <SectionCard>
         <div className="px-3 pt-3 pb-1">
-          <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+          <p className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
             Family Summary
           </p>
         </div>
@@ -191,7 +191,7 @@ export function DataSettings({
       {/* PDF Reports */}
       <SectionCard>
         <div className="px-3 pt-3 pb-1">
-          <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+          <p className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
             PDF Reports
           </p>
         </div>
@@ -221,14 +221,14 @@ export function DataSettings({
               <Zap size={12} />
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold text-violet-700 leading-snug">
+              <p className="text-[0.75rem] font-semibold text-violet-700 leading-snug">
                 Requires AI Mentor
               </p>
-              <p className="text-[11px] text-violet-500 leading-snug">
+              <p className="text-[0.6875rem] text-violet-500 leading-snug">
                 Tap to unlock — personalised learning insights for your child
               </p>
             </div>
-            <span className="shrink-0 text-[11px] font-bold text-violet-600 whitespace-nowrap">
+            <span className="shrink-0 text-[0.6875rem] font-bold text-violet-600 whitespace-nowrap">
               Add AI Mentor →
             </span>
           </button>
@@ -262,14 +262,14 @@ export function DataSettings({
               <Shield size={12} />
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold text-amber-700 leading-snug">
+              <p className="text-[0.75rem] font-semibold text-amber-700 leading-snug">
                 {shieldLabelText}
               </p>
-              <p className="text-[11px] text-amber-500 leading-snug">
+              <p className="text-[0.6875rem] text-amber-500 leading-snug">
                 Tap to unlock — court-ready tamper-evident exports
               </p>
             </div>
-            <span className="shrink-0 text-[11px] font-bold text-amber-600 whitespace-nowrap">
+            <span className="shrink-0 text-[0.6875rem] font-bold text-amber-600 whitespace-nowrap">
               Add Shield AI →
             </span>
           </button>
@@ -299,10 +299,10 @@ export function DataSettings({
                   <AlertTriangle size={15} />
                 </span>
                 <div>
-                  <p className="text-[14px] font-semibold text-[var(--color-text)]">
+                  <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
                     Archive old records?
                   </p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+                  <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                     Records older than 2 years will be archived. The immutable ledger chain is preserved.
                     This cannot be undone.
                   </p>
@@ -312,14 +312,14 @@ export function DataSettings({
                 <button
                   type="button"
                   onClick={handlePruneConfirm}
-                  className="flex-1 py-2 rounded-xl bg-red-600 text-white text-[13px] font-semibold hover:bg-red-700 active:bg-red-700 transition-colors cursor-pointer"
+                  className="flex-1 py-2 rounded-xl bg-red-600 text-white text-[0.8125rem] font-semibold hover:bg-red-700 active:bg-red-700 transition-colors cursor-pointer"
                 >
                   Yes, archive old records
                 </button>
                 <button
                   type="button"
                   onClick={() => setPruneStep('idle')}
-                  className="flex-1 py-2 rounded-xl bg-[var(--color-surface-alt)] text-[var(--color-text)] text-[13px] font-semibold hover:bg-[var(--color-border)] active:bg-[var(--color-border)] transition-colors cursor-pointer"
+                  className="flex-1 py-2 rounded-xl bg-[var(--color-surface-alt)] text-[var(--color-text)] text-[0.8125rem] font-semibold hover:bg-[var(--color-border)] active:bg-[var(--color-border)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -332,7 +332,7 @@ export function DataSettings({
               <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
                 <Spinner aria-hidden="true" />
               </span>
-              <p className="text-[14px] font-semibold text-[var(--color-text-muted)]">
+              <p className="text-[0.875rem] font-semibold text-[var(--color-text-muted)]">
                 Archiving records…
               </p>
             </div>
@@ -363,6 +363,6 @@ function Spinner({ 'aria-hidden': ariaHidden }: { 'aria-hidden'?: boolean | 'tru
 function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null
   return (
-    <p className="px-4 pb-2 text-[11px] text-red-500 leading-snug">{message}</p>
+    <p className="px-4 pb-2 text-[0.6875rem] text-red-500 leading-snug">{message}</p>
   )
 }

@@ -232,19 +232,19 @@ export function ProfileSettings({
                 ? <AvatarSVG id={myAvatar} size={52} />
                 : <DefaultAvatar size={52} initials={identity?.initials ?? identity?.display_name ?? 'P'} />
               }
-              <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 rounded-full transition-colors text-white text-[18px] opacity-0 group-hover:opacity-100">✎</span>
+              <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 rounded-full transition-colors text-white text-[1.125rem] opacity-0 group-hover:opacity-100">✎</span>
             </button>
           )}
           <div>
-            <p className="text-[14px] font-semibold text-[var(--color-text)]">
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
               {(family.display_name as string) ?? identity?.display_name ?? 'My family'}
             </p>
             {identity?.google_picture ? (
-              <p className="text-[12px] text-[var(--color-text-muted)]">Google profile picture</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)]">Google profile picture</p>
             ) : (
               <button
                 onClick={() => setShowAvatarPicker(true)}
-                className="text-[12px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer"
+                className="text-[0.75rem] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer"
               >
                 Change avatar
               </button>
@@ -256,7 +256,7 @@ export function ProfileSettings({
       {!identity?.google_picture && showAvatarPicker && (
         <SectionCard>
           <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
-            <p className="text-[15px] font-bold">Choose avatar</p>
+            <p className="text-[0.9375rem] font-bold">Choose avatar</p>
             <button onClick={() => setShowAvatarPicker(false)} className="tap-target-44 text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer">
               <X size={18} />
             </button>
@@ -312,21 +312,21 @@ export function ProfileSettings({
               aria-invalid={!!nameError}
               aria-describedby={nameError ? 'profile-name-error' : undefined}
               placeholder="Your name"
-              className="w-full px-3 py-2 text-[14px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+              className="w-full px-3 py-2 text-[0.875rem] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             />
-            {nameError && <p id="profile-name-error" role="alert" className="text-[12px] text-red-500">{nameError}</p>}
+            {nameError && <p id="profile-name-error" role="alert" className="text-[0.75rem] text-red-500">{nameError}</p>}
             <div className="flex gap-2">
               <button
                 type="submit"
                 disabled={nameSaving || nameInput.trim().length < 2 || nameInput.trim() === (profile?.display_name ?? identity?.display_name ?? '')}
-                className="flex-1 py-2 rounded-xl text-[13px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                className="flex-1 py-2 rounded-xl text-[0.8125rem] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
               >
                 {nameSaving ? 'Saving…' : 'Save'}
               </button>
               <button
                 type="button"
                 onClick={() => { setEditingName(false); setNameError(null) }}
-                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
+                className="px-4 py-2 rounded-xl text-[0.8125rem] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
               >
                 Cancel
               </button>
@@ -356,7 +356,7 @@ export function ProfileSettings({
         {emailSentTo && !editingEmail && (
           <div className="px-4 py-3 border-t border-[var(--color-border)] flex items-start gap-2 bg-teal-50">
             <span className="text-teal-600 shrink-0 mt-0.5">✓</span>
-            <p className="text-[12px] text-teal-700 leading-snug">
+            <p className="text-[0.75rem] text-teal-700 leading-snug">
               Verification email sent to <span className="font-semibold">{emailSentTo}</span>. Click the link in that email to confirm the change — your current address remains active until then.
             </p>
           </div>
@@ -376,21 +376,21 @@ export function ProfileSettings({
               aria-invalid={!!emailError}
               aria-describedby={emailError ? 'profile-email-error' : undefined}
               placeholder="your@email.com"
-              className="w-full px-3 py-2 text-[14px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+              className="w-full px-3 py-2 text-[0.875rem] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             />
-            {emailError && <p id="profile-email-error" role="alert" className="text-[12px] text-red-500">{emailError}</p>}
+            {emailError && <p id="profile-email-error" role="alert" className="text-[0.75rem] text-red-500">{emailError}</p>}
             <div className="flex gap-2">
               <button
                 type="submit"
                 disabled={emailSaving || !emailInput.trim() || emailInput.trim() === (profile?.email ?? '')}
-                className="flex-1 py-2 rounded-xl text-[13px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                className="flex-1 py-2 rounded-xl text-[0.8125rem] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
               >
                 {emailSaving ? 'Saving…' : 'Save'}
               </button>
               <button
                 type="button"
                 onClick={() => { setEditingEmail(false); setEmailError(null) }}
-                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
+                className="px-4 py-2 rounded-xl text-[0.8125rem] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
               >
                 Cancel
               </button>
@@ -401,7 +401,7 @@ export function ProfileSettings({
 
       {/* Danger Zone — visible to all parents */}
       <div>
-        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Danger Zone</p>
+        <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Danger Zone</p>
         <div className="rounded-xl border-2 border-red-500 overflow-hidden">
           {leadCount > 1 ? (
             <SettingsRow
@@ -435,24 +435,24 @@ export function ProfileSettings({
             className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl"
           >
             <div className="flex items-center justify-between">
-              <p className="text-[16px] font-bold text-[var(--color-text)]">Leave Family?</p>
+              <p className="text-[1rem] font-bold text-[var(--color-text)]">Leave Family?</p>
               <button onClick={() => { setShowLeaveModal(false); setDangerError(null) }} className="tap-target-44 text-[var(--color-text-muted)] cursor-pointer">
                 <X size={18} />
               </button>
             </div>
-            <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed">
               You will permanently lose access to this family. The ledger and all data will remain for the other parent.
             </p>
             {isLead && (
-              <p className="text-[12px] text-amber-600 font-semibold leading-relaxed">
+              <p className="text-[0.75rem] text-amber-600 font-semibold leading-relaxed">
                 A co-parent will be promoted to Lead to ensure the family can still be managed.
               </p>
             )}
-            {dangerError && <p role="alert" className="text-[12px] text-red-500">{dangerError}</p>}
+            {dangerError && <p role="alert" className="text-[0.75rem] text-red-500">{dangerError}</p>}
             <button
               onClick={handleLeave}
               disabled={dangerBusy}
-              className="w-full py-3 rounded-xl text-[14px] font-bold bg-red-600 text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-xl text-[0.875rem] font-bold bg-red-600 text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               {dangerBusy ? 'Leaving…' : 'Leave Family'}
             </button>
@@ -472,12 +472,12 @@ export function ProfileSettings({
             className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl"
           >
             <div className="flex items-center justify-between">
-              <p className="text-[16px] font-bold text-red-600">Delete Everything?</p>
+              <p className="text-[1rem] font-bold text-red-600">Delete Everything?</p>
               <button onClick={() => { setShowUprootModal(false); setUprootInput(''); setDangerError(null) }} className="tap-target-44 text-[var(--color-text-muted)] cursor-pointer">
                 <X size={18} />
               </button>
             </div>
-            <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed">
               This will permanently uproot your orchard. All family data, chores, and goals will be deleted. The ledger is anonymised immediately, but pseudonymised transaction records are retained for up to 7 years to preserve the hash chain's integrity (see our Privacy Policy, Section 6), then permanently deleted.
             </p>
             <label htmlFor="uproot-confirm-input" className="sr-only">Type UPROOT to confirm</label>
@@ -491,13 +491,13 @@ export function ProfileSettings({
               aria-invalid={!!dangerError}
               aria-describedby={dangerError ? 'uproot-error' : undefined}
               placeholder="Type UPROOT to confirm"
-              className="w-full px-3 py-2 text-[14px] rounded-xl border border-red-300 bg-red-50 text-red-800 placeholder-red-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 text-[0.875rem] rounded-xl border border-red-300 bg-red-50 text-red-800 placeholder-red-300 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
-            {dangerError && <p id="uproot-error" role="alert" className="text-[12px] text-red-500">{dangerError}</p>}
+            {dangerError && <p id="uproot-error" role="alert" className="text-[0.75rem] text-red-500">{dangerError}</p>}
             <button
               onClick={handleUproot}
               disabled={dangerBusy || uprootInput !== 'UPROOT'}
-              className="w-full py-3 rounded-xl text-[14px] font-bold bg-red-600 text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-xl text-[0.875rem] font-bold bg-red-600 text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               {dangerBusy ? 'Deleting…' : 'Delete Everything'}
             </button>
@@ -517,12 +517,12 @@ export function ProfileSettings({
             className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4 shadow-2xl"
           >
             <div className="flex items-center justify-between">
-              <p className="text-[16px] font-bold text-[var(--color-text)]">Confirm your PIN</p>
+              <p className="text-[1rem] font-bold text-[var(--color-text)]">Confirm your PIN</p>
               <button onClick={() => { setPinGate(null); setPinInput(''); setPinError(null) }} className="tap-target-44 text-[var(--color-text-muted)] cursor-pointer">
                 <X size={18} />
               </button>
             </div>
-            <p className="text-[13px] text-[var(--color-text-muted)]">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)]">
               Enter your PIN to continue with this sensitive action.
             </p>
             <label htmlFor="profile-pin-confirm-input" className="sr-only">PIN</label>
@@ -538,14 +538,14 @@ export function ProfileSettings({
               aria-required="true"
               aria-invalid={!!pinError}
               aria-describedby={pinError ? 'profile-pin-confirm-error' : undefined}
-              className="w-full text-center text-[24px] tracking-[0.5em] border-2 border-[var(--color-border)] rounded-xl px-3 py-3 bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:border-[var(--brand-primary)]"
+              className="w-full text-center text-[1.5rem] tracking-[0.5em] border-2 border-[var(--color-border)] rounded-xl px-3 py-3 bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:border-[var(--brand-primary)]"
               autoFocus
             />
-            {pinError && <p id="profile-pin-confirm-error" role="alert" className="text-[12px] font-semibold text-red-600">{pinError}</p>}
+            {pinError && <p id="profile-pin-confirm-error" role="alert" className="text-[0.75rem] font-semibold text-red-600">{pinError}</p>}
             <button
               onClick={() => void verifyPin(pinGate)}
               disabled={pinInput.length < 4}
-              className="w-full py-3 rounded-xl text-[14px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-xl text-[0.875rem] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               Confirm
             </button>

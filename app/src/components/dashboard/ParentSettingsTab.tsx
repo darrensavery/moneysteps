@@ -137,7 +137,7 @@ function useToast() {
 
 function Toast({ message }: { message: string }) {
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface text-main text-[13px] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface text-main text-[0.8125rem] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
       🌱 {message}
     </div>
   )
@@ -230,54 +230,57 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose,
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [c, f, s, p, leads, t, shieldPrice] = await Promise.all([
-      getChildren().then(r => r.children),
-      getFamily(),
-      getSettings(),
-      getMe(),
-      getLeadCount().then(r => r.lead_count).catch(() => 1),
-      getTrialStatus().catch(() => null),
-      getShieldUpgradePrice().catch(() => null),
-    ])
-    setChildren(c)
-    onChildrenChange(c)
-    setFamily(f)
-    setPocketMoneyDay(typeof f.pocket_money_day === 'number' ? f.pocket_money_day : 6)
-    setOverdraftEnabled(Boolean(f.overdraft_enabled))
-    setOverdraftLimitPence(typeof f.overdraft_limit_pence === 'number' ? f.overdraft_limit_pence : 0)
-    setSettings(s)
-    setProfile(p)
-    setLeadCount(leads)
-    setTrial(t)
-    setShieldUpgradePrice(shieldPrice)
-    if (s?.avatar_id) localStorage.setItem('mc_parent_avatar', s.avatar_id)
-    // Seed locale from D1 only if localStorage has no valid locale yet.
-    // Normalise legacy 2-char 'en' → 'en-GB' before applying.
-    const validLocales: string[] = ['en-GB', 'en-US', 'pl']
-    const stored = localStorage.getItem('mc_locale') ?? ''
-    if (s?.locale && !validLocales.includes(stored)) {
-      const normalised = s.locale === 'en' ? 'en-GB' : s.locale
-      if (validLocales.includes(normalised)) {
-        setLocale(normalised as import('../../lib/locale').AppLocale)
+    try {
+      const [c, f, s, p, leads, t, shieldPrice] = await Promise.all([
+        getChildren().then(r => r.children).catch(() => []),
+        getFamily().catch(() => ({})),
+        getSettings().catch(() => null),
+        getMe().catch(() => null),
+        getLeadCount().then(r => r.lead_count).catch(() => 1),
+        getTrialStatus().catch(() => null),
+        getShieldUpgradePrice().catch(() => null),
+      ])
+      setChildren(c)
+      onChildrenChange(c)
+      setFamily(f)
+      setPocketMoneyDay(typeof f.pocket_money_day === 'number' ? f.pocket_money_day : 6)
+      setOverdraftEnabled(Boolean(f.overdraft_enabled))
+      setOverdraftLimitPence(typeof f.overdraft_limit_pence === 'number' ? f.overdraft_limit_pence : 0)
+      setSettings(s)
+      setProfile(p)
+      setLeadCount(leads)
+      setTrial(t)
+      setShieldUpgradePrice(shieldPrice)
+      if (s?.avatar_id) localStorage.setItem('mc_parent_avatar', s.avatar_id)
+      // Seed locale from D1 only if localStorage has no valid locale yet.
+      // Normalise legacy 2-char 'en' → 'en-GB' before applying.
+      const validLocales: string[] = ['en-GB', 'en-US', 'pl']
+      const stored = localStorage.getItem('mc_locale') ?? ''
+      if (s?.locale && !validLocales.includes(stored)) {
+        const normalised = s.locale === 'en' ? 'en-GB' : s.locale
+        if (validLocales.includes(normalised)) {
+          setLocale(normalised as import('../../lib/locale').AppLocale)
+        }
       }
+      const [views, growths] = await Promise.all([
+        Promise.all(
+          c.map(child =>
+            getChildSettings(child.id)
+              .then(cs => [child.id, (cs.app_view ?? 'ORCHARD') as 'ORCHARD' | 'CLEAN'] as const)
+              .catch(() => [child.id, 'ORCHARD' as const] as const)
+          )
+        ),
+        Promise.all(
+          c.map(child => getChildGrowth(child.id).catch(() => null))
+        ),
+      ])
+      setAppViews(Object.fromEntries(views))
+      const growthMap: Record<string, ChildGrowthSettings> = {}
+      growths.forEach(g => { if (g) growthMap[g.id] = g })
+      setGrowthSettings(growthMap)
+    } finally {
+      setLoading(false)
     }
-    const [views, growths] = await Promise.all([
-      Promise.all(
-        c.map(child =>
-          getChildSettings(child.id)
-            .then(cs => [child.id, (cs.app_view ?? 'ORCHARD') as 'ORCHARD' | 'CLEAN'] as const)
-            .catch(() => [child.id, 'ORCHARD' as const] as const)
-        )
-      ),
-      Promise.all(
-        c.map(child => getChildGrowth(child.id).catch(() => null))
-      ),
-    ])
-    setAppViews(Object.fromEntries(views))
-    const growthMap: Record<string, ChildGrowthSettings> = {}
-    growths.forEach(g => { if (g) growthMap[g.id] = g })
-    setGrowthSettings(growthMap)
-    setLoading(false)
   }, [familyId, onChildrenChange])
 
   useEffect(() => { load() }, [load])
@@ -406,7 +409,7 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
     return avatarId ? (
       <div className="w-12 h-12 rounded-full overflow-hidden border border-[var(--color-border)]"><AvatarSVG id={avatarId} size={48} /></div>
     ) : (
-      <div className="w-12 h-12 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[15px] font-bold">{identity?.initials ?? 'P'}</div>
+      <div className="w-12 h-12 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[0.9375rem] font-bold">{identity?.initials ?? 'P'}</div>
     )
   })()
 
@@ -417,7 +420,7 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
     const isActivated = trial?.is_activated ?? false
 
     if (!isLead) return (
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-[0.75rem] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
         <Clock size={13} />
         {pl ? 'Współrodzic — niektóre opcje są ograniczone' : 'Co-Parent — some options are restricted'}
       </div>
@@ -428,13 +431,13 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
       <div className="rounded-xl border overflow-hidden bg-teal-50 border-teal-200 text-teal-700">
         <div className="flex items-center gap-2 px-3 pt-2 pb-1.5">
           <Clock size={13} className="shrink-0" />
-          <span className="flex-1 text-[12px] font-semibold">
+          <span className="flex-1 text-[0.75rem] font-semibold">
             {pl ? 'Rodzic — 14 dni bezpłatnie' : 'Parent — 14 days free'}
           </span>
           <button
             type="button"
             onClick={() => setView({ type: 'section', section: 'billing', billingSubView: 'plan' })}
-            className="flex items-center gap-0.5 text-[11px] font-semibold shrink-0 text-teal-600"
+            className="flex items-center gap-0.5 text-[0.6875rem] font-semibold shrink-0 text-teal-600"
           >
             {pl ? 'Plan' : 'Manage Plan'}<ChevronRight size={12} />
           </button>
@@ -455,9 +458,9 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
       <div className={cn('rounded-xl border overflow-hidden', urgentAmber ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-teal-50 border-teal-200 text-teal-700')}>
         <div className="flex items-center gap-2 px-3 pt-2 pb-1.5">
           <Clock size={13} className="shrink-0" />
-          <span className="flex-1 text-[12px] font-semibold">{label}</span>
+          <span className="flex-1 text-[0.75rem] font-semibold">{label}</span>
           <button type="button" onClick={() => setView({ type: 'section', section: 'billing', billingSubView: 'plan' })}
-            className={cn('flex items-center gap-0.5 text-[11px] font-semibold shrink-0', urgentAmber ? 'text-amber-600' : 'text-teal-600')}>
+            className={cn('flex items-center gap-0.5 text-[0.6875rem] font-semibold shrink-0', urgentAmber ? 'text-amber-600' : 'text-teal-600')}>
             {pl ? 'Plan' : 'Manage Plan'}<ChevronRight size={12} />
           </button>
         </div>
@@ -506,8 +509,8 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
           {item.icon}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold text-[var(--color-text)]">{item.label}</p>
-          <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 leading-snug">{item.description}</p>
+          <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">{item.label}</p>
+          <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">{item.description}</p>
         </div>
         <ChevronRight size={14} className="shrink-0 text-[var(--color-text-muted)]" />
       </button>
@@ -520,7 +523,7 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
 
       {/* Drawer header */}
       <div className="flex items-center justify-between px-4 pt-5 pb-4 border-b border-[var(--color-border)]">
-        <h2 className="text-[17px] font-bold text-[var(--color-text)]">{pl ? 'Ustawienia' : 'Settings'}</h2>
+        <h2 className="text-[1.0625rem] font-bold text-[var(--color-text)]">{pl ? 'Ustawienia' : 'Settings'}</h2>
         <button
           type="button"
           onClick={onClose}
@@ -541,17 +544,17 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
           <div className="flex items-center gap-3">
             {avatarEl}
             <div className="flex-1 min-w-0">
-              <p className="text-[15px] font-bold text-[var(--color-text)] truncate">{identity?.display_name ?? 'Parent'}</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] truncate">{profile?.email ?? ''}</p>
+              <p className="text-[0.9375rem] font-bold text-[var(--color-text)] truncate">{identity?.display_name ?? 'Parent'}</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] truncate">{profile?.email ?? ''}</p>
             </div>
             {/* System status */}
             <div className="flex items-center gap-1 shrink-0">
               {online ? (
-                <svg width="10" height="10" viewBox="0 0 10 10" className="text-gray-400" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
+                <svg width="10" height="10" viewBox="0 0 10 10" className="text-emerald-500" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
               ) : (
-                <svg width="10" height="10" viewBox="0 0 10 10" className="text-amber-400" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
+                <svg width="10" height="10" viewBox="0 0 10 10" className="text-red-500" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
               )}
-              <span className="text-[11px] text-[var(--color-text-muted)]">
+              <span className="text-[0.6875rem] text-[var(--color-text-muted)]">
                 {online ? (pl ? 'System online' : 'System online') : (pl ? 'Offline' : 'Offline')}
               </span>
             </div>
@@ -567,7 +570,7 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
         <div className="px-4 pb-4 space-y-4">
           {GROUPS.map(group => (
             <div key={group.title}>
-              <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
+              <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
                 {group.title}
               </p>
               <SectionCard>
@@ -599,8 +602,8 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
                 <LogOut size={15} />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-[var(--color-text)]">{pl ? 'Wyloguj się' : 'Log out'}</p>
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">{pl ? 'Dane rodziny są bezpieczne' : "Your family's data stays safe"}</p>
+                <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">{pl ? 'Wyloguj się' : 'Log out'}</p>
+                <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">{pl ? 'Dane rodziny są bezpieczne' : "Your family's data stays safe"}</p>
               </div>
             </button>
           </div>

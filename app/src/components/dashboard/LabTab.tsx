@@ -56,7 +56,7 @@ export function LabTab({ appView }: LabTabProps) {
   )
 
   if (error || !labData) return (
-    <p className="text-[13px] text-red-500 pt-2">{error ?? 'No data'}</p>
+    <p className="text-[0.8125rem] text-red-500 pt-2">{error ?? 'No data'}</p>
   )
 
   const totalUnlocked = Object.keys(labData.modules).length
@@ -79,17 +79,17 @@ export function LabTab({ appView }: LabTabProps) {
             </svg>
           </button>
 
-          <h2 className="text-[14px] font-bold text-[var(--color-text)] leading-snug pr-6">
+          <h2 className="text-[0.875rem] font-bold text-[var(--color-text)] leading-snug pr-6">
             {appView === 'ORCHARD' ? 'The Orchard Curriculum' : 'Learning Lab'}
           </h2>
 
           {appView === 'ORCHARD' ? (
-            <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed">
               Seventeen modules on the money skills that actually matter — how wages work, how to spot a financial trap before it closes, how savings compound into something real.
               The kind of knowledge most adults had to learn the hard way, usually after it cost them.
             </p>
           ) : (
-            <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed">
               17 modules covering earnings, tax, saving, debt, and investment — financial concepts most adults encountered too late.
               Each lesson uses your actual figures, not textbook examples.
             </p>
@@ -100,7 +100,7 @@ export function LabTab({ appView }: LabTabProps) {
               <rect x="3" y="11" width="18" height="11" rx="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-relaxed">
               {appView === 'ORCHARD'
                 ? 'Modules don\'t unlock by tapping buttons — they unlock when you do something. Save for four weeks and compound interest opens. Create a gaming goal and digital currency unlocks.'
                 : 'Modules unlock based on your activity. Save consistently for four weeks and compound interest triggers. Each lesson arrives when your data makes it directly relevant.'}
@@ -108,7 +108,7 @@ export function LabTab({ appView }: LabTabProps) {
           </div>
 
           {totalUnlocked > 0 && (
-            <p className="text-[11px] font-semibold text-[var(--brand-primary)]">
+            <p className="text-[0.6875rem] font-semibold text-[var(--brand-primary)]">
               {totalUnlocked} of {totalModules} unlocked
             </p>
           )}
@@ -128,7 +128,7 @@ export function LabTab({ appView }: LabTabProps) {
             {/* ── Level header ── */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.5625rem] font-bold shrink-0 ${
                   isFuture
                     ? 'bg-[var(--color-border)] text-[var(--color-text-muted)]'
                     : 'bg-[var(--brand-primary)] text-white'
@@ -136,15 +136,15 @@ export function LabTab({ appView }: LabTabProps) {
                   {level - 1}
                 </span>
                 <div>
-                  <h2 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${isFuture ? 'text-[var(--color-text-muted)]' : 'text-[var(--color-text)]'}`}>
+                  <h2 className={`text-[0.6875rem] font-bold uppercase tracking-[0.08em] ${isFuture ? 'text-[var(--color-text-muted)]' : 'text-[var(--color-text)]'}`}>
                     {levelLabel}
                     {isFuture && (
-                      <span className="ml-1.5 font-normal normal-case tracking-normal text-[10px]">
+                      <span className="ml-1.5 font-normal normal-case tracking-normal text-[0.625rem]">
                         · unlocks later
                       </span>
                     )}
                   </h2>
-                  <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
+                  <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">
                     {unlockedCount} of {totalCount} {unlockedCount === totalCount && totalCount > 0 ? '— complete' : 'unlocked'}
                   </p>
                 </div>
@@ -178,8 +178,8 @@ export function LabTab({ appView }: LabTabProps) {
                         {mod.illustration(true)}
                       </div>
                       <div className="p-2.5 flex flex-col gap-1">
-                        <p className="text-[11px] font-semibold text-[var(--color-text-muted)] leading-tight">{mod.title}</p>
-                        <p className="text-[9px] text-[var(--color-text-muted)]">{levelLabel}</p>
+                        <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] leading-tight">{mod.title}</p>
+                        <p className="text-[0.5625rem] text-[var(--color-text-muted)]">{levelLabel}</p>
                       </div>
                     </div>
                   )
@@ -193,10 +193,10 @@ export function LabTab({ appView }: LabTabProps) {
                         {mod.illustration(true)}
                       </div>
                       <div className="p-2.5 flex flex-col gap-1.5">
-                        <p className="text-[11px] font-bold text-[var(--color-text)] leading-tight">{mod.title}</p>
-                        <p className="text-[11px] text-[var(--color-text-muted)] leading-tight line-clamp-2">{mod.description}</p>
+                        <p className="text-[0.6875rem] font-bold text-[var(--color-text)] leading-tight">{mod.title}</p>
+                        <p className="text-[0.6875rem] text-[var(--color-text-muted)] leading-tight line-clamp-2">{mod.description}</p>
                         <div className="flex items-center justify-between mt-auto pt-0.5">
-                          <p className="text-[10px] text-[var(--color-text-muted)] leading-tight flex-1 pr-2 italic">{mod.triggerHint}</p>
+                          <p className="text-[0.625rem] text-[var(--color-text-muted)] leading-tight flex-1 pr-2 italic">{mod.triggerHint}</p>
                           <Lock size={9} className="text-amber-400/70 flex-shrink-0" />
                         </div>
                       </div>
@@ -224,21 +224,21 @@ export function LabTab({ appView }: LabTabProps) {
 
                     {/* Text content */}
                     <div className="p-2.5 flex flex-col gap-1 flex-1 relative">
-                      <p className="text-[11px] font-bold text-[var(--color-text)] leading-tight">{mod.title}</p>
-                      <p className="text-[11px] text-[var(--color-text-muted)] leading-tight line-clamp-2">{mod.description}</p>
+                      <p className="text-[0.6875rem] font-bold text-[var(--color-text)] leading-tight">{mod.title}</p>
+                      <p className="text-[0.6875rem] text-[var(--color-text-muted)] leading-tight line-clamp-2">{mod.description}</p>
                       {/* Pillar label left, status badge bottom-right */}
                       <div className="flex items-end justify-between mt-auto pt-1">
-                        <p className="text-[8px] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] px-1.5 py-0.5 rounded-full leading-none">{pillarLabel}</p>
+                        <p className="text-[0.5rem] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] px-1.5 py-0.5 rounded-full leading-none">{pillarLabel}</p>
                         {allDone ? (
-                          <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white leading-none" style={{ background: 'var(--brand-primary)' }}>
+                          <span className="text-[0.5rem] font-bold px-1.5 py-0.5 rounded-full text-white leading-none" style={{ background: 'var(--brand-primary)' }}>
                             ✓ Done
                           </span>
                         ) : completedActs.length > 0 ? (
-                          <span className="text-[8px] font-semibold px-1.5 py-0.5 rounded-full leading-none" style={{ background: 'rgba(0,149,156,0.12)', color: 'var(--brand-primary)' }}>
+                          <span className="text-[0.5rem] font-semibold px-1.5 py-0.5 rounded-full leading-none" style={{ background: 'rgba(0,149,156,0.12)', color: 'var(--brand-primary)' }}>
                             ~{minsLeft}m left
                           </span>
                         ) : (
-                          <span className="text-[8px] text-[var(--color-text-muted)] font-medium leading-none">
+                          <span className="text-[0.5rem] text-[var(--color-text-muted)] font-medium leading-none">
                             ~{totalMins}m
                           </span>
                         )}
@@ -256,7 +256,7 @@ export function LabTab({ appView }: LabTabProps) {
       {!loading && MODULES.length === 0 && (
         <div className="flex flex-col items-center gap-3 py-10">
           <BookOpen size={32} className="text-[var(--color-text-muted)]" />
-          <p className="text-[13px] text-[var(--color-text-muted)] text-center">
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)] text-center">
             Modules unlock as you use the app.
           </p>
         </div>

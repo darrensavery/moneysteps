@@ -119,7 +119,7 @@ export function Stage1ParentIdentity({ data, onNext }: Props) {
             Secure account creation
           </span>
         </div>
-        <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-gray-900 leading-tight outline-none">
+        <h2 ref={headingRef} tabIndex={-1} className="text-[1.625rem] font-extrabold tracking-tight text-gray-900 leading-tight outline-none">
           Your Identity
         </h2>
         <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">
@@ -442,7 +442,7 @@ function FloatingField({
           className={cn(
             'absolute left-3.5 transition-all duration-150 pointer-events-none select-none',
             floated
-              ? 'top-2 text-[10px] font-semibold tracking-wide'
+              ? 'top-2 text-[0.625rem] font-semibold tracking-wide'
               : 'top-1/2 -translate-y-1/2 text-sm',
             focused
               ? 'text-teal-600'

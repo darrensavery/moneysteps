@@ -194,7 +194,7 @@ export function ThemePicker() {
 
   return (
     <div>
-      <p className="text-[13px] font-bold text-muted uppercase tracking-wide mb-2">Display</p>
+      <p className="text-[0.8125rem] font-bold text-muted uppercase tracking-wide mb-2">Display</p>
       <div className="flex rounded-xl overflow-hidden border border-subtle bg-surface-alt">
         {OPTIONS.map(opt => {
           const active = preference === opt.value
@@ -203,21 +203,21 @@ export function ThemePicker() {
               key={opt.value}
               onClick={() => setTheme(opt.value)}
               className={`
-                flex-1 flex flex-col items-center gap-1 py-2.5 text-[12px] font-semibold
+                flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.75rem] font-semibold
                 transition-colors duration-150 cursor-pointer
                 ${active
-                  ? 'bg-surface text-main shadow-sm'
+                  ? 'bg-brand text-on-brand shadow-sm'
                   : 'text-muted hover:text-main'}
               `}
               aria-pressed={active}
             >
-              <span className="text-[16px] leading-none">{opt.icon}</span>
+              <span className="text-[1rem] leading-none">{opt.icon}</span>
               {opt.label}
             </button>
           )
         })}
       </div>
-      <p className="text-[11px] text-muted mt-1.5">
+      <p className="text-[0.6875rem] text-muted mt-1.5">
         Auto follows your device's display setting.
       </p>
     </div>
@@ -233,8 +233,8 @@ export function HighContrastToggle() {
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
-        <p className="text-[13px] font-semibold text-main">High Contrast</p>
-        <p className="text-[11px] text-muted mt-0.5">
+        <p className="text-[0.8125rem] font-semibold text-main">High Contrast</p>
+        <p className="text-[0.6875rem] text-muted mt-0.5">
           Meets WCAG AA accessibility standards for text and interface contrast.
         </p>
       </div>
@@ -244,8 +244,8 @@ export function HighContrastToggle() {
         aria-checked={highContrast}
         onClick={() => setHighContrast(!highContrast)}
         className={`
-          tap-target-44 relative w-11 h-6 rounded-full transition-colors duration-150 cursor-pointer shrink-0
-          ${highContrast ? 'bg-brand' : 'bg-surface-alt border border-subtle'}
+          tap-target-44 relative w-11 h-6 rounded-full border transition-colors duration-150 cursor-pointer shrink-0
+          ${highContrast ? 'bg-brand border-brand' : 'bg-surface-alt border-subtle'}
         `}
       >
         <span

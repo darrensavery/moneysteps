@@ -151,12 +151,12 @@ export const MODULES: ModuleDef[] = [
       React.createElement('rect', { x: 94, y: 41, width: 32, height: 8, rx: 3, fill: cGold(locked, 0.9) }),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? `You've earned ${fmtPence(d.lifetimeEarningsPence, d.currency)} so far. Before we count the apples, let's talk about the slice the orchard infrastructure quietly takes.`
           : `Cumulative earnings: ${fmtPence(d.lifetimeEarningsPence, d.currency)}. This module explains the deductions applied to real-world wages.`
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed text-[var(--color-text)]' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed text-[var(--color-text)]' },
         'Every person who earns money pays a portion to fund shared services — roads, hospitals, schools. This isn\'t optional. It\'s called tax. The amount you actually receive is called your ',
         React.createElement('strong', null, 'net pay'),
         '. The amount before deductions is your ',
@@ -165,21 +165,21 @@ export const MODULES: ModuleDef[] = [
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'Income Tax'),
         ' is a percentage of your earnings taken by the government. In the UK, the first £12,570 you earn in a year is tax-free (the Personal Allowance). Above that, 20% goes to the government.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'National Insurance (NI)'),
         ' is a separate contribution that funds the NHS and state pension. Employees pay 8% on earnings between £12,570 and £50,270.'
       ),
-      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
         React.createElement('p', null, 'Gross pay:         £2,000/month'),
         React.createElement('p', null, 'Income tax (20%):  −£285'),
         React.createElement('p', null, 'NI (8%):           −£100'),
         React.createElement('p', { className: 'font-bold mt-1' }, 'Net pay:            £1,615')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'For every £100 earned, roughly £19 goes to the government before the worker sees it. This pays for the things no single person could afford alone.'
       )
     ),
@@ -190,17 +190,17 @@ export const MODULES: ModuleDef[] = [
       const ni      = Math.round(monthly * 0.08)
       const net     = monthly - tax - ni
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[13px] text-[var(--color-text-muted)]' },
+        React.createElement('p', { className: 'text-[0.8125rem] text-[var(--color-text-muted)]' },
           'Using your median chore rate of ', React.createElement('strong', null, fmtPence(median, d.currency))
         ),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', null, `If you did 20 chores this month:`),
           React.createElement('p', null, `Gross earnings:   ${fmtPence(monthly, d.currency)}`),
           React.createElement('p', null, `Income tax (20%): −${fmtPence(tax, d.currency)}`),
           React.createElement('p', null, `NI (8%):          −${fmtPence(ni, d.currency)}`),
           React.createElement('p', { className: 'font-bold border-t border-[var(--color-border)] pt-1' }, `Net pay: ${fmtPence(net, d.currency)}`)
         ),
-        React.createElement('p', { className: 'text-[13px] leading-relaxed' },
+        React.createElement('p', { className: 'text-[0.8125rem] leading-relaxed' },
           `In the real world, your net pay would be ${fmtPence(net, d.currency)} — not ${fmtPence(monthly, d.currency)}. To cover the ${fmtPence(tax + ni, d.currency)} lost to tax and NI, you'd need `,
           React.createElement('strong', null, `${Math.ceil((tax + ni) / median)} extra chores`),
           ' at your median rate.'
@@ -261,39 +261,39 @@ export const MODULES: ModuleDef[] = [
       React.createElement('circle', { cx: 80, cy: 41, r: 1.5, fill: cRed(locked, 0.85) }),
     ),
     hook: (_d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         'Something in your orchard smells like blight. Scams grow fast and look delicious — let\'s learn how to spot them before they spread.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'Every year, billions of pounds are lost to scams. Most victims aren\'t careless — they were targeted by professionals who spend their careers making fake things look real. Knowing the patterns is your best defence.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] font-semibold' }, 'The three signals every scam shares:'),
-      React.createElement('ol', { className: 'flex flex-col gap-2 pl-4 list-decimal text-[14px]' },
+      React.createElement('p', { className: 'text-[0.875rem] font-semibold' }, 'The three signals every scam shares:'),
+      React.createElement('ol', { className: 'flex flex-col gap-2 pl-4 list-decimal text-[0.875rem]' },
         React.createElement('li', null, React.createElement('strong', null, 'Urgency. '), '"Act now or lose this forever." Scammers create time pressure so you don\'t think clearly.'),
         React.createElement('li', null, React.createElement('strong', null, 'Too good to be true. '), 'Free money, free prizes, amazing deals with no catch. If it sounds impossible, it usually is.'),
         React.createElement('li', null, React.createElement('strong', null, 'Requests for credentials. '), 'Legitimate companies never ask for your PIN, password, or full card number via message or link.')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'Protecting your accounts: '),
         'Use a different PIN for every service. Never share it — not even with a parent or carer. If you receive a suspicious message asking you to click a link, don\'t. Go directly to the website by typing the address yourself.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'In gaming: '),
         '"Free V-Bucks generators," "account boosting," and "rare item trades" are almost always scams. No legitimate service needs your login credentials to give you something for free.'
       )
     ),
     lab: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] font-semibold' }, 'Spot the scam. For each scenario, decide: real or fake?'),
+      React.createElement('p', { className: 'text-[0.875rem] font-semibold' }, 'Spot the scam. For each scenario, decide: real or fake?'),
       ...[
         { scenario: 'An email from "PayPal" says your account will be closed in 24 hours unless you click a link and enter your password.', answer: 'SCAM', why: 'Urgency + credential request. PayPal communicates through your account dashboard, not urgent emails.' },
         { scenario: 'Your game\'s official app sends a push notification that you\'ve earned a reward for completing a challenge you actually did yesterday.', answer: 'LIKELY REAL', why: 'No urgency, no credential request, matches recent activity. Still verify by opening the app directly — not via the notification.' },
         { scenario: 'A website offers to double your Robux if you enter your username and password.', answer: 'SCAM', why: 'No platform gives away currency for credentials. This is a classic credential-harvesting scam.' },
       ].map((item, i) => React.createElement('div', { key: i, className: 'rounded-xl border border-[var(--color-border)] p-3 flex flex-col gap-2' },
-        React.createElement('p', { className: 'text-[13px]' }, item.scenario),
-        React.createElement('p', { className: 'text-[12px] font-bold text-[var(--brand-primary)]' }, item.answer),
-        React.createElement('p', { className: 'text-[12px] text-[var(--color-text-muted)]' }, item.why)
+        React.createElement('p', { className: 'text-[0.8125rem]' }, item.scenario),
+        React.createElement('p', { className: 'text-[0.75rem] font-bold text-[var(--brand-primary)]' }, item.answer),
+        React.createElement('p', { className: 'text-[0.75rem] text-[var(--color-text-muted)]' }, item.why)
       ))
     ),
     quiz: [
@@ -357,28 +357,28 @@ export const MODULES: ModuleDef[] = [
       React.createElement('circle', { cx: 80, cy: 21, r: 5, fill: cGold(locked, 0.7) }),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? `Your grove is growing — ${fmtPence(d.currentBalancePence, d.currency)} saved. It's time to understand where the real orchards store their surplus.`
           : `Balance milestone reached: ${fmtPence(d.currentBalancePence, d.currency)}. This module covers real-world money storage and banking fundamentals.`
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'You\'ve built up real savings. Where should that money actually live when it\'s bigger than pocket money? The answer most people use is a bank — but most people don\'t understand how banks work. Let\'s fix that.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'A ', React.createElement('strong', null, 'current account'), ' is for day-to-day spending. Money goes in (wages, transfers) and out (purchases, bills). Most come with a debit card.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'A ', React.createElement('strong', null, 'savings account'), ' is for money you don\'t need immediately. The bank pays you ', React.createElement('strong', null, 'interest'), ' for keeping your money there — usually a percentage per year.'
       ),
-      React.createElement('p', { className: 'text-[14px] font-semibold' }, 'Debit card vs credit card:'),
-      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] flex flex-col gap-2' },
+      React.createElement('p', { className: 'text-[0.875rem] font-semibold' }, 'Debit card vs credit card:'),
+      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] flex flex-col gap-2' },
         React.createElement('p', null, React.createElement('strong', null, 'Debit:'), ' spends your own money directly from your account. If there\'s nothing in, it doesn\'t work.'),
         React.createElement('p', null, React.createElement('strong', null, 'Credit:'), ' the bank lends you money to spend now. You pay it back later — with interest if you don\'t clear the balance.')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'Why not keep money in a jar? Two reasons: it can be stolen or lost, and it earns nothing. A savings account keeps it safe and makes it grow slowly.'
       )
     ),
@@ -389,10 +389,10 @@ export const MODULES: ModuleDef[] = [
       const yr3 = Math.round(yr2 * 1.04)
       const earned = yr3 - balance
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[13px] text-[var(--color-text-muted)]' },
+        React.createElement('p', { className: 'text-[0.8125rem] text-[var(--color-text-muted)]' },
           'If your current balance of ', React.createElement('strong', null, fmtPence(balance, d.currency)), ' were in a 4% savings account:'
         ),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', null, `Today:   ${fmtPence(balance, d.currency)}`),
           React.createElement('p', null, `Year 1:  ${fmtPence(yr1, d.currency)}`),
           React.createElement('p', null, `Year 2:  ${fmtPence(yr2, d.currency)}`),
@@ -401,7 +401,7 @@ export const MODULES: ModuleDef[] = [
             `Interest earned: ${fmtPence(earned, d.currency)} — for doing nothing extra.`
           )
         ),
-        React.createElement('p', { className: 'text-[13px]' },
+        React.createElement('p', { className: 'text-[0.8125rem]' },
           `That's ${Math.ceil(earned / d.choreRateMedianPence)} chores at your median rate — earned by a bank account while you slept.`
         )
       )
@@ -464,24 +464,24 @@ export const MODULES: ModuleDef[] = [
       React.createElement('text', { x: 128, y: 27, fontSize: 9, textAnchor: 'middle', fill: cGold(locked, 0.9), fontWeight: 'bold' }, '£'),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? `${d.savingsStreakWeeks} weeks in a row — your snowball is rolling. Here's the secret: it gets heavier without you pushing harder.`
           : `${d.savingsStreakWeeks} consecutive weeks of balance growth recorded. This module explains compound interest.`
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         `You now have ${fmtPence(d.currentBalancePence, d.currency)}, up from ${fmtPence(d.balance4wkAgoPence, d.currency)} four weeks ago. You did that by earning and saving. In the real world, once a snowball gets big enough, it picks up extra snow just by rolling. Money can do the same thing — not inside Morechard, but in a savings account.`
       ),
-      React.createElement('p', { className: 'text-[12px] text-[var(--color-text-muted)] italic' },
+      React.createElement('p', { className: 'text-[0.75rem] text-[var(--color-text-muted)] italic' },
         'Note: Morechard tracks what you earn. It doesn\'t add interest. This lesson is about the real-world tool you\'ll use when you\'re ready.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'When you put money in a savings account, the bank pays you a little extra for keeping it there. That extra is called ', React.createElement('strong', null, 'interest'), '. A typical savings account might pay 4% per year. If you saved £100, the bank adds £4 at the end of the year. You\'d have £104.'
       ),
-      React.createElement('p', { className: 'text-[14px] font-semibold' }, 'Simple vs compound interest:'),
-      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+      React.createElement('p', { className: 'text-[0.875rem] font-semibold' }, 'Simple vs compound interest:'),
+      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
         React.createElement('p', { className: 'font-bold' }, 'Simple (4% of original each year):'),
         React.createElement('p', null, 'Year 1: £100 → £104'),
         React.createElement('p', null, 'Year 2: £100 → £108'),
@@ -491,7 +491,7 @@ export const MODULES: ModuleDef[] = [
         React.createElement('p', null, 'Year 2: £104.00 → £108.16'),
         React.createElement('p', null, 'Year 3: £108.16 → £112.49')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'The difference looks small now. Over 10 years on £50, compound interest earns £24 extra — for doing nothing. That\'s the snowball. Starting early is worth more than saving a lot. You can\'t buy back the years you didn\'t start. You\'re already doing that.'
       )
     ),
@@ -506,10 +506,10 @@ export const MODULES: ModuleDef[] = [
       const snowball   = Math.round(5000 * Math.pow(1.04, 10))
       const choreEquiv = Math.ceil(compound3 / d.choreRateMedianPence)
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[13px] text-[var(--color-text-muted)]' },
+        React.createElement('p', { className: 'text-[0.8125rem] text-[var(--color-text-muted)]' },
           'Using your balance of ', React.createElement('strong', null, fmtPence(balance, d.currency)), ' at 4% compound interest:'
         ),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', null, `Year 1: ${fmtPence(yr1, d.currency)}`),
           React.createElement('p', null, `Year 2: ${fmtPence(yr2, d.currency)}`),
           React.createElement('p', null, `Year 3: ${fmtPence(yr3, d.currency)}`),
@@ -517,10 +517,10 @@ export const MODULES: ModuleDef[] = [
           React.createElement('p', null, `Simple interest same period: ${fmtPence(simple3, d.currency)}`),
           React.createElement('p', { style: { color: 'var(--brand-primary)', fontWeight: 'bold' } }, `Compound earns ${fmtPence(extra, d.currency)} extra`)
         ),
-        React.createElement('p', { className: 'text-[13px]' },
+        React.createElement('p', { className: 'text-[0.8125rem]' },
           `That ${fmtPence(compound3, d.currency)} of interest equals `, React.createElement('strong', null, `${choreEquiv} chores`), ' at your median rate — earned without working.'
         ),
-        React.createElement('div', { className: 'rounded-xl border border-[var(--color-border)] p-3 text-[13px]' },
+        React.createElement('div', { className: 'rounded-xl border border-[var(--color-border)] p-3 text-[0.8125rem]' },
           React.createElement('p', { className: 'font-semibold mb-1' }, 'Snowball comparison: £50 for 10 years at 4%'),
           React.createElement('p', null, `Person A (savings account): ${fmtPence(snowball, d.currency)}`),
           React.createElement('p', null, `Person B (jar at home): ${fmtPence(5000, d.currency)}`),
@@ -589,30 +589,30 @@ export const MODULES: ModuleDef[] = [
       React.createElement('path', { d: 'M120 10 L120 6 M117 9 L120 6 L123 9', stroke: cRed(locked, 0.8), strokeWidth: 1.5, strokeLinecap: 'round' }),
     ),
     hook: (_d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         'Borrowing tomorrow\'s seeds to buy today\'s fruit can work. But the vine always wants something back.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'When you borrow money, you don\'t just pay back what you borrowed. You pay back more — because the lender charges for the use of their money. This extra charge is called interest. Understanding it is one of the most important financial skills you can have.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'How interest on debt works: '),
         'If you borrow £100 at 20% annual interest and pay nothing for a year, you owe £120. Wait another year: £144. The debt grows — just like savings compound, so do debts.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The minimum payment trap: '),
         'Credit cards let you pay a small "minimum payment" each month — sometimes just 1–2% of what you owe. If you only pay the minimum on a £1,000 balance at 20% interest, it can take over 10 years to pay off and cost nearly £1,000 in interest alone.'
       ),
-      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
         React.createElement('p', null, 'Borrow:           £1,000'),
         React.createElement('p', null, 'Interest rate:    20% per year'),
         React.createElement('p', null, 'Minimum payment:  £25/month'),
         React.createElement('p', { className: 'font-bold mt-1' }, 'Time to clear:    ~10 years'),
         React.createElement('p', { className: 'font-bold text-red-500' }, 'Total paid:       ~£1,900')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'The trap is not borrowing. The trap is borrowing and only paying the minimum.'
       )
     ),
@@ -622,15 +622,15 @@ export const MODULES: ModuleDef[] = [
       const after2  = Math.round(after1 * 1.20)
       const extra   = after2 - loan
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[13px] text-[var(--color-text-muted)]' },
+        React.createElement('p', { className: 'text-[0.8125rem] text-[var(--color-text-muted)]' },
           `Imagine borrowing ${fmtPence(loan, d.currency)} (50% more than your current balance) at 20% annual interest:`
         ),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', null, `Borrowed:  ${fmtPence(loan, d.currency)}`),
           React.createElement('p', null, `After 1yr: ${fmtPence(after1, d.currency)} (+${fmtPence(after1 - loan, d.currency)})`),
           React.createElement('p', null, `After 2yr: ${fmtPence(after2, d.currency)} (+${fmtPence(extra, d.currency)} total)`)
         ),
-        React.createElement('p', { className: 'text-[13px]' },
+        React.createElement('p', { className: 'text-[0.8125rem]' },
           `If you paid nothing for 2 years, you'd owe ${fmtPence(extra, d.currency)} extra — that's `,
           React.createElement('strong', null, `${Math.ceil(extra / d.choreRateMedianPence)} chores`),
           ' at your median rate just to cover the interest.'
@@ -693,31 +693,31 @@ export const MODULES: ModuleDef[] = [
       React.createElement('path', { d: 'M132 38 L132 14 M126 20 L132 14 L138 20', stroke: cRed(locked, 0.8), strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? 'Your seeds are sitting still. Money has a slow rot — here\'s what\'s quietly happening to your pile.'
           : 'No transaction activity detected. This module explains purchasing power erosion over time.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         `Imagine you put ${fmtPence(d.currentBalancePence, d.currency)} under your mattress today. In 10 years, it's still ${fmtPence(d.currentBalancePence, d.currency)} — but it buys less. A chocolate bar that costs 80p today might cost £1.10 in a decade. Your money didn't shrink. But what it can buy did. That's inflation.`
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'What inflation is: '),
         'Inflation is the general rise in prices over time. The UK government targets about 2% per year. At 2% inflation, something that costs £1.00 today costs roughly £1.22 in 10 years.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'What it means for savings: '),
         'If your savings earn 0% interest and inflation runs at 2%, your money\'s real purchasing power falls by about 2% per year. After 10 years, you can buy roughly 20% less with the same amount.'
       ),
-      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
         React.createElement('p', null, 'Today:    £100 buys a basket of goods'),
         React.createElement('p', null, '+5 years: same basket costs ~£110'),
         React.createElement('p', null, '+10 yrs:  same basket costs ~£122'),
         React.createElement('p', { className: 'font-bold mt-1' }, 'Your £100 (uninvested) buys less each year.')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The fix: '),
         'Keep savings in accounts that earn interest at or above the inflation rate. Money sitting in a 0% account loses real value every year.'
       )
@@ -727,15 +727,15 @@ export const MODULES: ModuleDef[] = [
       const yr5real  = Math.round(balance / Math.pow(1.02, 5))
       const yr10real = Math.round(balance / Math.pow(1.02, 10))
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[13px] text-[var(--color-text-muted)]' },
+        React.createElement('p', { className: 'text-[0.8125rem] text-[var(--color-text-muted)]' },
           `If your ${fmtPence(balance, d.currency)} earns 0% while inflation runs at 2%:`
         ),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', null, `Today (face value):   ${fmtPence(balance, d.currency)}`),
           React.createElement('p', null, `In 5 years (real):    ${fmtPence(yr5real, d.currency)} (−${fmtPence(balance - yr5real, d.currency)} purchasing power)`),
           React.createElement('p', null, `In 10 years (real):   ${fmtPence(yr10real, d.currency)} (−${fmtPence(balance - yr10real, d.currency)} purchasing power)`)
         ),
-        React.createElement('p', { className: 'text-[13px]' },
+        React.createElement('p', { className: 'text-[0.8125rem]' },
           `After 10 years you'd still have ${fmtPence(balance, d.currency)} in your account — but it would only buy what ${fmtPence(yr10real, d.currency)} buys today. That's `,
           React.createElement('strong', null, `${Math.ceil((balance - yr10real) / d.choreRateMedianPence)} chores`),
           ' worth of purchasing power, silently erased.'
@@ -799,23 +799,23 @@ export const MODULES: ModuleDef[] = [
       React.createElement('text', { x: 122, y: 35, fontSize: 11, textAnchor: 'middle', fill: cGold(locked, 0.85), fontWeight: 'bold' }, '£'),
     ),
     hook: (_d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         'V-Bucks, Robux, Gems — the orchard has a dark corner selling "magic seeds" that only grow inside one walled garden. Let\'s map the exit.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'In-game currencies aren\'t just a payment method — they\'re a design decision. Converting real money into game currency is intentional: it makes you forget how much you\'re spending. Understanding how it works puts you back in control.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'Why game currencies exist: '),
         'When you buy V-Bucks or Robux, you exchange real money for in-game tokens. The conversion rate is usually awkward (e.g. 1,000 V-Bucks for £7.99) — this is deliberate. It\'s harder to think "is this skin worth 3 hours of chores?" when you\'re thinking in V-Bucks.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The "leftover" trick: '),
         'Bundles are often designed so you always have a little currency left over after a purchase. That leftover encourages you to buy another bundle to "not waste" it.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The real-money test: '),
         'Before any in-game purchase, convert it back to real money. 1,000 V-Bucks ≈ £8. Is this skin worth £8? Would you hand over that cash at a till for it?'
       )
@@ -825,13 +825,13 @@ export const MODULES: ModuleDef[] = [
       const rate       = d.choreRateMedianPence
       const choreEquiv = (vbucks1000 / rate).toFixed(1)
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[14px] font-semibold' }, 'The labour equivalent test'),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] flex flex-col gap-2' },
+        React.createElement('p', { className: 'text-[0.875rem] font-semibold' }, 'The labour equivalent test'),
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] flex flex-col gap-2' },
           React.createElement('p', null, `1,000 V-Bucks = ${fmtPence(vbucks1000, d.currency)}`),
           React.createElement('p', null, `Your median chore rate = ${fmtPence(rate, d.currency)}`),
           React.createElement('p', { className: 'font-bold' }, `That skin costs you ${choreEquiv} chores worth of effort.`)
         ),
-        React.createElement('p', { className: 'text-[13px] leading-relaxed' },
+        React.createElement('p', { className: 'text-[0.8125rem] leading-relaxed' },
           `Next time you consider an in-game purchase, ask yourself: "Would I do ${choreEquiv} chores for this?" If the answer is no, the purchase isn't worth it at your real rate of earning.`
         )
       )
@@ -892,11 +892,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Complete 10 different types of chore to unlock',
     description: 'What it means to make the work work for you — not just do more of it.',
-    hook: (d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       `You've worked ${d.distinctChoreTypes} different types of job. Now here's the question every serious grower eventually asks: what if the orchard worked for `, React.createElement('em', null, 'you'), ' instead?'
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-03-entrepreneurship.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-03-entrepreneurship.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -919,11 +919,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Triggered by variable earnings week to week',
     description: 'The trade-off between high-potential gig income and the safety of steady pay.',
-    hook: (_d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (_d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       'Some weeks a feast, some weeks bare branches — your earnings are swinging. That pattern has a name, and it\'s worth knowing before you build a life around it.'
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-03b-gig-trap-vs-salary-safety.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-03b-gig-trap-vs-salary-safety.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -944,11 +944,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Triggered by repeat spending in the same category',
     description: 'How advertising is designed to make you want things — and how to notice it.',
-    hook: (_d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (_d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       'Three times in a month, the same shelf called your name. That\'s not a coincidence — someone designed that shelf. Let\'s inspect the architecture.'
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-06-advertising-influence.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-06-advertising-influence.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -970,11 +970,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Triggered when a goal is cancelled after a competing purchase',
     description: 'Every yes is a hidden no — how to make trade-offs consciously.',
-    hook: (_d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (_d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       'You said yes to something — and quietly said no to something else. That trade has a name. Here\'s how to make it consciously next time.'
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-09-opportunity-cost.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-09-opportunity-cost.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -993,11 +993,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Achieve 90% reliability over 8 weeks to unlock',
     description: 'How your financial reliability becomes a number — and why it matters.',
-    hook: (d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       `Your consistency has a number. In the wider world, that number is ${d.reliabilityRating}% — and it opens doors or closes them. Here's how the system works.`
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-11-credit-scores-and-trust.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-11-credit-scores-and-trust.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -1016,11 +1016,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Complete The Interest Trap module first',
     description: 'Not all debt is equal — a mortgage and a payday loan are not the same thing.',
-    hook: (_d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (_d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       'Not all debt is a vine strangling your tree. Some debt is a trellis. Here\'s the test every serious grower uses to tell the difference.'
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-12-good-vs-bad-debt.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-12-good-vs-bad-debt.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -1034,11 +1034,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Triggered after a purchase you felt mixed about',
     description: 'Buyer\'s remorse, contentment, and why getting the thing doesn\'t fix the feeling.',
-    hook: (_d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (_d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       'You got the thing — and something feels off. That feeling has a name. Let\'s talk about it before it shapes your next harvest.'
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-18-money-and-mental-health.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-18-money-and-mental-health.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -1057,11 +1057,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Triggered when spending follows a peer\'s purchase',
     description: 'Why "keeping up" is a race with no finish line — and how to opt out.',
-    hook: (_d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (_d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       'Someone else planted a seed and now you want the same crop. That\'s human — but let\'s make sure it\'s your hunger driving this, not theirs.'
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-18b-social-comparison.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-18b-social-comparison.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -1091,11 +1091,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Earn £100 lifetime to unlock',
     description: 'Fractional ownership of companies — and why long-term investors usually win.',
-    hook: (d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       `${fmtPence(d.lifetimeEarningsPence, d.currency)} earned. The orchard now has a question: do you want to own a small piece of someone else's farm?`
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-13-compound-growth.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-13-compound-growth.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -1113,11 +1113,11 @@ export const MODULES: ModuleDef[] = [
     ),
     triggerHint: 'Have 3 active goals including one long-term goal',
     description: 'Don\'t put all your seeds in one basket — the maths of spreading risk.',
-    hook: (d) => React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+    hook: (d) => React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
       `${d.activeGoalsCount} active goals — you're thinking like a strategist. Now let's examine what happens when one of those soils turns bad.`
     ),
-    lesson: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-15-risk-and-diversification.md Act 2'),
-    lab: (_d) => React.createElement('p', { className: 'text-[14px] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
+    lesson: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Content coming soon — see docs/notebooklm/09-module-15-risk-and-diversification.md Act 2'),
+    lab: (_d) => React.createElement('p', { className: 'text-[0.875rem] text-[var(--color-text-muted)]' }, 'Interactive lab coming soon'),
     quiz: [],
   },
 
@@ -1145,30 +1145,30 @@ export const MODULES: ModuleDef[] = [
       React.createElement('text', { x: 80, y: 43.5, fontSize: 8, textAnchor: 'middle', fill: cGold(locked, 0.95), fontWeight: 'bold' }, '£'),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? `You've sheltered ${fmtPence(d.currentBalancePence, d.currency)} in your grove. One bad storm could flatten it overnight — unless you build a roof before the clouds arrive.`
           : `You've built ${fmtPence(d.currentBalancePence, d.currency)} in savings. A single unexpected loss could wipe it out. Insurance is the tool that stops one bad day from undoing months of work.`
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'Insurance is a deal: you pay a small, predictable amount regularly, and in return someone else agrees to cover a big, unpredictable loss if it happens. You\'re trading a small certain cost for protection against a large uncertain one.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'How it works — pooling risk: '),
         'Thousands of people each pay a small amount (the ', React.createElement('strong', null, 'premium'), ') into a shared pot. Most won\'t need it. The few who suffer a big loss are paid from the pot. Everyone trades a little money for peace of mind.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The excess: '),
         'When you claim, you usually pay the first slice yourself — the ', React.createElement('strong', null, 'excess'), '. A £400 phone claim with a £50 excess means the insurer pays £350 and you pay £50. A higher excess makes the premium cheaper, but leaves more to find if you claim.'
       ),
-      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] flex flex-col gap-2' },
+      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] flex flex-col gap-2' },
         React.createElement('p', null, React.createElement('strong', null, 'Required by law: '), 'Car insurance — you cannot legally drive without it.'),
         React.createElement('p', null, React.createElement('strong', null, 'Strongly worth it: '), 'Home contents, and travel insurance (medical bills abroad can be enormous).'),
         React.createElement('p', null, React.createElement('strong', null, 'Often not worth it: '), 'Cheap gadgets and extended warranties on low-cost items you could simply replace.')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The rule: '),
         'Insure what you couldn\'t afford to replace. Don\'t insure what you could comfortably cover yourself — for small losses, you are your own best insurer.'
       )
@@ -1181,16 +1181,16 @@ export const MODULES: ModuleDef[] = [
       const rate    = d.choreRateMedianPence
       const phoneChores = Math.ceil(phone / rate)
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[13px] text-[var(--color-text-muted)]' },
+        React.createElement('p', { className: 'text-[0.8125rem] text-[var(--color-text-muted)]' },
           'Imagine a phone worth ', React.createElement('strong', null, fmtPence(phone, d.currency)), ' — that\'s ', React.createElement('strong', null, `${phoneChores} chores`), ' of effort at your median rate.'
         ),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', null, `Replace it yourself:   ${fmtPence(phone, d.currency)}`),
           React.createElement('p', null, `Insurance premium:     ${fmtPence(premium, d.currency)}/month (${fmtPence(annual, d.currency)}/yr)`),
           React.createElement('p', null, `Excess if you claim:   ${fmtPence(excess, d.currency)}`),
           React.createElement('p', { className: 'font-bold border-t border-[var(--color-border)] pt-1' }, `If it breaks: you pay ${fmtPence(excess, d.currency)}, not ${fmtPence(phone, d.currency)}`)
         ),
-        React.createElement('p', { className: 'text-[13px] leading-relaxed' },
+        React.createElement('p', { className: 'text-[0.8125rem] leading-relaxed' },
           `If your savings couldn't absorb a sudden ${fmtPence(phone, d.currency)} loss, the ${fmtPence(annual, d.currency)} a year buys protection worth having. If you could easily replace it, you might skip the premium and self-insure. The question is never "will it break?" — it's "could I cope if it did?"`
         )
       )
@@ -1254,31 +1254,31 @@ export const MODULES: ModuleDef[] = [
       React.createElement('path', { d: 'M66 50 C66 40 80 36 80 36 C80 36 94 40 94 50 Z', fill: cGold(locked, 0.6) }),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? 'The oldest orchards were planted by people who knew they\'d never sit in their shade. A pension is that tree — planted now, harvested in fifty years.'
           : 'A pension is money you lock away now for a version of you that won\'t exist for decades. It sounds distant — but the maths makes starting early the single most powerful move you can make.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'You\'ve already learned how compound growth works. A pension is compound growth given its longest possible run — often 40 or 50 years. Over that long, the difference between starting now and starting "later" is enormous.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'What a pension is: '),
         'A pension is a long-term savings pot for retirement. The money is invested (usually in shares and bonds) so it grows over decades, and you generally can\'t touch it until your late 50s — which is the point.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'Free money — the employer match: '),
         'In the UK, most workers are automatically enrolled into a workplace pension. You pay in, your ', React.createElement('strong', null, 'employer also pays in'), ', and the government adds tax relief on top. Opting out means turning down free money from your employer.'
       ),
-      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] flex flex-col gap-1' },
+      React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] flex flex-col gap-1' },
         React.createElement('p', null, React.createElement('strong', null, 'You contribute:'), ' e.g. 5% of pay'),
         React.createElement('p', null, React.createElement('strong', null, 'Employer adds:'), ' e.g. 3% of pay — free'),
         React.createElement('p', null, React.createElement('strong', null, 'Government adds:'), ' tax relief on your share'),
         React.createElement('p', { className: 'font-bold border-t border-[var(--color-border)] pt-1' }, 'Every £1 you pay becomes more than £1 invested.')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The State Pension exists too '),
         '— but it\'s modest and starts late. It\'s a floor, not a comfortable retirement. The earlier you add your own pension on top, the more the decades of compounding do the heavy lifting for you.'
       )
@@ -1293,10 +1293,10 @@ export const MODULES: ModuleDef[] = [
       const lateIn  = monthly * 37 * 12
       const gap     = early - late
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[13px] text-[var(--color-text-muted)]' },
+        React.createElement('p', { className: 'text-[0.8125rem] text-[var(--color-text-muted)]' },
           'Two people each save ', React.createElement('strong', null, fmtPence(monthly, d.currency)), '/month into a pension growing ~5% a year. The only difference: when they started.'
         ),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', { className: 'font-bold' }, 'Started at 20 (paid in 47 years):'),
           React.createElement('p', null, `Paid in:   ${fmtPence(earlyIn, d.currency)}`),
           React.createElement('p', null, `Pot at 67: ${fmtPence(early, d.currency)}`),
@@ -1305,7 +1305,7 @@ export const MODULES: ModuleDef[] = [
           React.createElement('p', null, `Pot at 67: ${fmtPence(late, d.currency)}`),
           React.createElement('p', { style: { color: 'var(--brand-primary)', fontWeight: 'bold' }, className: 'border-t border-[var(--color-border)] pt-1' }, `Ten years earlier = ${fmtPence(gap, d.currency)} more`)
         ),
-        React.createElement('p', { className: 'text-[13px] leading-relaxed' },
+        React.createElement('p', { className: 'text-[0.8125rem] leading-relaxed' },
           `The early starter paid in only ${fmtPence(earlyIn - lateIn, d.currency)} more, but ended up with ${fmtPence(gap, d.currency)} more. That gap is pure compounding — the reward for time, not effort. You can't buy back the years you didn't start, which is exactly why this lesson reaches you now.`
         )
       )
@@ -1370,29 +1370,29 @@ export const MODULES: ModuleDef[] = [
       React.createElement('path', { d: 'M138 14 L138 50 M132 44 L138 50 L144 44', stroke: cRed(locked, 0.7), strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? 'A stall at the orchard market sells sealed baskets — "one might hold a golden apple!" Most hold a single bruised plum. The stallholder, somehow, is always rich.'
           : 'A loot box promises a rare reward for a small payment. Most of the time you get something nearly worthless. The company selling it always comes out ahead — and that\'s not luck, it\'s design.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'Gambling and chance-based game purchases run on the same maths: you pay a certain amount for an uncertain reward that, on average, is worth less than you paid. Understanding the maths is how you stop being the product.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The house edge: '),
         'Every casino game, lottery and loot box is built so that, on average, players get back less than they put in. The gap is the operator\'s profit. You might win sometimes — but play long enough and the maths grinds you down. The house never needs luck; it just needs you to keep playing.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'The gambler\'s fallacy: '),
         'After five reds in a row, it feels like black is "due". It isn\'t. Each spin is independent — the odds reset every time. Believing you\'re "owed" a win is exactly the thought that keeps people spending.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'Why loot boxes hook you: '),
         'They use "variable rewards" — you never know when the good one is coming, so your brain keeps you opening "just one more". Near-misses (the rare item that "almost" dropped) and flashy animations are deliberately designed to feel like a win even when you lost.'
       ),
-      React.createElement('p', { className: 'text-[13px] leading-relaxed text-[var(--color-text-muted)]' },
+      React.createElement('p', { className: 'text-[0.8125rem] leading-relaxed text-[var(--color-text-muted)]' },
         'Spending on chance can quietly turn into a habit, and the costs can build into debt. If it ever stops feeling like a free choice — for you or a friend — talk to an adult you trust.'
       )
     ),
@@ -1407,8 +1407,8 @@ export const MODULES: ModuleDef[] = [
       const rate      = d.choreRateMedianPence
       const choresLost = Math.ceil(totalLost / rate)
       return React.createElement('div', { className: 'flex flex-col gap-4' },
-        React.createElement('p', { className: 'text-[14px] font-semibold' }, 'The house edge, in numbers'),
-        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[13px] font-mono flex flex-col gap-1' },
+        React.createElement('p', { className: 'text-[0.875rem] font-semibold' }, 'The house edge, in numbers'),
+        React.createElement('div', { className: 'rounded-xl bg-[var(--color-surface-alt)] p-3 text-[0.8125rem] font-mono flex flex-col gap-1' },
           React.createElement('p', null, `Each box costs:        ${fmtPence(box, d.currency)}`),
           React.createElement('p', null, `Average reward value:  ${fmtPence(avgBack, d.currency)}`),
           React.createElement('p', { className: 'font-bold' }, `Average loss per box:   ${fmtPence(lossEach, d.currency)}`),
@@ -1416,7 +1416,7 @@ export const MODULES: ModuleDef[] = [
           React.createElement('p', null, `Get back (value):      ${fmtPence(totalBack, d.currency)}`),
           React.createElement('p', { style: { color: 'var(--brand-primary)', fontWeight: 'bold' } }, `Lost to the house:     ${fmtPence(totalLost, d.currency)}`)
         ),
-        React.createElement('p', { className: 'text-[13px] leading-relaxed' },
+        React.createElement('p', { className: 'text-[0.8125rem] leading-relaxed' },
           `That ${fmtPence(totalLost, d.currency)} is `, React.createElement('strong', null, `${choresLost} chores`), ` of real effort, gone — not to a thing you chose, but to chance. The flashy animation hides a simple truth: the more boxes you open, the closer your result gets to that guaranteed loss.`
         )
       )
@@ -1477,48 +1477,48 @@ export const MODULES: ModuleDef[] = [
       React.createElement('path', { d: 'M96 46 L99 49 L105 42', stroke: cGold(locked, 0.9), strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' }),
     ),
     hook: (d) => React.createElement('div', { className: 'flex flex-col gap-3' },
-      React.createElement('p', { className: 'text-[15px] font-bold leading-snug' },
+      React.createElement('p', { className: 'text-[0.9375rem] font-bold leading-snug' },
         d.appView === 'ORCHARD'
           ? 'Every trade at the orchard market is a two-way promise: your coins for sound fruit. When the fruit turns out rotten, the law sides with the buyer — even if the stall has a "no swaps" sign.'
           : 'Every time you buy something you enter a legal contract — and UK law gives you rights the seller cannot take away, no matter what their returns sign says.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         'Knowing your rights turns "I suppose I\'m stuck with it" into "actually, I\'m owed a refund." It\'s one of the most useful — and least taught — money skills there is.'
       )
     ),
     lesson: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'A purchase is a contract: '),
         'When you buy something, you and the seller make a legal agreement. In the UK, the ', React.createElement('strong', null, 'Consumer Rights Act 2015'), ' says everything you buy must be:'
       ),
-      React.createElement('ol', { className: 'flex flex-col gap-2 pl-4 list-decimal text-[14px]' },
+      React.createElement('ol', { className: 'flex flex-col gap-2 pl-4 list-decimal text-[0.875rem]' },
         React.createElement('li', null, React.createElement('strong', null, 'Of satisfactory quality '), '— not faulty or damaged.'),
         React.createElement('li', null, React.createElement('strong', null, 'Fit for purpose '), '— it does what it\'s meant to do.'),
         React.createElement('li', null, React.createElement('strong', null, 'As described '), '— it matches the photo, label or claims.')
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'If it\'s faulty: '),
         'You have a ', React.createElement('strong', null, '30-day right to reject'), ' it for a full refund. After that, you\'re entitled to a repair or replacement. A shop sign saying "no refunds" is meaningless for faulty goods — your legal rights override it.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'Changed your mind? '),
         'In a shop there\'s no automatic right to a refund for simply changing your mind — returns are the shop\'s goodwill. But buy ', React.createElement('strong', null, 'online'), ' and you usually get a 14-day cooling-off period to return it for any reason.'
       ),
-      React.createElement('p', { className: 'text-[14px] leading-relaxed' },
+      React.createElement('p', { className: 'text-[0.875rem] leading-relaxed' },
         React.createElement('strong', null, 'Watch the small print: '),
         'Free trials that auto-renew into paid subscriptions are a common trap. Always check what happens when the trial ends — and keep receipts and order confirmations as proof of the contract.'
       )
     ),
     lab: (_d) => React.createElement('div', { className: 'flex flex-col gap-4' },
-      React.createElement('p', { className: 'text-[14px] font-semibold' }, 'Know your rights. For each case, what are you actually entitled to?'),
+      React.createElement('p', { className: 'text-[0.875rem] font-semibold' }, 'Know your rights. For each case, what are you actually entitled to?'),
       ...[
         { scenario: 'Headphones you bought in a shop 10 days ago stop working through no fault of yours.', answer: 'FULL REFUND', why: 'Faulty goods within 30 days — you have the right to reject them for a full refund under the Consumer Rights Act.' },
         { scenario: 'The shop has a big "STRICTLY NO REFUNDS" sign by the till. Your new kettle arrived broken.', answer: 'YOUR RIGHTS WIN', why: 'A "no refunds" sign cannot remove your legal rights for faulty goods. It is not enforceable here.' },
         { scenario: 'You bought a jumper online, it fits fine, but you\'ve gone off the colour. It arrived 3 days ago.', answer: 'RETURN IT (ONLINE)', why: 'Online purchases come with a 14-day cooling-off period — you can return it just for changing your mind. (In-store, this would be goodwill only.)' },
       ].map((item, i) => React.createElement('div', { key: i, className: 'rounded-xl border border-[var(--color-border)] p-3 flex flex-col gap-2' },
-        React.createElement('p', { className: 'text-[13px]' }, item.scenario),
-        React.createElement('p', { className: 'text-[12px] font-bold text-[var(--brand-primary)]' }, item.answer),
-        React.createElement('p', { className: 'text-[12px] text-[var(--color-text-muted)]' }, item.why)
+        React.createElement('p', { className: 'text-[0.8125rem]' }, item.scenario),
+        React.createElement('p', { className: 'text-[0.75rem] font-bold text-[var(--brand-primary)]' }, item.answer),
+        React.createElement('p', { className: 'text-[0.75rem] text-[var(--color-text-muted)]' }, item.why)
       ))
     ),
     quiz: [

@@ -95,7 +95,7 @@ export function GoalMentorNudge({ goal, childName }: Props) {
           <div className="flex items-center gap-2">
             <MentorAvatar />
             <span
-              className="text-[10px] font-bold tracking-widest uppercase"
+              className="text-[0.625rem] font-bold tracking-widest uppercase"
               style={{ color: '#9ca3af' }}
             >
               Orchard Mentor
@@ -106,14 +106,14 @@ export function GoalMentorNudge({ goal, childName }: Props) {
 
         {/* Velocity nudge */}
         {velocity && (
-          <p className="text-[13px] leading-relaxed mb-2" style={{ color: '#a7c4b5' }}>
+          <p className="text-[0.8125rem] leading-relaxed mb-2" style={{ color: '#a7c4b5' }}>
             {velocity}
           </p>
         )}
 
         {/* Pillar nudge — dimmer, smaller */}
         {pillar && (
-          <p className="text-[12px] leading-relaxed" style={{ color: '#6b9e87' }}>
+          <p className="text-[0.75rem] leading-relaxed" style={{ color: '#6b9e87' }}>
             {pillar}
           </p>
         )}

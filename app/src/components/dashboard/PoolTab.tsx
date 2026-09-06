@@ -197,7 +197,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
         <div className="pointer-events-auto w-full max-w-[560px] px-3.5 flex gap-2 pt-3 pb-2 bg-gradient-to-t from-[var(--color-bg)] via-[var(--color-bg)]/90 to-transparent">
           <button
             onClick={onAddClick}
-            className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[14px] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
+            className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
           >
             {isCoParenting ? '+ Log shared expense' : '+ Log household expense'}
           </button>
@@ -321,7 +321,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
                         </p>
                         <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{ledgerNote(e, currentUserId)}</p>
                         {isCoParenting && uneven && (
-                          <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5 italic">
+                          <p className="text-[0.625rem] text-[var(--color-text-muted)] mt-0.5 italic">
                             Your share: {formatAmount(myAmount, e.currency)}
                           </p>
                         )}
@@ -457,12 +457,12 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
                   <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
                 </svg>
               </div>
-              <p className="text-[14px] font-bold text-[var(--color-text)] leading-snug">
+              <p className="text-[0.875rem] font-bold text-[var(--color-text)] leading-snug">
                 {isCoParenting ? 'Track shared child expenses' : 'Track household expenses'}
               </p>
             </div>
             <div>
-              <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-relaxed">
                 {isCoParenting
                   ? 'Log costs you share for your child — school trips, clubs, clothing, medical. Each expense is split between you and your co-parent and kept in an immutable record you can both refer to.'
                   : 'Keep a running record of what you spend on your child — school trips, activities, clothing, and more. Every entry is logged and archived by month for easy reference.'}
@@ -476,8 +476,8 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
                 'Export to CSV any time for your records',
               ].map((step, i) => (
                 <div key={i} className="flex items-start gap-2.5">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)] text-[var(--brand-primary)] flex items-center justify-center text-[10px] font-bold mt-0.5">{i + 1}</span>
-                  <p className="text-[12px] text-[var(--color-text-muted)] leading-snug">{step}</p>
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)] text-[var(--brand-primary)] flex items-center justify-center text-[0.625rem] font-bold mt-0.5">{i + 1}</span>
+                  <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-snug">{step}</p>
                 </div>
               ))}
             </div>

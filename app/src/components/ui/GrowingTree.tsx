@@ -166,7 +166,7 @@ export function GrowingTree({ pct, size = 80, showLabel = false, className = '' 
         <StageComponent />
       </svg>
       {showLabel && (
-        <span className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        <span className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
           {STAGE_LABELS[stage]}
         </span>
       )}

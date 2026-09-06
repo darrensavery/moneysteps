@@ -271,20 +271,20 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
           )}
 
           <p
-            className={cn('text-[22px] font-bold leading-snug mb-3', current.headingColor)}
+            className={cn('text-[1.375rem] font-bold leading-snug mb-3', current.headingColor)}
             style={{ animation: 'mc-fade-up .55s cubic-bezier(.2,1,.4,1) .22s both' }}
           >
             {current.heading}
           </p>
           <p
-            className={cn('text-[15px] leading-relaxed', current.bodyColor)}
+            className={cn('text-[0.9375rem] leading-relaxed', current.bodyColor)}
             style={{ animation: 'mc-fade-up .55s cubic-bezier(.2,1,.4,1) .34s both' }}
           >
             {current.body}
           </p>
           {current.attribution && (
             <p
-              className="text-[12px] text-white/30 mt-4 italic"
+              className="text-[0.75rem] text-white/30 mt-4 italic"
               style={{ animation: 'mc-fade-up .55s cubic-bezier(.2,1,.4,1) .44s both' }}
             >
               {current.attribution}

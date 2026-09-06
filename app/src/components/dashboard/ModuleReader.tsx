@@ -71,8 +71,8 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
       return (
         <div className="flex flex-col gap-3 items-center py-8">
           <CheckCircle2 size={36} className="text-[var(--brand-primary)]" />
-          <p className="text-[15px] font-semibold text-[var(--color-text)]">Quiz complete</p>
-          <p className="text-[13px] text-[var(--color-text-muted)]">
+          <p className="text-[0.9375rem] font-semibold text-[var(--color-text)]">Quiz complete</p>
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)]">
             {quizResults.filter(Boolean).length} of {mod.quiz.length} correct
           </p>
         </div>
@@ -84,10 +84,10 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
 
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-[0.06em]">
+        <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-[0.06em]">
           Question {quizIdx + 1} of {mod.quiz.length}
         </p>
-        <p className="text-[15px] font-semibold leading-snug">{questionText}</p>
+        <p className="text-[0.9375rem] font-semibold leading-snug">{questionText}</p>
         <div className="flex flex-col gap-2">
           {q.options.map(opt => {
             const isSelected = quizAnswer === opt.label
@@ -102,7 +102,7 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
                   setQuizResults(prev => [...prev, opt.label === q.correct])
                 }}
                 className={[
-                  'text-left rounded-xl border px-4 py-3 text-[13px] transition-colors',
+                  'text-left rounded-xl border px-4 py-3 text-[0.8125rem] transition-colors',
                   answered ? '' : 'cursor-pointer hover:border-[var(--brand-primary)]',
                   isCorrect ? 'border-[var(--brand-primary)] bg-[rgba(0,149,156,0.06)] text-[var(--color-text)]' : '',
                   isWrong   ? 'border-red-400 bg-red-50 text-red-800' : '',
@@ -116,7 +116,7 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
           })}
         </div>
         {answered && (
-          <div className="rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] p-3 text-[13px] leading-relaxed">
+          <div className="rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] p-3 text-[0.8125rem] leading-relaxed">
             <span className="font-semibold">{quizAnswer === q.correct ? '✓ Correct. ' : '✗ Not quite. '}</span>
             {q.explanation}
           </div>
@@ -124,7 +124,7 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
         {answered && quizIdx < mod.quiz.length - 1 && (
           <button
             onClick={() => { setQuizAnswer(null); setQuizIdx(prev => prev + 1) }}
-            className="self-end text-[13px] font-semibold text-[var(--brand-primary)] cursor-pointer"
+            className="self-end text-[0.8125rem] font-semibold text-[var(--brand-primary)] cursor-pointer"
           >
             Next question →
           </button>
@@ -158,10 +158,10 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
           <ChevronLeft size={16} />
         </button>
         <div className="flex flex-col items-center gap-0.5">
-          <span className="text-[11px] font-semibold text-[var(--color-text)] tracking-wide">
+          <span className="text-[0.6875rem] font-semibold text-[var(--color-text)] tracking-wide">
             {mod.title}
           </span>
-          <span className="text-[10px] text-[var(--color-text-muted)]">
+          <span className="text-[0.625rem] text-[var(--color-text-muted)]">
             {childData.appView === 'ORCHARD' ? pillar.orchardName : pillar.name}
             {' · '}~{(mod.actMinutes as ActMinutes)[(['hook','lesson','lab','quiz'] as (keyof ActMinutes)[])[actIndex]]}m
           </span>
@@ -197,7 +197,7 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
         {ACT_LABELS.map((label, i) => (
           <div key={i} className="flex-1 text-center">
             <span
-              className="text-[9px] font-semibold uppercase tracking-[0.06em]"
+              className="text-[0.5625rem] font-semibold uppercase tracking-[0.06em]"
               style={{
                 color: i === actIndex
                   ? 'var(--brand-primary)'
@@ -220,14 +220,14 @@ export function ModuleReader({ slug, childData, completedActs, onActComplete, on
       {/* ── Footer CTA ── */}
       <div className="px-4 pb-6 pt-3 border-t border-[var(--color-border)] bg-[var(--color-surface)]">
         {!canProceed ? (
-          <p className="text-center text-[13px] text-[var(--color-text-muted)]">
+          <p className="text-center text-[0.8125rem] text-[var(--color-text-muted)]">
             Answer all questions to continue
           </p>
         ) : (
           <button
             onClick={handleNext}
             disabled={saving}
-            className="w-full py-3.5 rounded-xl bg-[var(--brand-primary)] text-white text-[14px] font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 transition-opacity"
+            className="w-full py-3.5 rounded-xl bg-[var(--brand-primary)] text-white text-[0.875rem] font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 transition-opacity"
           >
             {isCompleted && actIndex < 3 && <CheckCircle2 size={16} />}
             {actIndex < 3 ? 'Next' : 'Finish'}

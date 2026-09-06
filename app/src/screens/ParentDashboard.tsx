@@ -317,7 +317,7 @@ export function ParentDashboard() {
               ) : (
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="tap-target-44 w-8 h-8 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[11px] font-bold tracking-wide shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--brand-primary)]"
+                  className="tap-target-44 w-8 h-8 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[0.6875rem] font-bold tracking-wide shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--brand-primary)]"
                   title="Settings"
                   aria-label="Open settings"
                 >
@@ -339,17 +339,17 @@ export function ParentDashboard() {
                   key={child.id}
                   onClick={() => handleSetActiveChild(child)}
                   className={`
-                    tap-target-44 shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold
-                    transition-colors duration-100 cursor-pointer relative
+                    tap-target-44 shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.8125rem] font-semibold
+                    border transition-colors duration-100 cursor-pointer relative
                     ${activeChild?.id === child.id
-                      ? 'bg-[var(--brand-primary)] text-white'
-                      : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:opacity-80'}
+                      ? 'bg-[var(--brand-primary)] border-[var(--brand-primary)] text-white'
+                      : 'bg-[var(--color-surface-alt)] border-[var(--color-border)] text-[var(--color-text-muted)] hover:opacity-80'}
                   `}
                 >
                   <AvatarSVG id={child.avatar_id ?? 'bottts:spark'} size={20} />
                   {child.display_name}
                   {showNavBadge && (
-                    <span className="bg-red-500 text-white text-[9px] font-bold rounded-full w-[16px] h-[16px] flex items-center justify-center leading-none shrink-0">
+                    <span className="bg-red-500 text-white text-[0.5625rem] font-bold rounded-full w-[16px] h-[16px] flex items-center justify-center leading-none shrink-0">
                       {childPending}
                     </span>
                   )}
@@ -378,10 +378,10 @@ export function ParentDashboard() {
           <div className="rounded-2xl bg-[color-mix(in_srgb,var(--brand-primary)_8%,white)] border border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] px-4 py-3.5 flex items-start gap-3">
             <span className="text-xl shrink-0 mt-0.5">🌳</span>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-[var(--color-text)] leading-snug">
+              <p className="text-[0.8125rem] font-semibold text-[var(--color-text)] leading-snug">
                 Your 14-day harvest begins here.
               </p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-relaxed">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-relaxed">
                 Once you add the first chore or goal, the clock starts. We'll guide you and {activeChild?.display_name ?? 'your child'} through your first harvest — everything Morechard has to offer, yours to explore.
               </p>
             </div>
@@ -420,7 +420,7 @@ export function ParentDashboard() {
           settingsJumpView={settingsJump.view}
           settingsJumpToken={settingsJump.token}
         />
-        <p className="text-center text-[10px] text-[var(--color-text-muted)] opacity-40 tracking-wide pb-3">
+        <p className="text-center text-[0.625rem] text-[var(--color-text-muted)] opacity-40 tracking-wide pb-3">
           v{__APP_VERSION__}
         </p>
       </div>
@@ -480,13 +480,13 @@ export function ParentDashboard() {
                   </div>
 
                   <div>
-                    <p className="text-[12px] font-semibold text-[var(--brand-primary)] mb-2 tracking-wide">
+                    <p className="text-[0.75rem] font-semibold text-[var(--brand-primary)] mb-2 tracking-wide">
                       {welcome}
                     </p>
-                    <h2 className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight mb-1.5">
+                    <h2 className="text-[1.125rem] font-extrabold text-[var(--color-text)] tracking-tight mb-1.5">
                       Add your first child
                     </h2>
-                    <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed max-w-[260px] mx-auto">
+                    <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed max-w-[260px] mx-auto">
                       Once you add a child, you can set up chores, track their pocket money, and watch their savings grow.
                     </p>
                   </div>
@@ -495,7 +495,7 @@ export function ParentDashboard() {
                 {/* Primary CTA — pinned to the bottom, matching other primary-action placement */}
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="h-12 px-6 mx-auto mb-2 bg-[var(--brand-primary)] text-white font-semibold text-[14px] rounded-2xl cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all shadow-md flex items-center gap-2"
+                  className="h-12 px-6 mx-auto mb-2 bg-[var(--brand-primary)] text-white font-semibold text-[0.875rem] rounded-2xl cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all shadow-md flex items-center gap-2"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M12 5v14M5 12h14"/>

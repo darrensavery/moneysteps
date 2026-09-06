@@ -73,13 +73,13 @@ function ModuleDetailSheet({
               <PillarIcon pillar={mod.pillar} size={20}/>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: statusColor }}>
+              <p className="text-[0.625rem] font-bold uppercase tracking-wide" style={{ color: statusColor }}>
                 {statusLabel}
               </p>
-              <p className="text-[15px] font-extrabold text-[var(--color-text)] leading-snug mt-0.5">
+              <p className="text-[0.9375rem] font-extrabold text-[var(--color-text)] leading-snug mt-0.5">
                 {mod.title}
               </p>
-              <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
+              <p className="text-[0.625rem] text-[var(--color-text-muted)] mt-0.5">
                 {PILLAR_LABELS[mod.pillar] ?? mod.pillar} · Level {mod.level}
               </p>
             </div>
@@ -94,7 +94,7 @@ function ModuleDetailSheet({
 
         {/* Act progress */}
         <div className="px-5 pt-4 pb-2">
-          <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             Progress
           </p>
           <div className="flex gap-2">
@@ -115,7 +115,7 @@ function ModuleDetailSheet({
                     }}
                   />
                   <span
-                    className="text-[9px] font-semibold uppercase tracking-wide"
+                    className="text-[0.5625rem] font-semibold uppercase tracking-wide"
                     style={{ color: done ? 'var(--brand-primary)' : 'var(--color-text-muted)' }}
                   >
                     {done ? `${label} ✓` : label}
@@ -129,19 +129,19 @@ function ModuleDetailSheet({
         {/* Time stats */}
         <div className="px-5 py-3 flex gap-4 border-t border-[var(--color-border)]">
           <div>
-            <p className="text-[10px] text-[var(--color-text-muted)]">Time invested</p>
-            <p className="text-[13px] font-bold text-[var(--color-text)]">
+            <p className="text-[0.625rem] text-[var(--color-text-muted)]">Time invested</p>
+            <p className="text-[0.8125rem] font-bold text-[var(--color-text)]">
               {mod.minutes_done > 0 ? `~${mod.minutes_done} min` : '—'}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-[var(--color-text-muted)]">Total module</p>
-            <p className="text-[13px] font-bold text-[var(--color-text)]">~{mod.total_minutes} min</p>
+            <p className="text-[0.625rem] text-[var(--color-text-muted)]">Total module</p>
+            <p className="text-[0.8125rem] font-bold text-[var(--color-text)]">~{mod.total_minutes} min</p>
           </div>
           {!allDone && mod.minutes_done > 0 && (
             <div>
-              <p className="text-[10px] text-[var(--color-text-muted)]">Remaining</p>
-              <p className="text-[13px] font-bold text-[var(--color-text)]">
+              <p className="text-[0.625rem] text-[var(--color-text-muted)]">Remaining</p>
+              <p className="text-[0.8125rem] font-bold text-[var(--color-text)]">
                 ~{mod.total_minutes - mod.minutes_done} min
               </p>
             </div>
@@ -150,7 +150,7 @@ function ModuleDetailSheet({
 
         <div className="px-5 pb-5">
           <button onClick={onClose}
-            className="w-full mt-2 py-3 rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[13px] font-semibold text-[var(--color-text-muted)] cursor-pointer">
+            className="w-full mt-2 py-3 rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[0.8125rem] font-semibold text-[var(--color-text-muted)] cursor-pointer">
             Close
           </button>
         </div>
@@ -198,10 +198,10 @@ export function LabSection({
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
-        <p className="text-[12px] font-bold text-[var(--color-text)]">
+        <p className="text-[0.75rem] font-bold text-[var(--color-text)]">
           {childName}'s Learning Lab
         </p>
-        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full border"
+        <span className="text-[0.625rem] font-bold px-2.5 py-1 rounded-full border"
           style={{
             background:  'color-mix(in srgb, var(--brand-primary) 12%, transparent)',
             borderColor: 'color-mix(in srgb, var(--brand-primary) 25%, transparent)',
@@ -215,21 +215,21 @@ export function LabSection({
       {totalUnlocked > 0 && (
         <div className="grid grid-cols-3 divide-x divide-[var(--color-border)] border-b border-[var(--color-border)]">
           <div className="px-3 py-2.5 text-center">
-            <p className="text-[16px] font-extrabold text-[var(--color-text)] tabular-nums">{labActsCompleted}</p>
-            <p className="text-[10px] text-[var(--color-text-muted)] leading-tight">acts done</p>
+            <p className="text-[1rem] font-extrabold text-[var(--color-text)] tabular-nums">{labActsCompleted}</p>
+            <p className="text-[0.625rem] text-[var(--color-text-muted)] leading-tight">acts done</p>
           </div>
           <div className="px-3 py-2.5 text-center">
-            <p className="text-[16px] font-extrabold text-[var(--color-text)] tabular-nums">
+            <p className="text-[1rem] font-extrabold text-[var(--color-text)] tabular-nums">
               {labTimeInvestedMinutes > 0 ? `~${labTimeInvestedMinutes}m` : '—'}
             </p>
-            <p className="text-[10px] text-[var(--color-text-muted)] leading-tight">time invested</p>
+            <p className="text-[0.625rem] text-[var(--color-text-muted)] leading-tight">time invested</p>
           </div>
           <div className="px-3 py-2.5 text-center">
-            <p className="text-[16px] font-extrabold tabular-nums"
+            <p className="text-[1rem] font-extrabold tabular-nums"
               style={{ color: retentionScore !== null ? 'var(--brand-primary)' : 'var(--color-text)' }}>
               {retentionScore !== null ? `${retentionScore}%` : '—'}
             </p>
-            <p className="text-[10px] text-[var(--color-text-muted)] leading-tight">quiz pass rate</p>
+            <p className="text-[0.625rem] text-[var(--color-text-muted)] leading-tight">quiz pass rate</p>
           </div>
         </div>
       )}
@@ -241,11 +241,11 @@ export function LabSection({
         return (
           <div className="px-4 py-3 border-b border-[var(--color-border)]">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[12px] font-semibold text-[var(--color-text)]">
+              <p className="text-[0.75rem] font-semibold text-[var(--color-text)]">
                 Now studying: <span className="font-bold">{currentModule.title}</span>
               </p>
               {labLastActiveAt && (
-                <span className="text-[10px] text-[var(--color-text-muted)]">
+                <span className="text-[0.625rem] text-[var(--color-text-muted)]">
                   {relativeTime(labLastActiveAt)}
                 </span>
               )}
@@ -263,7 +263,7 @@ export function LabSection({
                           : next ? 'rgba(0,149,156,0.3)'
                           : 'var(--color-border)',
                       }}/>
-                    <p className="text-[9px] text-center font-medium"
+                    <p className="text-[0.5625rem] text-center font-medium"
                       style={{ color: done ? 'var(--brand-primary)' : next ? '#d97706' : 'var(--color-text-muted)' }}>
                       {done ? `${label} ✓` : next ? `${label} →` : label}
                     </p>
@@ -279,10 +279,10 @@ export function LabSection({
       {totalUnlocked > 0 ? (
         <div className="px-4 pt-3 pb-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
+            <p className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
               Unlocked modules
             </p>
-            <div className="flex items-center gap-1 text-[10px] text-[var(--color-text-muted)]">
+            <div className="flex items-center gap-1 text-[0.625rem] text-[var(--color-text-muted)]">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
@@ -349,13 +349,13 @@ export function LabSection({
                       </div>
                     </div>
 
-                    <span className="text-[10px] text-center leading-tight font-semibold px-1"
+                    <span className="text-[0.625rem] text-center leading-tight font-semibold px-1"
                       style={{ color: allDone ? 'var(--brand-primary)' : isCurrent ? '#d97706' : 'var(--color-text-muted)' }}>
                       {mod.title.length > 14 ? mod.title.substring(0, 13) + '…' : mod.title}
                     </span>
 
                     {inProgress && (
-                      <span className="text-[9px] text-[var(--color-text-muted)]">
+                      <span className="text-[0.5625rem] text-[var(--color-text-muted)]">
                         {mod.completed_acts.length}/4 acts
                       </span>
                     )}
@@ -367,7 +367,7 @@ export function LabSection({
         </div>
       ) : (
         <div className="px-4 py-5 text-center">
-          <p className="text-[13px] text-[var(--color-text-muted)]">
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)]">
             No modules unlocked yet — they open as {childName} earns, saves, and sets goals.
           </p>
         </div>

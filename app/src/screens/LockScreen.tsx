@@ -262,12 +262,12 @@ export function LockScreen() {
           <div className="w-[76px] h-[76px] rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] flex items-center justify-center border-2 border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] shadow-md overflow-hidden">
             {identity.avatar_id
               ? <AvatarSVG id={identity.avatar_id} size={76} />
-              : <span className="text-[28px] font-extrabold text-[var(--brand-primary)]">{identity.initials}</span>
+              : <span className="text-[1.75rem] font-extrabold text-[var(--brand-primary)]">{identity.initials}</span>
             }
           </div>
           <div className="text-center">
-            <p className="text-[19px] font-extrabold text-[var(--color-text)] tracking-tight">{identity.display_name}</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">{identity.role === 'parent' ? 'Parent' : 'Child'}</p>
+            <p className="text-[1.1875rem] font-extrabold text-[var(--color-text)] tracking-tight">{identity.display_name}</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">{identity.role === 'parent' ? 'Parent' : 'Child'}</p>
           </div>
         </div>
 
@@ -282,7 +282,7 @@ export function LockScreen() {
                 setTimeout(() => inputRefs.current[0]?.focus(), 100)
               }
             }}
-            className="mb-6 h-12 px-8 rounded-2xl bg-[var(--brand-primary)] text-white text-[14px] font-semibold active:scale-[0.97] transition-transform cursor-pointer"
+            className="mb-6 h-12 px-8 rounded-2xl bg-[var(--brand-primary)] text-white text-[0.875rem] font-semibold active:scale-[0.97] transition-transform cursor-pointer"
           >
             Tap to unlock
           </button>
@@ -317,7 +317,7 @@ export function LockScreen() {
                 </svg>
               )}
             </button>
-            <p className="text-[13px] text-[var(--color-text-muted)]">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)]">
               {bioRunning ? 'Checking…' : 'Tap to unlock'}
             </p>
           </div>
@@ -326,7 +326,7 @@ export function LockScreen() {
         {/* PIN pad */}
         {showAuth && showPin && (
           <>
-            <p className="text-[14px] font-semibold text-[var(--color-text)] mb-5">
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)] mb-5">
               {showBiometricButton ? 'Or enter your PIN' : 'Enter your PIN to get back in'}
             </p>
             <div className="flex gap-3 mb-4">
@@ -343,7 +343,7 @@ export function LockScreen() {
                   disabled={unlocking}
                   aria-label={`PIN digit ${i + 1}`}
                   className={`
-                    w-[54px] h-[66px] text-center text-[28px] font-extrabold
+                    w-[54px] h-[66px] text-center text-[1.75rem] font-extrabold
                     border-2 rounded-xl outline-none transition-colors duration-100
                     bg-[var(--color-surface)] text-[var(--color-text)]
                     ${error
@@ -355,19 +355,19 @@ export function LockScreen() {
                 />
               ))}
             </div>
-            {error && <p className="text-[13px] font-semibold text-red-600 mb-2">{error}</p>}
+            {error && <p className="text-[0.8125rem] font-semibold text-red-600 mb-2">{error}</p>}
           </>
         )}
 
         {/* Fallback: unrecognised auth state — fail closed, force re-login */}
         {showAuth && !showBiometricButton && !showPin && (
           <div className="mb-4 flex flex-col items-center gap-3 text-center max-w-[260px]">
-            <p className="text-[13px] text-[var(--color-text-muted)] leading-snug">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-snug">
               Your security settings couldn't be read. Log out and sign in again to continue.
             </p>
             <button
               onClick={handleLogout}
-              className="h-11 px-6 rounded-2xl border border-[var(--color-border)] text-[14px] font-semibold text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-surface-raised)] transition-colors"
+              className="h-11 px-6 rounded-2xl border border-[var(--color-border)] text-[0.875rem] font-semibold text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-surface-raised)] transition-colors"
             >
               Log out
             </button>
@@ -377,7 +377,7 @@ export function LockScreen() {
         {/* Log out */}
         <button
           onClick={handleLogout}
-          className="mt-10 text-[12px] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)] transition-colors"
+          className="mt-10 text-[0.75rem] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)] transition-colors"
         >
           Not {identity.display_name.split(' ')[0]}? Log out
         </button>

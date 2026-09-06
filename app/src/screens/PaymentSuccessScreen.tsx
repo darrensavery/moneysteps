@@ -73,8 +73,8 @@ export function PaymentSuccessScreen() {
                 <Loader2 className="h-7 w-7 text-teal-500 animate-spin" />
               </div>
               <div>
-                <h1 className="text-[20px] font-bold text-[var(--color-text)]">Confirming payment…</h1>
-                <p className="text-[13px] text-[var(--color-text-muted)] mt-1.5 leading-relaxed">
+                <h1 className="text-[1.25rem] font-bold text-[var(--color-text)]">Confirming payment…</h1>
+                <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1.5 leading-relaxed">
                   Activating your licence — this takes just a moment.
                 </p>
               </div>
@@ -85,16 +85,16 @@ export function PaymentSuccessScreen() {
                 <CheckCircle className="h-7 w-7 text-teal-500" />
               </div>
               <div>
-                <h1 className="text-[20px] font-bold text-[var(--color-text)]">
+                <h1 className="text-[1.25rem] font-bold text-[var(--color-text)]">
                   {phase === 'confirmed' ? 'You\'re all set' : 'Payment received'}
                 </h1>
-                <p className="text-[13px] text-[var(--color-text-muted)] mt-1.5 leading-relaxed">
+                <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1.5 leading-relaxed">
                   {phase === 'confirmed'
                     ? 'Full access has been unlocked for your family.'
                     : 'Your purchase is confirmed. Your plan will update shortly.'}
                 </p>
               </div>
-              <p className="text-[12px] text-[var(--color-text-muted)]">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)]">
                 Returning to Morechard in {countdown}…
               </p>
             </>
@@ -105,7 +105,7 @@ export function PaymentSuccessScreen() {
           <button
             type="button"
             onClick={() => { window.location.href = '/parent' }}
-            className="w-full rounded-xl bg-[var(--brand-primary)] py-3 text-[14px] font-bold text-white hover:opacity-90 active:opacity-80 transition-opacity"
+            className="w-full rounded-xl bg-[var(--brand-primary)] py-3 text-[0.875rem] font-bold text-white hover:opacity-90 active:opacity-80 transition-opacity"
           >
             Go to dashboard
           </button>

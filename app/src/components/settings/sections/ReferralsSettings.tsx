@@ -92,10 +92,10 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
             <Sparkles size={18} />
           </span>
           <div>
-            <p className="text-[14px] font-bold text-[var(--color-text)]">
+            <p className="text-[0.875rem] font-bold text-[var(--color-text)]">
               {pl ? '3 miesiące Mentora AI gratis' : '3 months AI Mentor free'}
             </p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
               {pl
                 ? 'Dla Ciebie i zaproszonej rodziny — po aktywacji licencji dożywotniej.'
                 : 'For you and the family you invite — unlocked when they activate a Lifetime licence.'}
@@ -107,7 +107,7 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
       {/* Share box */}
       <SectionCard>
         <div className="px-4 py-4">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
             {pl ? 'Twój link polecający' : 'Your referral link'}
           </p>
           {loading ? (
@@ -116,7 +116,7 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
             <>
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex-1 min-w-0 px-3 py-2.5 rounded-lg bg-[var(--color-surface-alt)] border border-[var(--color-border)]">
-                  <p className="text-[13px] font-mono text-[var(--color-text)] truncate">{shareUrl}</p>
+                  <p className="text-[0.8125rem] font-mono text-[var(--color-text)] truncate">{shareUrl}</p>
                 </div>
                 <button
                   type="button"
@@ -133,7 +133,7 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
 
               {/* Code pill */}
               {code && (
-                <p className="text-[11px] text-[var(--color-text-muted)] mb-3">
+                <p className="text-[0.6875rem] text-[var(--color-text-muted)] mb-3">
                   {pl ? 'Twój kod: ' : 'Your code: '}
                   <span className="font-mono font-bold text-[var(--color-text)]">{code}</span>
                 </p>
@@ -142,7 +142,7 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
               <button
                 type="button"
                 onClick={handleShare}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[var(--brand-primary)] text-white text-[14px] font-semibold hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[var(--brand-primary)] text-white text-[0.875rem] font-semibold hover:opacity-90 active:opacity-80 transition-opacity cursor-pointer"
               >
                 <Share2 size={15} />
                 {pl ? 'Udostępnij link' : 'Share this link'}
@@ -162,8 +162,8 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
               { label: pl ? 'Zakupy' : 'Conversions',   value: stats.conversions },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="text-[20px] font-bold tabular-nums text-[var(--color-text)]">{value}</p>
-                <p className="text-[11px] text-[var(--color-text-muted)]">{label}</p>
+                <p className="text-[1.25rem] font-bold tabular-nums text-[var(--color-text)]">{value}</p>
+                <p className="text-[0.6875rem] text-[var(--color-text-muted)]">{label}</p>
               </div>
             ))}
           </div>
@@ -173,20 +173,20 @@ function PeerView({ onBack, showToast }: { onBack: () => void; showToast: (m: st
       {/* How it works */}
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             {pl ? 'Jak to działa' : 'How it works'}
           </p>
-          <ol className="space-y-2 text-[12px] text-[var(--color-text)] leading-relaxed">
+          <ol className="space-y-2 text-[0.75rem] text-[var(--color-text)] leading-relaxed">
             <li className="flex gap-2">
-              <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold flex items-center justify-center">1</span>
+              <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[0.6875rem] font-bold flex items-center justify-center">1</span>
               <span>{pl ? 'Wyślij swój unikalny link znajomej rodzinie.' : 'Send your unique link to a family you think would benefit.'}</span>
             </li>
             <li className="flex gap-2">
-              <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold flex items-center justify-center">2</span>
+              <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[0.6875rem] font-bold flex items-center justify-center">2</span>
               <span>{pl ? 'Dołączają i kupują licencję.' : 'They join and purchase a Lifetime licence.'}</span>
             </li>
             <li className="flex gap-2">
-              <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold flex items-center justify-center">3</span>
+              <span className="shrink-0 w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[0.6875rem] font-bold flex items-center justify-center">3</span>
               <span>{pl ? 'Obie rodziny otrzymują 3 miesiące Mentora AI gratis.' : 'Both families get 3 months of AI Mentor — on us.'}</span>
             </li>
           </ol>
@@ -214,8 +214,8 @@ function ProLegalView({ onBack }: { onBack: () => void }) {
               <Scale size={18} />
             </span>
             <div>
-              <p className="text-[14px] font-bold text-[var(--color-text)]">Complimentary professional access</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              <p className="text-[0.875rem] font-bold text-[var(--color-text)]">Complimentary professional access</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                 Free account with multi-client view and white-label court-report generation. No commission — no SRA disclosure required.
               </p>
             </div>
@@ -225,10 +225,10 @@ function ProLegalView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             Who it's for
           </p>
-          <ul className="space-y-1.5 text-[12px] text-[var(--color-text)] leading-relaxed">
+          <ul className="space-y-1.5 text-[0.75rem] text-[var(--color-text)] leading-relaxed">
             <li>• Family-law solicitors (SRA-regulated or equivalent)</li>
             <li>• Accredited family mediators</li>
             <li>• McKenzie Friend network members</li>
@@ -239,10 +239,10 @@ function ProLegalView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             Why no commission
           </p>
-          <p className="text-[12px] text-[var(--color-text)] leading-relaxed">
+          <p className="text-[0.75rem] text-[var(--color-text)] leading-relaxed">
             The SRA Code of Conduct requires client disclosure of any referral fees. Rather than put that burden on you and your clients, professional access is free — so your recommendation stays clean.
           </p>
         </div>
@@ -257,8 +257,8 @@ function ProLegalView({ onBack }: { onBack: () => void }) {
             <ExternalLink size={15} />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[var(--color-text)]">Register your interest</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">Opens a pre-filled email to our partnerships team</p>
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">Register your interest</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">Opens a pre-filled email to our partnerships team</p>
           </div>
           <ExternalLink size={13} className="shrink-0 text-[var(--color-text-muted)]" />
         </a>
@@ -285,8 +285,8 @@ function ProMediaView({ onBack }: { onBack: () => void }) {
               <Megaphone size={18} />
             </span>
             <div>
-              <p className="text-[14px] font-bold text-[var(--color-text)]">Earn 20% on every licence sold</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              <p className="text-[0.875rem] font-bold text-[var(--color-text)]">Earn 20% on every licence sold</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                 For parenting bloggers, YouTube creators, newsletter writers, and personal-finance educators with an engaged audience.
               </p>
             </div>
@@ -296,10 +296,10 @@ function ProMediaView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             What's included
           </p>
-          <ul className="space-y-1.5 text-[12px] text-[var(--color-text)] leading-relaxed">
+          <ul className="space-y-1.5 text-[0.75rem] text-[var(--color-text)] leading-relaxed">
             <li>• Unique tracking link with 90-day attribution cookie</li>
             <li>• Dashboard with real-time conversions and payouts</li>
             <li>• Monthly payouts via Stripe Connect</li>
@@ -310,10 +310,10 @@ function ProMediaView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             Disclosure requirements
           </p>
-          <p className="text-[12px] text-[var(--color-text)] leading-relaxed">
+          <p className="text-[0.75rem] text-[var(--color-text)] leading-relaxed">
             All affiliate content must be clearly labelled (#ad, #affiliate, "sponsored" or equivalent per ASA/FTC rules). We review links quarterly.
           </p>
         </div>
@@ -328,8 +328,8 @@ function ProMediaView({ onBack }: { onBack: () => void }) {
             <ExternalLink size={15} />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[var(--color-text)]">Apply to the programme</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">Opens a pre-filled email to our affiliate team</p>
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">Apply to the programme</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">Opens a pre-filled email to our affiliate team</p>
           </div>
           <ExternalLink size={13} className="shrink-0 text-[var(--color-text-muted)]" />
         </a>
@@ -359,10 +359,10 @@ function HardshipView({ onBack }: { onBack: () => void }) {
               <HeartHandshake size={18} />
             </span>
             <div>
-              <p className="text-[14px] font-bold text-[var(--color-text)]">
+              <p className="text-[0.875rem] font-bold text-[var(--color-text)]">
                 {pl ? 'Bezpłatny dostęp dla rodzin w potrzebie' : 'Free access for families in need'}
               </p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                 {pl
                   ? 'Współpracujemy z zaufanymi organizacjami, aby zapewnić darmowe licencje rodzinom w trudnej sytuacji finansowej lub prawnej.'
                   : 'We work with trusted charities to provide free Lifetime licences to families facing financial hardship or legal crisis.'}
@@ -374,10 +374,10 @@ function HardshipView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             {pl ? 'Dla kogo' : 'Who qualifies'}
           </p>
-          <ul className="space-y-1.5 text-[12px] text-[var(--color-text)] leading-relaxed">
+          <ul className="space-y-1.5 text-[0.75rem] text-[var(--color-text)] leading-relaxed">
             {pl ? (
               <>
                 <li>• Organizacje wspierające ofiary przemocy domowej</li>
@@ -398,10 +398,10 @@ function HardshipView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             {pl ? 'Jak to działa' : 'How it works'}
           </p>
-          <p className="text-[12px] text-[var(--color-text)] leading-relaxed">
+          <p className="text-[0.75rem] text-[var(--color-text)] leading-relaxed">
             {pl
               ? 'Organizacje partnerskie otrzymują pulę licencji do bezpłatnego przekazania podopiecznym. Umowa o współpracy, bez rozliczeń finansowych.'
               : 'Partner organisations receive a capped pool of free licences to distribute to their service users. Memorandum of understanding, no commercial exchange.'}
@@ -420,10 +420,10 @@ function HardshipView({ onBack }: { onBack: () => void }) {
             <Users size={15} />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[var(--color-text)]">
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
               {pl ? 'Jestem z organizacji' : 'I represent a charity'}
             </p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
               {pl ? 'Otwiera wstępnie wypełniony e-mail do naszego zespołu' : 'Opens a pre-filled email to our partnerships team'}
             </p>
           </div>
@@ -465,7 +465,7 @@ export function ReferralsSettings({ toast, onBack, onComingSoon: _onComingSoon }
 
       {/* Group 1 — Share & Rewards (always visible) */}
       <div>
-        <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
+        <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
           {pl ? 'Udostępnij i zyskaj' : 'Share & Rewards'}
         </p>
         <SectionCard>
@@ -481,7 +481,7 @@ export function ReferralsSettings({ toast, onBack, onComingSoon: _onComingSoon }
       {/* Group 2 — Professional Network (EN only) */}
       {!pl && (
         <div>
-          <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
+          <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
             Professional Network
           </p>
           <SectionCard>
@@ -503,7 +503,7 @@ export function ReferralsSettings({ toast, onBack, onComingSoon: _onComingSoon }
 
       {/* Group 3 — Community Support (always visible) */}
       <div>
-        <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
+        <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
           {pl ? 'Wsparcie społeczności' : 'Community Support'}
         </p>
         <SectionCard>
@@ -518,7 +518,7 @@ export function ReferralsSettings({ toast, onBack, onComingSoon: _onComingSoon }
 
       {/* Footer note */}
       <div className="px-1 pt-1">
-        <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+        <p className="text-[0.6875rem] text-[var(--color-text-muted)] leading-relaxed">
           {pl
             ? 'Kliknij "Zaproś rodzinę", aby wygenerować swój unikalny link polecający. Programy partnerskie dla profesjonalistów i organizacji charytatywnych są w budowie.'
             : 'Tap "Invite a Family" to get your unique referral link. Professional and charity partnership programmes open soon — tap through to register interest.'}

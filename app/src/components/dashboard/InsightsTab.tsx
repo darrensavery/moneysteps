@@ -94,7 +94,7 @@ export function InsightsTab({ familyId, child, trialStatus, onUpgrade }: Props) 
                 key={p}
                 onClick={() => setPeriod(p)}
                 className={`
-                  tap-target-44 flex-1 py-1.5 rounded-lg text-[12px] font-semibold transition-all duration-150 cursor-pointer
+                  tap-target-44 flex-1 py-1.5 rounded-lg text-[0.75rem] font-semibold transition-all duration-150 cursor-pointer
                   ${period === p
                     ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm'
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}
@@ -150,7 +150,7 @@ function InsightsDashboard({
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
             <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
           </svg>
-          <p className="text-[11px] font-semibold" style={{ color: 'var(--brand-accent)' }}>
+          <p className="text-[0.6875rem] font-semibold" style={{ color: 'var(--brand-accent)' }}>
             Demo account — showing all-time data snapshot
           </p>
         </div>
@@ -221,7 +221,7 @@ function InsightsDashboard({
             <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
             <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
           </svg>
-          <p className="text-[11px] leading-relaxed" style={{ color: '#6b9e87' }}>
+          <p className="text-[0.6875rem] leading-relaxed" style={{ color: '#6b9e87' }}>
             <span className="font-semibold" style={{ color: '#0d9488' }}>
               Sent to {childFirstName} this week:
             </span>{' '}
@@ -325,8 +325,8 @@ function BalanceStat({
   const align = position === 'left' ? 'items-start' : position === 'right' ? 'items-end' : 'items-center'
   return (
     <div className={`flex flex-col gap-0.5 px-3 first:pl-0 last:pr-0 ${align}`}>
-      <span className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{label}</span>
-      <span className={`text-[15px] font-extrabold tabular-nums leading-tight ${valueColor}`}>{value}</span>
+      <span className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{label}</span>
+      <span className={`text-[0.9375rem] font-extrabold tabular-nums leading-tight ${valueColor}`}>{value}</span>
     </div>
   )
 }
@@ -447,14 +447,14 @@ function DiscoveryCard({ data, name }: { data: InsightsData; name: string }) {
             <MentorAvatar />
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
                   Orchard Mentor
                 </span>
                 {briefing?.source === 'ai'
                   ? <AiDisclosurePill />
                   : <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
               </div>
-              <p className="text-[15px] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
                 Getting to know {name}
               </p>
             </div>
@@ -477,7 +477,7 @@ function DiscoveryCard({ data, name }: { data: InsightsData; name: string }) {
         </div>
 
         {/* Body — advisor prose style */}
-        <p className="text-[13px] leading-relaxed mb-4" style={{ color: '#a7c4b5' }}>
+        <p className="text-[0.8125rem] leading-relaxed mb-4" style={{ color: '#a7c4b5' }}>
           {briefing
             ? briefing.intro
             : <>I'm building a picture of how <span style={{ color: '#e2f5ee', fontWeight: 600 }}>{name}</span> approaches their responsibilities.</>}
@@ -500,11 +500,11 @@ function DiscoveryCard({ data, name }: { data: InsightsData; name: string }) {
 function DiscoveryAction({ step, text }: { step: string; text: string }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="shrink-0 text-[9px] font-black tracking-wider tabular-nums mt-0.5"
+      <span className="shrink-0 text-[0.5625rem] font-black tracking-wider tabular-nums mt-0.5"
             style={{ color: '#0d9488' }}>
         {step}
       </span>
-      <p className="text-[12px] leading-relaxed" style={{ color: '#a7c4b5' }}>{text}</p>
+      <p className="text-[0.75rem] leading-relaxed" style={{ color: '#a7c4b5' }}>{text}</p>
     </div>
   )
 }
@@ -552,18 +552,18 @@ function LiveBriefingCard({
               <MentorAvatar accent={p.accent} />
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                  <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
                     Orchard Mentor
                   </span>
                   {/* Persona lens pill */}
-                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                  <span className="text-[0.5625rem] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                         style={{ background: p.accentDim, color: p.accent }}>
                     {p.label}
                   </span>
                   {/* EU AI Act Article 50 disclosure — visible on every AI-generated card */}
                   {briefing.source !== 'fallback' && <AiDisclosurePill />}
                 </div>
-                <p className="text-[15px] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+                <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
                   {PERIOD_NOTE_LABEL[period]}
                 </p>
               </div>
@@ -606,11 +606,11 @@ function LiveBriefingCard({
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
               </svg>
-              <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: '#0d9488' }}>
+              <span className="text-[0.5625rem] font-black uppercase tracking-wider" style={{ color: '#0d9488' }}>
                 Recommended action
               </span>
             </div>
-            <p className="text-[13px] leading-relaxed" style={{ color: '#e2f5ee' }}>
+            <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#e2f5ee' }}>
               {briefing.the_nudge}
             </p>
           </div>
@@ -619,7 +619,7 @@ function LiveBriefingCard({
           <div className="flex gap-2 pt-0.5">
             <button
               onClick={() => setModalOpen(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-bold cursor-pointer transition-opacity hover:opacity-85 active:opacity-70"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[0.8125rem] font-bold cursor-pointer transition-opacity hover:opacity-85 active:opacity-70"
               style={{ background: 'linear-gradient(135deg, #0d9488, #0a7c70)', color: '#fff' }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -629,7 +629,7 @@ function LiveBriefingCard({
               Share with {name}
             </button>
             <button
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold cursor-pointer transition-opacity hover:opacity-85"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[0.8125rem] font-semibold cursor-pointer transition-opacity hover:opacity-85"
               style={{ background: 'rgba(255,255,255,0.07)', color: '#a7c4b5', border: '1px solid rgba(255,255,255,0.1)' }}
               onClick={onViewTrends}
             >
@@ -641,7 +641,7 @@ function LiveBriefingCard({
           </div>
 
           {/* Pro attribution footer */}
-          <p className="text-[10px] text-center" style={{ color: 'rgba(107,158,135,0.7)' }}>
+          <p className="text-[0.625rem] text-center" style={{ color: 'rgba(107,158,135,0.7)' }}>
             ✦ Orchard Pro · {briefing.source !== 'fallback' ? 'AI-generated coaching note' : 'Coaching note'}
           </p>
 
@@ -753,8 +753,8 @@ function ShareNudgeModal({
       <div className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl overflow-hidden shadow-xl">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[var(--color-border)]">
           <div>
-            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Share coaching note</p>
-            <p className="text-[15px] font-extrabold text-[var(--color-text)] tracking-tight">Message for {name}</p>
+            <p className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Share coaching note</p>
+            <p className="text-[0.9375rem] font-extrabold text-[var(--color-text)] tracking-tight">Message for {name}</p>
           </div>
           <button onClick={onClose} aria-label="Close" className="tap-target-44 w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
@@ -765,12 +765,12 @@ function ShareNudgeModal({
 
         <div className="px-4 py-3.5">
           <div
-            className="rounded-xl px-3.5 py-3 text-[13px] leading-relaxed text-[var(--color-text)] border border-[var(--color-border)]"
+            className="rounded-xl px-3.5 py-3 text-[0.8125rem] leading-relaxed text-[var(--color-text)] border border-[var(--color-border)]"
             style={{ background: 'color-mix(in_srgb, var(--brand-primary) 4%, var(--color-surface))' }}
           >
             {message}
           </div>
-          <p className="text-[10px] text-[var(--color-text-muted)] mt-2 text-center">
+          <p className="text-[0.625rem] text-[var(--color-text-muted)] mt-2 text-center">
             Based on: "{briefing.the_nudge.length > 72 ? briefing.the_nudge.slice(0, 72) + '…' : briefing.the_nudge}"
           </p>
         </div>
@@ -778,7 +778,7 @@ function ShareNudgeModal({
         <div className="px-4 pb-4 space-y-2">
           <button
             onClick={handleCopy}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[13px] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[0.8125rem] font-semibold text-white cursor-pointer transition-opacity hover:opacity-90"
             style={{ background: copied ? '#16a34a' : 'var(--brand-primary)' }}
           >
             {copied ? (
@@ -787,7 +787,7 @@ function ShareNudgeModal({
               <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy Message</>
             )}
           </button>
-          <p className="text-[10px] text-[var(--color-text-muted)] text-center">✦ Drafted by your Orchard Mentor</p>
+          <p className="text-[0.625rem] text-[var(--color-text-muted)] text-center">✦ Drafted by your Orchard Mentor</p>
         </div>
       </div>
     </div>
@@ -820,8 +820,8 @@ function EffortTag({ preference, child }: { preference: 'high_yield' | 'steady';
     <div className={`${cfg.bg} ${cfg.border} border rounded-2xl px-4 py-3 flex items-start gap-3`}>
       <div className={`shrink-0 w-2 h-2 rounded-full ${cfg.dot} mt-1.5`} />
       <div>
-        <p className={`text-[12px] font-bold ${cfg.text} uppercase tracking-wide`}>{cfg.label}</p>
-        <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-relaxed">{cfg.description}</p>
+        <p className={`text-[0.75rem] font-bold ${cfg.text} uppercase tracking-wide`}>{cfg.label}</p>
+        <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-relaxed">{cfg.description}</p>
       </div>
     </div>
   )
@@ -843,41 +843,41 @@ function SupportingStats({ data, currency }: { data: InsightsData; currency: str
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
       <div className="px-4 py-3 border-b border-[var(--color-border)]">
-        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
+        <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
           Progress Summary
         </p>
       </div>
       <div className="grid grid-cols-2 divide-x divide-y divide-[var(--color-border)]">
         <div className="px-4 py-3">
-          <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">Chores done</p>
-          <p className="text-[15px] font-bold text-[var(--color-text)] tabular-nums mt-0.5 flex items-baseline gap-1">
+          <p className="text-[0.625rem] text-[var(--color-text-muted)] uppercase tracking-wide">Chores done</p>
+          <p className="text-[0.9375rem] font-bold text-[var(--color-text)] tabular-nums mt-0.5 flex items-baseline gap-1">
             <AnimatedStat value={String(data.tasks_completed)}/>
             {choreDelta !== null && choreDelta > 0 && (
-              <span className="text-[10px] font-bold text-success">↑ {choreDelta}</span>
+              <span className="text-[0.625rem] font-bold text-success">↑ {choreDelta}</span>
             )}
           </p>
         </div>
         <div className="px-4 py-3">
-          <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">Needed revision</p>
-          <p className="text-[15px] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
+          <p className="text-[0.625rem] text-[var(--color-text-muted)] uppercase tracking-wide">Needed revision</p>
+          <p className="text-[0.9375rem] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
             <AnimatedStat value={String(data.tasks_revised)}/>
           </p>
         </div>
         <div className="px-4 py-3">
-          <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">Earned</p>
-          <p className="text-[15px] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
+          <p className="text-[0.625rem] text-[var(--color-text-muted)] uppercase tracking-wide">Earned</p>
+          <p className="text-[0.9375rem] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
             <AnimatedStat value={formatCurrency(data.total_earned_pence, currency)}/>
           </p>
         </div>
         <div className="px-4 py-3">
-          <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">Saved to goals</p>
-          <p className="text-[15px] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
+          <p className="text-[0.625rem] text-[var(--color-text-muted)] uppercase tracking-wide">Saved to goals</p>
+          <p className="text-[0.9375rem] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
             <AnimatedStat value={formatCurrency(data.total_saved_pence, currency)}/>
           </p>
         </div>
         <div className="px-4 py-3 col-span-2">
-          <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wide">Planning horizon</p>
-          <p className="text-[13px] font-semibold text-[var(--color-text-muted)] mt-0.5">
+          <p className="text-[0.625rem] text-[var(--color-text-muted)] uppercase tracking-wide">Planning horizon</p>
+          <p className="text-[0.8125rem] font-semibold text-[var(--color-text-muted)] mt-0.5">
             {planningHorizonLabel(data.planning_horizon)}
           </p>
         </div>
@@ -906,9 +906,9 @@ function LoadingSkeleton() {
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-8 text-center space-y-3">
-      <p className="text-[14px] font-semibold text-[var(--color-text)]">Unable to load insights</p>
-      <p className="text-[12px] text-[var(--color-text-muted)]">Check your connection and try again.</p>
-      <button onClick={onRetry} className="text-[13px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
+      <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">Unable to load insights</p>
+      <p className="text-[0.75rem] text-[var(--color-text-muted)]">Check your connection and try again.</p>
+      <button onClick={onRetry} className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
         Retry
       </button>
     </div>

@@ -279,7 +279,7 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg font-semibold text-[--color-text]">Chore Guide</h2>
-            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">What other families pay</p>
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">What other families pay</p>
           </div>
           <button onClick={onClose} className="tap-target-44 w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer" aria-label="Close">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -293,7 +293,7 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
             placeholder="Search chores…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-3.5 py-2.5 text-[14px] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition shadow-sm"
+            className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-3.5 py-2.5 text-[0.875rem] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition shadow-sm"
           />
         </div>
 
@@ -306,13 +306,13 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
             <button
               key={cat.label}
               onClick={() => setCategory(cat.label)}
-              className={`tap-target-44 shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
+              className={`tap-target-44 shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
                 category === cat.label
                   ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                   : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[color-mix(in_srgb,var(--color-surface-alt)_85%,var(--color-text)_15%)] hover:text-[var(--color-text)]'
               }`}
             >
-              <span className="text-[11px] leading-none">{cat.icon}</span>
+              <span className="text-[0.6875rem] leading-none">{cat.icon}</span>
               {cat.label}
             </button>
           ))}
@@ -326,11 +326,11 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
 
         {noResults && (
           <div className="py-12 flex flex-col items-center gap-3 px-6 text-center">
-            <p className="text-[14px] text-[var(--color-text-muted)]">No chores found for "{search}"</p>
+            <p className="text-[0.875rem] text-[var(--color-text-muted)]">No chores found for "{search}"</p>
             {familyId && (
               <button
                 onClick={() => { setNewChore(f => ({ ...f, title: search })); setSearch(''); setNewChoreOpen(true); }}
-                className="px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[13px] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.8125rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition cursor-pointer"
               >
                 Suggest "{search}" instead
               </button>
@@ -342,13 +342,13 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
           <>
             {/* Sort control */}
             <div className="flex items-center justify-end gap-1.5 pt-3 pb-2">
-              <span className="text-[11px] text-[var(--color-text-muted)] font-medium shrink-0">Sort:</span>
+              <span className="text-[0.6875rem] text-[var(--color-text-muted)] font-medium shrink-0">Sort:</span>
               <div className="flex gap-1 flex-wrap justify-end">
                 {SORT_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => setSort(opt.value)}
-                    className={`tap-target-44 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors cursor-pointer
+                    className={`tap-target-44 px-2 py-1 rounded-md text-[0.6875rem] font-semibold transition-colors cursor-pointer
                       ${sort === opt.value
                         ? 'bg-[var(--brand-primary)] text-white'
                         : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--color-surface-alt)_70%,var(--color-border))] hover:text-[var(--color-text)]'
@@ -367,7 +367,7 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
               >
                 <div className="flex-1 min-w-0 mr-3">
                   <p className="text-sm font-medium text-[--color-text] truncate">{rate.canonical_name}</p>
-                  <p className="text-[11px] text-[--color-text-muted] mt-0.5">{rate.category}</p>
+                  <p className="text-[0.6875rem] text-[--color-text-muted] mt-0.5">{rate.category}</p>
                   {!rate.median_is_local && (
                     <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                       We're still learning what this is worth in {regionLabel} — you could be the first!
@@ -381,7 +381,7 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                   <button
                     disabled={suggested === rate.id}
                     onClick={() => openEdit(rate)}
-                    className="h-7 px-2.5 rounded-lg bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold hover:bg-[color-mix(in_srgb,var(--brand-primary)_18%,transparent)] disabled:opacity-50 transition cursor-pointer"
+                    className="h-7 px-2.5 rounded-lg bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] text-[var(--brand-primary)] text-[0.6875rem] font-bold hover:bg-[color-mix(in_srgb,var(--brand-primary)_18%,transparent)] disabled:opacity-50 transition cursor-pointer"
                   >
                     {suggested === rate.id ? '✓ Sent' : 'Suggest'}
                   </button>
@@ -394,7 +394,7 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
         {/* My suggestions — child context only */}
         {familyId && !loading && !error && mySuggestions.length > 0 && (
           <div className="mt-8 border-t border-[--color-border] pt-6">
-            <h3 className="text-[11px] font-bold text-[--color-text-muted] uppercase tracking-wider mb-3">My suggestions</h3>
+            <h3 className="text-[0.6875rem] font-bold text-[--color-text-muted] uppercase tracking-wider mb-3">My suggestions</h3>
             <div className="space-y-2.5">
               {mySuggestions.map(s => {
                 const isPending  = s.status === 'pending';
@@ -407,13 +407,13 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                   }`}>
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-[--color-text] truncate">{s.title}</p>
-                        <p className="text-[12px] text-[--color-text-muted] tabular-nums mt-0.5">
+                        <p className="text-[0.8125rem] font-semibold text-[--color-text] truncate">{s.title}</p>
+                        <p className="text-[0.75rem] text-[--color-text-muted] tabular-nums mt-0.5">
                           {symbol}{(s.proposed_amount / 100).toFixed(2)}
                           {s.due_date && <> · by {s.due_date}</>}
                         </p>
                       </div>
-                      <span className={`shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5 ${
+                      <span className={`shrink-0 text-[0.625rem] font-bold rounded-full px-2 py-0.5 ${
                         isPending  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300' :
                         isApproved ? 'bg-green-500/15 text-green-700 dark:text-green-400' :
                                      'bg-red-500/15 text-red-700 dark:text-red-400'
@@ -422,12 +422,12 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                       </span>
                     </div>
                     {!isPending && !isApproved && s.rejection_note && (
-                      <p className="text-[12px] text-[--color-text-muted] mt-2 pt-2 border-t border-red-400/20 italic">
+                      <p className="text-[0.75rem] text-[--color-text-muted] mt-2 pt-2 border-t border-red-400/20 italic">
                         "{s.rejection_note}"
                       </p>
                     )}
                     {isApproved && (
-                      <p className="text-[11px] text-green-700 dark:text-green-400 mt-1.5">
+                      <p className="text-[0.6875rem] text-green-700 dark:text-green-400 mt-1.5">
                         Added to your chores! {isOrchard ? '🌱' : ''}
                       </p>
                     )}
@@ -441,12 +441,12 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
         {/* Suggest a new chore — child context only */}
         {familyId && !loading && !error && (
           <div className="mt-6 border-t border-[--color-border] pt-6 text-center">
-            <p className="text-[13px] text-[--color-text-muted] mb-3">
+            <p className="text-[0.8125rem] text-[--color-text-muted] mb-3">
               Don't see the chore you want to do?
             </p>
             <button
               onClick={() => setNewChoreOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[13px] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.8125rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14M5 12h14"/>
@@ -476,12 +476,12 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
 
             <div className="space-y-4">
               <div>
-                <p className="text-[15px] font-bold text-[--color-text]">Suggest a new chore</p>
-                <p className="text-[12px] text-[--color-text-muted] mt-0.5">Tell your parent what you'd like to do and how much it should pay.</p>
+                <p className="text-[0.9375rem] font-bold text-[--color-text]">Suggest a new chore</p>
+                <p className="text-[0.75rem] text-[--color-text-muted] mt-0.5">Tell your parent what you'd like to do and how much it should pay.</p>
               </div>
               <ErrorBox message={newChoreError} />
               <div>
-                <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+                <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                   Chore name <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -489,15 +489,15 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                   placeholder="e.g. Clean the bathroom"
                   value={newChore.title}
                   onChange={e => setNewChore(f => ({ ...f, title: e.target.value }))}
-                  className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
               <div>
-                <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+                <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                   How much should it pay? <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">{symbol}</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.875rem] text-[var(--color-text-muted)]">{symbol}</span>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -506,23 +506,23 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                     placeholder="0.00"
                     value={newChore.amount}
                     onChange={e => setNewChore(f => ({ ...f, amount: e.target.value }))}
-                    className="w-full border border-[var(--color-border)] rounded-xl pl-7 pr-3 py-2.5 text-[14px] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                    className="w-full border border-[var(--color-border)] rounded-xl pl-7 pr-3 py-2.5 text-[0.875rem] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+                <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                   When do you want to do it by? <span className="font-normal">(optional)</span>
                 </label>
                 <input
                   type="date"
                   value={newChore.dueDate}
                   onChange={e => setNewChore(f => ({ ...f, dueDate: e.target.value }))}
-                  className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
               <div>
-                <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+                <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                   Why should this be a chore? <span className="font-normal">(optional)</span>
                 </label>
                 <textarea
@@ -530,20 +530,20 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                   placeholder="e.g. I could do this every Saturday morning"
                   value={newChore.reason}
                   onChange={e => setNewChore(f => ({ ...f, reason: e.target.value }))}
-                  className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={closeNewChore}
-                  className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[13px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
+                  className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.8125rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleNewChoreSuggest}
                   disabled={newChoreBusy}
-                  className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[13px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
+                  className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.8125rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
                 >
                   {newChoreBusy ? 'Sending…' : 'Send to parent →'}
                 </button>
@@ -571,9 +571,9 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
             </div>
 
             <div>
-              <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">Suggest this chore</p>
-              <p className="text-[16px] font-bold text-[var(--color-text)]">{editRate.canonical_name}</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+              <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">Suggest this chore</p>
+              <p className="text-[1rem] font-bold text-[var(--color-text)]">{editRate.canonical_name}</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">
                 Market rate: {formatAmount(editRate.median_amount, symbol)} — change the amount if you think it's worth more or less.
               </p>
             </div>
@@ -582,11 +582,11 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
 
             {/* Amount input */}
             <div>
-              <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+              <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                 How much should it pay?
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.875rem] text-[var(--color-text-muted)]">
                   {symbol}
                 </span>
                 <input
@@ -597,14 +597,14 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                   autoFocus
                   value={editAmount}
                   onChange={e => setEditAmount(e.target.value)}
-                  className="w-full border border-[var(--color-border)] rounded-xl pl-7 pr-3 py-3 text-[15px] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="w-full border border-[var(--color-border)] rounded-xl pl-7 pr-3 py-3 text-[0.9375rem] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
             </div>
 
             {/* Optional reason */}
             <div>
-              <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+              <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                 Why should this be a chore? <span className="font-normal">(optional)</span>
               </label>
               <textarea
@@ -612,21 +612,21 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                 placeholder="e.g. I could do this every week after school"
                 value={editReason}
                 onChange={e => setEditReason(e.target.value)}
-                className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               />
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={closeEditRate}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmSuggest}
                 disabled={editBusy}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[0.875rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
               >
                 {editBusy ? 'Sending…' : 'Send to parent →'}
               </button>

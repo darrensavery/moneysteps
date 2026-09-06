@@ -293,10 +293,10 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
           </svg>
         </div>
         <h2 className="text-xl font-bold text-[var(--color-text)] mb-2">Spend logged!</h2>
-        <p className="text-[14px] text-[var(--color-text-muted)] mb-8">Your balance has been updated.</p>
+        <p className="text-[0.875rem] text-[var(--color-text-muted)] mb-8">Your balance has been updated.</p>
         <button
           onClick={() => { setSuccess(false); onSaved() }}
-          className="rounded-xl bg-[var(--brand-primary)] text-white px-8 py-3 text-[14px] font-bold"
+          className="rounded-xl bg-[var(--brand-primary)] text-white px-8 py-3 text-[0.875rem] font-bold"
         >
           Done
         </button>
@@ -312,8 +312,8 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
       <div className="shrink-0 border-b border-[var(--color-border)] px-4 pt-6 pb-0">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-[17px] font-bold text-[var(--color-text)]">Spend Guide</h2>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">What did you buy?</p>
+            <h2 className="text-[1.0625rem] font-bold text-[var(--color-text)]">Spend Guide</h2>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">What did you buy?</p>
           </div>
           <button
             onClick={onClose}
@@ -333,7 +333,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
             placeholder="Search what you bought…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-3.5 py-2.5 text-[14px] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition shadow-sm"
+            className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-3.5 py-2.5 text-[0.875rem] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition shadow-sm"
           />
         </div>
 
@@ -344,7 +344,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
         >
           <button
             onClick={() => setCategory('all')}
-            className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
+            className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
               category === 'all'
                 ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                 : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:text-[var(--color-text)]'
@@ -356,7 +356,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
             <button
               key={cat.id}
               onClick={() => setCategory(cat.id)}
-              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
+              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
                 category === cat.id
                   ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                   : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:text-[var(--color-text)]'
@@ -374,12 +374,12 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
 
         {noResults && (
           <div className="py-12 flex flex-col items-center gap-3 px-6 text-center">
-            <p className="text-[14px] text-[var(--color-text-muted)]">
+            <p className="text-[0.875rem] text-[var(--color-text-muted)]">
               {search ? `Nothing found for "${search}"` : 'No items in this category'}
             </p>
             <button
               onClick={openCustom}
-              className="px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[13px] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.8125rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition cursor-pointer"
             >
               {search ? `Log "${search}" instead` : 'Add a custom spend'}
             </button>
@@ -392,7 +392,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
               <span className="w-7 h-7 rounded-lg bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] text-[var(--brand-primary)] flex items-center justify-center shrink-0">
                 <CategoryIcon id={cat.id} size={15} />
               </span>
-              <span className="text-[15px] font-extrabold text-[var(--color-text)] tracking-tight">
+              <span className="text-[0.9375rem] font-extrabold text-[var(--color-text)] tracking-tight">
                 {cat.heading}
               </span>
             </h3>
@@ -401,10 +401,10 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
                 key={item.id}
                 className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0"
               >
-                <p className="text-[14px] text-[var(--color-text)] flex-1 mr-3">{item.label}</p>
+                <p className="text-[0.875rem] text-[var(--color-text)] flex-1 mr-3">{item.label}</p>
                 <button
                   onClick={() => openItem(item)}
-                  className="rounded-lg bg-[var(--brand-primary)] text-white px-3 py-1.5 text-[12px] font-semibold transition-opacity hover:opacity-90 cursor-pointer shrink-0"
+                  className="rounded-lg bg-[var(--brand-primary)] text-white px-3 py-1.5 text-[0.75rem] font-semibold transition-opacity hover:opacity-90 cursor-pointer shrink-0"
                 >
                   Log
                 </button>
@@ -416,12 +416,12 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
         {/* ── Custom entry ── */}
         {!noResults && (
           <div className="mt-8 border-t border-[var(--color-border)] pt-6 text-center">
-            <p className="text-[13px] text-[var(--color-text-muted)] mb-3">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] mb-3">
               Don't see what you spent money on?
             </p>
             <button
               onClick={openCustom}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[13px] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.8125rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14M5 12h14"/>
@@ -446,10 +446,10 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
             <div className="flex justify-center pt-3 pb-0">
               <div className="w-10 h-1 rounded-full bg-[var(--color-border)]" />
             </div>
-            <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+            <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
               Just checking
             </p>
-            <p className="text-[15px] leading-relaxed text-[var(--color-text)]">
+            <p className="text-[0.9375rem] leading-relaxed text-[var(--color-text)]">
               {appView === 'CLEAN'
                 ? 'This is 15% of your available balance. Delaying big spends by 48 hours usually feels better later. Shall we pause?'
                 : "We've noticed this harvest is very large! If you keep these seeds instead, your grove keeps growing. Are you sure?"}
@@ -457,14 +457,14 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
             <div className="flex gap-3">
               <button
                 onClick={handleCooldownWait}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
               >
                 Wait a bit
               </button>
               <button
                 onClick={handleCooldownProceed}
                 disabled={saving}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[0.875rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
               >
                 {saving ? 'Saving…' : "I'm sure, log it"}
               </button>
@@ -491,7 +491,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
             </div>
 
             <div>
-              <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">
+              <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">
                 Log a spend
               </p>
               {entry.custom ? (
@@ -501,16 +501,16 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
                   onChange={e => setEntry(v => v && ({ ...v, title: e.target.value, category: detectCategory(e.target.value) }))}
                   placeholder="What did you buy?"
                   autoFocus
-                  className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[15px] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] mt-1"
+                  className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.9375rem] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] mt-1"
                 />
               ) : (
-                <p className="text-[17px] font-bold text-[var(--color-text)]">{entry.title}</p>
+                <p className="text-[1.0625rem] font-bold text-[var(--color-text)]">{entry.title}</p>
               )}
             </div>
 
             {/* Category — read-only chip for catalogue items, picker for custom */}
             <div>
-              <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+              <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                 Category
               </label>
               {entry.custom ? (
@@ -520,7 +520,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
                       key={c.id}
                       type="button"
                       onClick={() => setEntry(v => v && ({ ...v, category: c.id }))}
-                      className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
+                      className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
                         entry.category === c.id
                           ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                           : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)]'
@@ -532,7 +532,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
                   ))}
                 </div>
               ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] text-[var(--brand-primary)]">
+                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] text-[var(--brand-primary)]">
                   <CategoryIcon id={entry.category} size={13} />
                   {SPEND_CATEGORIES.find(c => c.id === entry.category)?.heading ?? 'Other'}
                 </span>
@@ -543,11 +543,11 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
 
             {/* Amount */}
             <div>
-              <label className="text-[12px] font-semibold text-[var(--color-text-muted)] block mb-1.5">
+              <label className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] block mb-1.5">
                 How much did you spend?
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--color-text-muted)]">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.9375rem] font-bold text-[var(--color-text-muted)]">
                   {symbol}
                 </span>
                 <input
@@ -559,7 +559,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
                   value={entry.amountStr}
                   onChange={e => setEntry(v => v && ({ ...v, amountStr: e.target.value }))}
                   placeholder="0.00"
-                  className="w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-3 text-[20px] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-3 text-[1.25rem] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
             </div>
@@ -569,7 +569,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
               <button
                 type="button"
                 onClick={() => setEntry(v => v && ({ ...v, noteOpen: !v.noteOpen }))}
-                className="text-[13px] font-semibold text-[var(--brand-primary)] cursor-pointer"
+                className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] cursor-pointer"
               >
                 {entry.noteOpen ? '▾ Remove note' : '▸ Add a note'}
               </button>
@@ -579,7 +579,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
                   onChange={e => setEntry(v => v && ({ ...v, note: e.target.value }))}
                   placeholder="e.g. birthday money treat"
                   rows={2}
-                  className="mt-2 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="mt-2 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               )}
             </div>
@@ -587,14 +587,14 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
             <div className="flex gap-3">
               <button
                 onClick={closeEntry}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
               >
                 Back
               </button>
               <button
                 onClick={handleSaveClick}
                 disabled={saving}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[0.875rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
               >
                 {saving ? 'Saving…' : 'Save spend →'}
               </button>

@@ -16,12 +16,12 @@ export function SmartCopyPanel({ rows, warningBanner, apologyBanner }: Props) {
   return (
     <div className="flex flex-col gap-3 px-4 pb-6">
       {apologyBanner && (
-        <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-[13px] text-amber-900">
+        <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-[0.8125rem] text-amber-900">
           {apologyBanner}
         </div>
       )}
       {warningBanner && (
-        <div className="rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2 text-[12px] text-neutral-600">
+        <div className="rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2 text-[0.75rem] text-neutral-600">
           {warningBanner}
         </div>
       )}
@@ -58,8 +58,8 @@ function CopyRow({ label, value }: Row) {
       )}
     >
       <div className="min-w-0">
-        <div className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</div>
-        <div className="text-[15px] font-semibold font-mono truncate">{value}</div>
+        <div className="text-[0.6875rem] uppercase tracking-wide text-neutral-500">{label}</div>
+        <div className="text-[0.9375rem] font-semibold font-mono truncate">{value}</div>
       </div>
       <div className={cn('shrink-0 ml-3', copied ? 'text-emerald-600' : 'text-neutral-400')}>
         {copied ? <Check size={20} /> : <Copy size={18} />}

@@ -56,11 +56,11 @@ function GatekeeperModalUI({
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 id="gk-title" className="text-[16px] font-bold text-[var(--color-text)]">Confirm it's you</h2>
+          <h2 id="gk-title" className="text-[1rem] font-bold text-[var(--color-text)]">Confirm it's you</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-[22px] leading-none cursor-pointer"
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-[1.375rem] leading-none cursor-pointer"
             aria-label="Cancel"
           >
             ×
@@ -86,11 +86,11 @@ function GatekeeperModalUI({
         {/* Error / lockout message */}
         <div role="status" aria-live="polite" className="h-5 flex items-center justify-center mb-4">
           {locked ? (
-            <p className="text-[12px] font-semibold text-amber-600">
+            <p className="text-[0.75rem] font-semibold text-amber-600">
               Locked for {lockSeconds}s…
             </p>
           ) : errorMsg ? (
-            <p className="text-[12px] font-semibold text-red-500">{errorMsg}</p>
+            <p className="text-[0.75rem] font-semibold text-red-500">{errorMsg}</p>
           ) : null}
         </div>
 
@@ -103,7 +103,7 @@ function GatekeeperModalUI({
               key={d}
               type="button"
               onClick={() => onDigit(d)}
-              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.375rem] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
             >
               {d}
             </button>
@@ -113,14 +113,14 @@ function GatekeeperModalUI({
           <button
             type="button"
             onClick={() => onDigit('0')}
-            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.375rem] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
           >
             0
           </button>
           <button
             type="button"
             onClick={onBackspace}
-            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[18px] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.125rem] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
             aria-label="Backspace"
           >
             ⌫
@@ -132,7 +132,7 @@ function GatekeeperModalUI({
           <button
             type="button"
             onClick={onForgotPin}
-            className="text-[12px] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)]"
+            className="text-[0.75rem] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)]"
           >
             Forgot PIN? Manage in Settings
           </button>

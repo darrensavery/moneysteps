@@ -83,7 +83,7 @@ export function TurnstileWidget({ onVerify }: Props) {
     <div className="flex flex-col items-center gap-1">
       <div ref={containerRef} />
       {error && (
-        <p className="text-[11px] text-red-500">Verification failed to load — please refresh.</p>
+        <p className="text-[0.6875rem] text-red-500">Verification failed to load — please refresh.</p>
       )}
     </div>
   );

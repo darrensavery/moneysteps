@@ -329,11 +329,11 @@ export function CreateChoreSheet({
         {/* Header */}
         <div className="px-5 pt-4 pb-2 flex items-center justify-between shrink-0">
           <div>
-            <p className="text-[17px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
+            <p className="text-[1.0625rem] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
               {isEditMode ? 'Edit chore' : 'New chore'}
             </p>
             {!isEditMode && singleChild && (
-              <p className="text-[12px] text-[var(--color-text-muted)]">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)]">
                 for <span className="font-semibold text-[var(--brand-primary)]">{singleChild.display_name}</span>
               </p>
             )}
@@ -360,7 +360,7 @@ export function CreateChoreSheet({
                   key={c.id}
                   type="button"
                   onClick={() => toggleChildId(c.id)}
-                  className={`tap-target-44 shrink-0 px-3 py-1 rounded-full text-[12px] font-semibold border transition-all cursor-pointer whitespace-nowrap
+                  className={`tap-target-44 shrink-0 px-3 py-1 rounded-full text-[0.75rem] font-semibold border transition-all cursor-pointer whitespace-nowrap
                     ${active
                       ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                       : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
@@ -374,7 +374,7 @@ export function CreateChoreSheet({
             <button
               type="button"
               onClick={setModeAnyone}
-              className={`tap-target-44 shrink-0 px-3 py-1 rounded-full text-[12px] font-semibold border transition-all cursor-pointer whitespace-nowrap
+              className={`tap-target-44 shrink-0 px-3 py-1 rounded-full text-[0.75rem] font-semibold border transition-all cursor-pointer whitespace-nowrap
                 ${assignMode === 'anyone'
                   ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                   : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
@@ -386,7 +386,7 @@ export function CreateChoreSheet({
             <button
               type="button"
               onClick={setModeEveryone}
-              className={`tap-target-44 shrink-0 px-3 py-1 rounded-full text-[12px] font-semibold border transition-all cursor-pointer whitespace-nowrap
+              className={`tap-target-44 shrink-0 px-3 py-1 rounded-full text-[0.75rem] font-semibold border transition-all cursor-pointer whitespace-nowrap
                 ${assignMode === 'everyone'
                   ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                   : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
@@ -402,21 +402,21 @@ export function CreateChoreSheet({
 
           {error && (
             <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-4 py-2.5">
-              <p className="text-[12px] text-red-700 dark:text-red-300">{error}</p>
+              <p className="text-[0.75rem] text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
 
           {/* ── Quick Pick tile grid ─────────────────────────────── */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
+              <p className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                 Quick Pick
               </p>
               {!isEditMode && (
                 <button
                   type="button"
                   onClick={() => setRateGuideOpen(true)}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-primary)] hover:opacity-80 transition-opacity cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--brand-primary)] hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
@@ -428,7 +428,7 @@ export function CreateChoreSheet({
             {ratesLoading ? (
               <div className="py-3 text-center text-xs text-[var(--color-text-muted)]">Loading…</div>
             ) : ratesError ? (
-              <div className="py-2 text-center text-[11px] text-red-500">{ratesError}</div>
+              <div className="py-2 text-center text-[0.6875rem] text-red-500">{ratesError}</div>
             ) : (
               <div className="grid grid-cols-4 gap-2">
                 {rates
@@ -448,7 +448,7 @@ export function CreateChoreSheet({
                           }`}
                       >
                         <TileIcon name={rate.canonical_name} />
-                        <span className="text-[9px] font-semibold leading-tight text-center">
+                        <span className="text-[0.5625rem] font-semibold leading-tight text-center">
                           {rate.canonical_name.split('/')[0]}
                         </span>
                       </button>
@@ -460,7 +460,7 @@ export function CreateChoreSheet({
 
           {/* ── Search / title input + dropdown ─────────────────── */}
           <div className="relative">
-            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
+            <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
               Chore name <span className="text-red-500">*</span>
             </label>
             <input
@@ -496,11 +496,11 @@ export function CreateChoreSheet({
                       className="w-full flex items-center px-3 py-2.5 text-left hover:bg-[var(--color-surface-alt)] transition-colors"
                     >
                       {/* No price shown — price surfaced via Smart Suggestion banner */}
-                      <span className="text-[13px] text-[var(--color-text)]">{rate.canonical_name}</span>
+                      <span className="text-[0.8125rem] text-[var(--color-text)]">{rate.canonical_name}</span>
                     </button>
                   ))}
                 {rates.filter(r => !r.is_orchard_8 && fuzzyMatch(r, searchQuery)).length === 0 && (
-                  <p className="px-3 py-2.5 text-[12px] text-[var(--color-text-muted)]">
+                  <p className="px-3 py-2.5 text-[0.75rem] text-[var(--color-text-muted)]">
                     Custom chore — type your own.
                   </p>
                 )}
@@ -513,14 +513,14 @@ export function CreateChoreSheet({
             {suggestion && suggestion.median_amount != null ? (
               <div className="flex items-center gap-2">
                 {/* Dim label — price pill is the star */}
-                <span className="text-[10px] text-[var(--color-text-muted)]">
+                <span className="text-[0.625rem] text-[var(--color-text-muted)]">
                   {suggestion.sample_count > 5 ? 'Morechard parents pay' : 'Industry average'}
                 </span>
                 {/* Tappable price pill — no "use" text, whole pill is the action */}
                 <button
                   type="button"
                   onClick={() => applySuggestion(suggestion)}
-                  className="tap-target-44 px-3 py-1 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[13px] font-bold tabular-nums hover:bg-[color-mix(in_srgb,var(--brand-primary)_22%,transparent)] active:scale-95 transition-all cursor-pointer"
+                  className="tap-target-44 px-3 py-1 rounded-full bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.8125rem] font-bold tabular-nums hover:bg-[color-mix(in_srgb,var(--brand-primary)_22%,transparent)] active:scale-95 transition-all cursor-pointer"
                 >
                   {sym}{(suggestion.median_amount / 100).toFixed(2)}
                 </button>
@@ -535,15 +535,15 @@ export function CreateChoreSheet({
           <div className="flex gap-3">
             {/* Reward — left half */}
             <div className="flex-1">
-              <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
+              <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
                 Reward <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--color-text-muted)]">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.9375rem] font-bold text-[var(--color-text-muted)]">
                   {sym}
                 </span>
                 <input
-                  className={`w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-2.5 text-[15px] font-semibold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition${sparkActive ? ' ring-2 ring-[var(--brand-primary)]' : ''}`}
+                  className={`w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-2.5 text-[0.9375rem] font-semibold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition${sparkActive ? ' ring-2 ring-[var(--brand-primary)]' : ''}`}
                   placeholder="0.00"
                   type="number"
                   inputMode="decimal"
@@ -561,20 +561,20 @@ export function CreateChoreSheet({
 
             {/* Due Date / Day — right half */}
             <div className="flex-1">
-              <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
+              <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
                 {form.frequency === 'as_needed' ? 'Due date' : form.frequency === 'weekly' ? 'Day' : 'Schedule'}
               </label>
               {form.frequency === 'as_needed' ? (
                 <input
                   type="date"
-                  className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
+                  className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
                   value={form.due_date}
                   onChange={e => setField('due_date', e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                 />
               ) : form.frequency === 'weekly' ? (
                 <select
-                  className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
+                  className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
                   value={form.weekly_day}
                   onChange={e => setField('weekly_day', Number(e.target.value))}
                 >
@@ -583,7 +583,7 @@ export function CreateChoreSheet({
                   ))}
                 </select>
               ) : (
-                <div className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[13px] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
+                <div className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.8125rem] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
                   Recurring
                 </div>
               )}
@@ -593,7 +593,7 @@ export function CreateChoreSheet({
           {/* ── Frequency horizontal pill scroll ─────────────────── */}
           {/* overflow-x-auto + flex-nowrap = true horizontal scroll, never wraps */}
           <div>
-            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
+            <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
               Frequency
             </label>
             <div
@@ -605,7 +605,7 @@ export function CreateChoreSheet({
                   key={opt.value}
                   type="button"
                   onClick={() => setField('frequency', opt.value)}
-                  className={`tap-target-44 shrink-0 px-4 py-1.5 rounded-full text-[12px] font-semibold border transition-all cursor-pointer whitespace-nowrap
+                  className={`tap-target-44 shrink-0 px-4 py-1.5 rounded-full text-[0.75rem] font-semibold border transition-all cursor-pointer whitespace-nowrap
                     ${form.frequency === opt.value
                       ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                       : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
@@ -619,7 +619,7 @@ export function CreateChoreSheet({
 
           {/* ── Completion Rules ─────────────────────────────────── */}
           <div>
-            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
+            <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
               Completion Rules
             </label>
 
@@ -636,7 +636,7 @@ export function CreateChoreSheet({
                   }`}
               >
                 <CameraIcon active={form.proof_required} />
-                <span className="text-[11px] font-semibold leading-none">Photo Proof</span>
+                <span className="text-[0.6875rem] font-semibold leading-none">Photo Proof</span>
               </button>
 
               {/* Skip Approval (Auto-pay) card */}
@@ -651,7 +651,7 @@ export function CreateChoreSheet({
                     }`}
                 >
                   <BoltIcon active={form.auto_approve} />
-                  <span className="text-[11px] font-semibold leading-none">Skip Approval</span>
+                  <span className="text-[0.6875rem] font-semibold leading-none">Skip Approval</span>
 
                   {/* Info tooltip trigger — top-right corner */}
                   <span
@@ -666,7 +666,7 @@ export function CreateChoreSheet({
                         setShowTooltip(v => !v)
                       }
                     }}
-                    className="absolute top-1.5 right-2 w-4 h-4 rounded-full border border-current flex items-center justify-center text-[9px] font-bold opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+                    className="absolute top-1.5 right-2 w-4 h-4 rounded-full border border-current flex items-center justify-center text-[0.5625rem] font-bold opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     i
                   </span>
@@ -675,7 +675,7 @@ export function CreateChoreSheet({
                 {/* Tooltip bubble */}
                 {showTooltip && (
                   <div
-                    className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 z-20 bg-[var(--color-text)] text-[var(--color-surface)] text-[11px] leading-relaxed px-3 py-2 rounded-xl shadow-lg"
+                    className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 z-20 bg-[var(--color-text)] text-[var(--color-surface)] text-[0.6875rem] leading-relaxed px-3 py-2 rounded-xl shadow-lg"
                     onClick={() => setShowTooltip(false)}
                   >
                     Turn on to pay them the moment they finish. Leave off if you want to review their work first.
@@ -687,7 +687,7 @@ export function CreateChoreSheet({
 
             {/* Conflict message — shown when trying to enable Auto-pay with Photo Proof on */}
             {conflictMsg && (
-              <p className="mt-2 text-[11px] text-center text-[var(--color-text-muted)] italic">
+              <p className="mt-2 text-[0.6875rem] text-center text-[var(--color-text-muted)] italic">
                 Tasks requiring photo proof usually need a quick look before paying!
               </p>
             )}
@@ -698,14 +698,14 @@ export function CreateChoreSheet({
             <button
               type="button"
               onClick={() => setShowDesc(v => !v)}
-              className="flex items-center gap-1.5 text-[12px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-[0.75rem] font-semibold text-[var(--color-text-muted)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
             >
               <span className={`inline-block transition-transform duration-150 ${showDesc ? 'rotate-90' : ''}`}>▶</span>
               {showDesc ? 'Hide' : 'Add'} detailed instructions
             </button>
             {showDesc && (
               <textarea
-                className="mt-2 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] resize-none transition"
+                className="mt-2 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] resize-none transition"
                 placeholder="Step-by-step instructions, standards expected…"
                 rows={3}
                 value={form.description}
@@ -724,7 +724,7 @@ export function CreateChoreSheet({
             form=""
             onClick={handleSubmit}
             disabled={saving || !canSubmit}
-            className="w-full h-13 bg-[var(--brand-primary)] disabled:opacity-40 text-white font-extrabold text-[15px] rounded-2xl shadow-lg hover:brightness-90 active:scale-[0.98] transition-all cursor-pointer disabled:cursor-not-allowed"
+            className="w-full h-13 bg-[var(--brand-primary)] disabled:opacity-40 text-white font-extrabold text-[0.9375rem] rounded-2xl shadow-lg hover:brightness-90 active:scale-[0.98] transition-all cursor-pointer disabled:cursor-not-allowed"
           >
             {saving ? (
               <span className="flex items-center justify-center gap-2">

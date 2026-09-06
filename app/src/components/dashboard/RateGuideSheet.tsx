@@ -142,8 +142,8 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-[17px] font-extrabold text-[var(--color-text)] tracking-tight">Rate Guide</h2>
-              <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">What other families pay</p>
+              <h2 className="text-[1.0625rem] font-extrabold text-[var(--color-text)] tracking-tight">Rate Guide</h2>
+              <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">What other families pay</p>
             </div>
             <button
               onClick={onClose}
@@ -161,7 +161,7 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
               placeholder="Search chores…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-3.5 py-2.5 text-[14px] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition shadow-sm"
+              className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-3.5 py-2.5 text-[0.875rem] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition shadow-sm"
             />
           </div>
 
@@ -174,20 +174,20 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
               <button
                 key={cat.label}
                 onClick={() => setCategory(cat.label)}
-                className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
+                className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold border transition-colors cursor-pointer whitespace-nowrap ${
                   category === cat.label
                     ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                     : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[color-mix(in_srgb,var(--color-surface-alt)_85%,var(--color-text)_15%)] hover:text-[var(--color-text)]'
                 }`}
               >
-                <span className="text-[11px] leading-none">{cat.icon}</span>
+                <span className="text-[0.6875rem] leading-none">{cat.icon}</span>
                 {cat.label}
               </button>
             ))}
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-4 pb-3 text-[10px] text-[var(--color-text-muted)]">
+          <div className="flex items-center gap-4 pb-3 text-[0.625rem] text-[var(--color-text-muted)]">
             <span className="flex items-center gap-1">
               <span className="text-[var(--brand-primary)]"><CommunityIcon /></span>
               Morechard families
@@ -202,23 +202,23 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
         {/* ── Scrollable list ───────────────────────────────────────── */}
         <div className="flex-1 overflow-y-auto">
           {loading && (
-            <p className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</p>
+            <p className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</p>
           )}
           {error && (
-            <p className="py-10 text-center text-[13px] text-red-500">{error}</p>
+            <p className="py-10 text-center text-[0.8125rem] text-red-500">{error}</p>
           )}
 
           {/* No results state */}
           {noResults && (
             <div className="py-12 flex flex-col items-center gap-3 px-6 text-center">
-              <p className="text-[14px] text-[var(--color-text-muted)]">No rates found for "{search}"</p>
+              <p className="text-[0.875rem] text-[var(--color-text-muted)]">No rates found for "{search}"</p>
               <button
                 onClick={() => {
                   // Clear search and close so parent can open CreateChoreSheet with the typed title
                   if (onUse) onUse(search, 0);
                   else onClose();
                 }}
-                className="px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[13px] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.8125rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition cursor-pointer"
               >
                 Add "{search}" as custom chore
               </button>
@@ -230,13 +230,13 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
             <div className="px-5 pb-8">
               {/* Sort control */}
               <div className="flex items-center justify-end gap-1.5 pt-3 pb-2">
-                <span className="text-[11px] text-[var(--color-text-muted)] font-medium shrink-0">Sort:</span>
+                <span className="text-[0.6875rem] text-[var(--color-text-muted)] font-medium shrink-0">Sort:</span>
                 <div className="flex gap-1 flex-wrap justify-end">
                   {SORT_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
                       onClick={() => setSort(opt.value)}
-                      className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-colors cursor-pointer
+                      className={`px-2 py-1 rounded-md text-[0.6875rem] font-semibold transition-colors cursor-pointer
                         ${sort === opt.value
                           ? 'bg-[var(--brand-primary)] text-white'
                           : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--color-surface-alt)_70%,var(--color-border))] hover:text-[var(--color-text)]'
@@ -257,8 +257,8 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
                   >
                     {/* Chore name + category */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-[var(--color-text)] leading-snug">{rate.canonical_name}</p>
-                      <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">{rate.category}</p>
+                      <p className="text-[0.875rem] font-semibold text-[var(--color-text)] leading-snug">{rate.canonical_name}</p>
+                      <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">{rate.category}</p>
                     </div>
 
                     {/* Price + source icon + Use button */}
@@ -270,7 +270,7 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
                         >
                           {isCommunity ? <CommunityIcon /> : <IndustryIcon />}
                         </span>
-                        <span className="text-[16px] font-extrabold tabular-nums text-[var(--color-text)]">
+                        <span className="text-[1rem] font-extrabold tabular-nums text-[var(--color-text)]">
                           {formatAmount(rate.median_amount, symbol)}
                         </span>
                       </div>
@@ -278,7 +278,7 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
                       {onUse && rate.median_amount != null && (
                         <button
                           onClick={() => onUse(rate.canonical_name, rate.median_amount!)}
-                          className="h-7 px-2.5 rounded-lg bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] text-[var(--brand-primary)] text-[11px] font-bold hover:bg-[color-mix(in_srgb,var(--brand-primary)_18%,transparent)] transition cursor-pointer"
+                          className="h-7 px-2.5 rounded-lg bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] text-[var(--brand-primary)] text-[0.6875rem] font-bold hover:bg-[color-mix(in_srgb,var(--brand-primary)_18%,transparent)] transition cursor-pointer"
                         >
                           Use
                         </button>

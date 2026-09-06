@@ -449,7 +449,7 @@ export function ChildDashboard() {
       {/* Account lock banner — shown when a parent has temporarily restricted this account */}
       {lockedUntil && lockedUntil > Date.now() / 1000 && (
         <div className="bg-amber-500/15 border-b border-amber-400/30 px-4 py-2.5 text-center">
-          <p className="text-[13px] font-semibold text-amber-700 dark:text-amber-300">
+          <p className="text-[0.8125rem] font-semibold text-amber-700 dark:text-amber-300">
             Your account is paused by a parent until{' '}
             {new Date(lockedUntil * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.
             You can still view everything, but earning is on hold.
@@ -505,7 +505,7 @@ export function ChildDashboard() {
             className="relative bg-[var(--color-surface)] rounded-t-2xl shadow-xl max-w-[560px] w-full mx-auto px-4 pt-4 pb-10 space-y-5"
           >
             <div className="flex items-center justify-between">
-              <p className="text-[16px] font-extrabold text-[var(--color-text)]">Settings</p>
+              <p className="text-[1rem] font-extrabold text-[var(--color-text)]">Settings</p>
               <button
                 onClick={() => setShowSettings(false)}
                 className="tap-target-44 text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer"
@@ -516,14 +516,14 @@ export function ChildDashboard() {
 
             {/* Avatar */}
             <div>
-              <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Avatar</p>
+              <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Avatar</p>
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[var(--color-border)] shrink-0">
                   <AvatarSVG id={avatarId} size={56} />
                 </div>
                 <button
                   onClick={() => setShowAvatarPicker(v => !v)}
-                  className="text-[13px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer"
+                  className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer"
                 >
                   {showAvatarPicker ? 'Close' : 'Change avatar'}
                 </button>
@@ -533,7 +533,7 @@ export function ChildDashboard() {
                 <div className="mt-3 max-h-56 overflow-y-auto rounded-xl border border-[var(--color-border)] p-2.5">
                   {AVATAR_CATEGORIES.map(cat => (
                     <div key={cat.id} className="mb-3 last:mb-0">
-                      <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-0.5">{cat.label}</p>
+                      <p className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-0.5">{cat.label}</p>
                       <div className="grid grid-cols-6 gap-1.5">
                         {avatarsForCategory(cat.id as AvatarCategory).map(avId => (
                           <button
@@ -567,7 +567,7 @@ export function ChildDashboard() {
 
             {/* Appearance */}
             <div>
-              <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Appearance</p>
+              <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Appearance</p>
               <div className="space-y-3">
                 <ThemePicker />
                 <HighContrastToggle />
@@ -576,15 +576,15 @@ export function ChildDashboard() {
 
             {/* Experience mode — read-only, parent controls */}
             <div>
-              <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Experience</p>
+              <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Experience</p>
               <div className="flex items-center justify-between rounded-xl border border-[var(--color-border)] px-3.5 py-3 bg-[var(--color-surface-alt)]">
                 <div>
-                  <p className="text-[14px] font-semibold text-[var(--color-text)]">
+                  <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
                     {appView === 'CLEAN' ? 'Professional mode' : 'Orchard mode'}
                   </p>
-                  <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">Set by your parent</p>
+                  <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">Set by your parent</p>
                 </div>
-                <span className="text-[22px] select-none">{appView === 'CLEAN' ? '📊' : '🌱'}</span>
+                <span className="text-[1.375rem] select-none">{appView === 'CLEAN' ? '📊' : '🌱'}</span>
               </div>
             </div>
 
@@ -783,20 +783,20 @@ function ChoreRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             {!!chore.is_flash && (
-              <span className="text-[10px] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>
+              <span className="text-[0.625rem] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>
             )}
             {isRecurring && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] rounded px-1.5 py-0.5">
+              <span className="inline-flex items-center gap-0.5 text-[0.625rem] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] rounded px-1.5 py-0.5">
                 <RecurringIcon /> Repeating
               </span>
             )}
-            <span className="text-[14px] font-semibold text-[var(--color-text)] truncate">{chore.title}</span>
+            <span className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">{chore.title}</span>
           </div>
-          <p className="text-[12px] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">
+          <p className="text-[0.75rem] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">
             {formatCurrency(chore.reward_amount, chore.currency)}
           </p>
           {chore.proof_required ? (
-            <p className="text-[11px] text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
               <CameraIconSmall /> Photo required to submit
             </p>
           ) : null}
@@ -820,14 +820,14 @@ function ChoreRow({
 
         {/* Primary action button */}
         {submitted ? (
-          <span className="shrink-0 text-[12px] font-bold text-amber-700 bg-amber-100 rounded-full px-2.5 py-1">
+          <span className="shrink-0 text-[0.75rem] font-bold text-amber-700 bg-amber-100 rounded-full px-2.5 py-1">
             {tone.waitingBadge}
           </span>
         ) : (
           <button
             onClick={() => { triggerHaptic(); onDone() }}
             disabled={submitting}
-            className={`shrink-0 h-9 bg-[var(--brand-primary)] text-white text-[13px] font-bold ${tone.isChild ? 'rounded-xl' : 'rounded-lg'} hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 btn-depth ${chore.proof_required ? 'px-3' : 'px-3.5'}`}
+            className={`shrink-0 h-9 bg-[var(--brand-primary)] text-white text-[0.8125rem] font-bold ${tone.isChild ? 'rounded-xl' : 'rounded-lg'} hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 btn-depth ${chore.proof_required ? 'px-3' : 'px-3.5'}`}
           >
             {submitting ? '…' : chore.proof_required ? <><CameraIconSmall />{tone.doneButton}</> : tone.doneButton}
           </button>
@@ -839,7 +839,7 @@ function ChoreRow({
         <div className="mt-3 space-y-2">
           <ErrorBox message={submitErr} />
           <textarea
-            className="w-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] rounded-lg px-3 py-2 text-[13px] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] placeholder:text-[var(--color-text-muted)]"
+            className="w-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] rounded-lg px-3 py-2 text-[0.8125rem] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] placeholder:text-[var(--color-text-muted)]"
             placeholder="Add a note for your parent (optional)"
             rows={2}
             value={noteText}
@@ -849,14 +849,14 @@ function ChoreRow({
           <div className="flex gap-2">
             <button
               onClick={onNoteCancel}
-              className="flex-1 border border-[var(--color-border)] rounded-lg py-2 text-[13px] font-semibold text-[var(--color-text-muted)] cursor-pointer hover:bg-[var(--color-surface-alt)]"
+              className="flex-1 border border-[var(--color-border)] rounded-lg py-2 text-[0.8125rem] font-semibold text-[var(--color-text-muted)] cursor-pointer hover:bg-[var(--color-surface-alt)]"
             >
               Cancel
             </button>
             <button
               onClick={onNoteSubmit}
               disabled={submitting}
-              className="flex-1 bg-[var(--brand-primary)] text-white rounded-lg py-2 text-[13px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer"
+              className="flex-1 bg-[var(--brand-primary)] text-white rounded-lg py-2 text-[0.8125rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer"
             >
               {submitting ? '…' : tone.submitButton}
             </button>
@@ -967,8 +967,8 @@ function WeeklyPlannerCard({
         className="w-full flex items-center justify-between px-4 py-4 text-left cursor-pointer"
       >
         <div>
-          <h2 className="text-[15px] font-bold text-[var(--color-text)]">{tone.weekSection}</h2>
-          <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+          <h2 className="text-[0.9375rem] font-bold text-[var(--color-text)]">{tone.weekSection}</h2>
+          <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">
             {dayChores.length === 0
               ? tone.weekSubtitle
               : `${dayChores.length} chore${dayChores.length !== 1 ? 's' : ''} today`}
@@ -996,7 +996,7 @@ function WeeklyPlannerCard({
                   className={`shrink-0 flex flex-col items-center rounded-xl px-2.5 py-2 min-w-[44px] transition-colors duration-100 cursor-pointer
                     ${isToday ? 'bg-[var(--brand-primary)] text-white day-pill-active' : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:bg-[var(--color-border)]'}`}
                 >
-                  <span className="text-[11px] font-semibold">{day}</span>
+                  <span className="text-[0.6875rem] font-semibold">{day}</span>
                   <span className={`mt-1.5 rounded-full w-1.5 h-1.5 ${hasChores ? (isToday ? 'bg-white/50' : 'bg-[var(--brand-primary)]') : 'bg-transparent'}`} />
                 </button>
               )
@@ -1004,7 +1004,7 @@ function WeeklyPlannerCard({
           </div>
           <div className="border-t border-[var(--color-border)] divide-y divide-[var(--color-border)]">
             {dayChores.length === 0 ? (
-              <p className="px-4 py-5 text-[13px] text-[var(--color-text-muted)] text-center">
+              <p className="px-4 py-5 text-[0.8125rem] text-[var(--color-text-muted)] text-center">
                 {tone.nothingToday} {DAYS[activeDay - 1]} yet
               </p>
             ) : (
@@ -1065,9 +1065,9 @@ function KpiRow({ streakData }: KpiRowProps) {
     <div className="grid grid-cols-3 gap-2.5">
       {stats.map(({ icon, value, label, cardClass }) => (
         <div key={label} className={`rounded-xl border p-3 text-center ${cardClass}`}>
-          <div className="text-[18px] leading-none mb-1">{icon}</div>
-          <div className="text-[17px] font-extrabold text-[var(--color-text)] tabular-nums leading-none">{value}</div>
-          <div className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mt-1">{label}</div>
+          <div className="text-[1.125rem] leading-none mb-1">{icon}</div>
+          <div className="text-[1.0625rem] font-extrabold text-[var(--color-text)] tabular-nums leading-none">{value}</div>
+          <div className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mt-1">{label}</div>
         </div>
       ))}
     </div>
@@ -1102,7 +1102,7 @@ function OverdueChoresCard({
     <div className="bg-[var(--color-surface)] rounded-2xl card-depth border-2 border-amber-400 overflow-hidden">
       <div className="px-4 pt-4 pb-1 flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-        <h2 className="text-[13px] font-extrabold text-amber-600 uppercase tracking-wider">
+        <h2 className="text-[0.8125rem] font-extrabold text-amber-600 uppercase tracking-wider">
           {chores.length === 1 ? 'Overdue — 1 chore' : `Overdue — ${chores.length} chores`}
         </h2>
       </div>
@@ -1199,18 +1199,18 @@ function OrchardView({
     <>
       {/* Balance card */}
       <div className="bg-[var(--color-surface)] rounded-2xl card-depth border-t-[3px] border-t-[var(--brand-primary)] border border-[var(--color-border)] p-4">
-        <div className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{tone.balance}</div>
-        <div className="text-[46px] font-extrabold text-[var(--color-text)] leading-none tracking-tight tabular-nums">
+        <div className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{tone.balance}</div>
+        <div className="text-[2.875rem] font-extrabold text-[var(--color-text)] leading-none tracking-tight tabular-nums">
           {balance ? formatCurrency(balance.available, currency) : '£—'}
         </div>
         <div className="flex gap-4 mt-2">
-          <span className="text-[13px] text-[var(--color-text-muted)]">
+          <span className="text-[0.8125rem] text-[var(--color-text-muted)]">
             Earned: <strong className="text-[var(--color-text)] tabular-nums">
               {balance ? formatCurrency(balance.earned, currency) : '—'}
             </strong>
           </span>
           {(balance?.pending ?? 0) > 0 && (
-            <span className="text-[13px] text-[var(--color-text-muted)]">
+            <span className="text-[0.8125rem] text-[var(--color-text-muted)]">
               Pending: <strong className="text-amber-500 tabular-nums">
                 {formatCurrency(balance!.pending, currency)}
               </strong>
@@ -1233,8 +1233,8 @@ function OrchardView({
       {/* Pending nudge */}
       {pending.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
-          <span className="text-[20px]">⏳</span>
-          <p className="text-[13px] text-amber-800 font-semibold">
+          <span className="text-[1.25rem]">⏳</span>
+          <p className="text-[0.8125rem] text-amber-800 font-semibold">
             {pending.length === 1
               ? `1 chore is waiting for your parent to check`
               : `${pending.length} chores are waiting for your parent to check`}
@@ -1282,19 +1282,19 @@ function OrchardView({
 
       {chores.length === 0 && (
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-sm border border-[var(--color-border)] p-8 text-center">
-          <p className="text-[28px] mb-2">🌱</p>
-          <p className="text-[15px] font-semibold text-[var(--color-text)]">{tone.emptyGrove}</p>
-          <p className="text-[13px] text-[var(--color-text-muted)] mt-1">{tone.emptyGroveSub}</p>
+          <p className="text-[1.75rem] mb-2">🌱</p>
+          <p className="text-[0.9375rem] font-semibold text-[var(--color-text)]">{tone.emptyGrove}</p>
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1">{tone.emptyGroveSub}</p>
         </div>
       )}
 
       {/* ── My Goals: Effort-to-Earn Mentor ──────────────────────────── */}
       <div className="bg-[var(--color-surface)] rounded-2xl card-depth border border-[var(--color-border)] overflow-hidden">
         <div className="px-4 pt-4 pb-3 flex items-center justify-between">
-          <h2 className="text-[15px] font-bold text-[var(--color-text)]">🎯 My Goals</h2>
+          <h2 className="text-[0.9375rem] font-bold text-[var(--color-text)]">🎯 My Goals</h2>
           <button
             onClick={onPlantGoal}
-            className="tap-target-44 flex items-center gap-1.5 text-[12px] font-bold text-[var(--brand-primary)] border border-[var(--brand-primary)] rounded-lg px-2.5 py-1 hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
+            className="tap-target-44 flex items-center gap-1.5 text-[0.75rem] font-bold text-[var(--brand-primary)] border border-[var(--brand-primary)] rounded-lg px-2.5 py-1 hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
           >
             <span>+</span> Add Goal
           </button>
@@ -1303,8 +1303,8 @@ function OrchardView({
         {activeGoals.length === 0 ? (
           <div className="px-4 pb-5 text-center flex flex-col items-center">
             <GrowingTree pct={0} size={64} showLabel className="mb-1" />
-            <p className="text-[13px] font-semibold text-[var(--color-text)]">No goals yet</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">Tap "Add Goal" to start saving for something exciting!</p>
+            <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">No goals yet</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">Tap "Add Goal" to start saving for something exciting!</p>
           </div>
         ) : (
           <div className="divide-y divide-[var(--color-border)]">
@@ -1330,9 +1330,9 @@ function OrchardView({
                   <div className="flex items-center gap-4">
                     <GrowingTree pct={pct} size={72} showLabel />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[14px] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</div>
+                      <div className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</div>
                       {activeTopGoal.parent_match_pct > 0 && (
-                        <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">
+                        <div className="text-[0.6875rem] text-emerald-600 font-semibold mt-0.5">
                           🤝 Parent matches {activeTopGoal.parent_match_pct}% — you only need {formatCurrency(effTarget, activeTopGoal.currency)}!
                         </div>
                       )}
@@ -1348,27 +1348,27 @@ function OrchardView({
                       />
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[11px] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(avail, activeTopGoal.currency)} saved</span>
-                      <span className="text-[11px] text-[var(--color-text-muted)] tabular-nums">{pct}% • {formatCurrency(effTarget, activeTopGoal.currency)}</span>
+                      <span className="text-[0.6875rem] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(avail, activeTopGoal.currency)} saved</span>
+                      <span className="text-[0.6875rem] text-[var(--color-text-muted)] tabular-nums">{pct}% • {formatCurrency(effTarget, activeTopGoal.currency)}</span>
                     </div>
                   </div>
 
                   {/* Effort labels */}
                   <div className="rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] px-3.5 py-2.5 space-y-1.5">
-                    <div className="flex items-center gap-2 text-[12px]">
+                    <div className="flex items-center gap-2 text-[0.75rem]">
                       <span>💪</span>
                       <span className="text-[var(--color-text-muted)]">Total cost:</span>
                       <span className="font-semibold text-[var(--color-text)]">{effortLabel(activeTopGoal.target_amount)}</span>
                     </div>
                     {remaining > 0 && (
-                      <div className="flex items-center gap-2 text-[12px]">
+                      <div className="flex items-center gap-2 text-[0.75rem]">
                         <span>🌿</span>
                         <span className="text-[var(--color-text-muted)]">Still need:</span>
                         <span className="font-semibold text-[var(--color-text)]">{effortLabel(remaining)}</span>
                       </div>
                     )}
                     {arrivalDate && (
-                      <div className="flex items-center gap-2 text-[12px]">
+                      <div className="flex items-center gap-2 text-[0.75rem]">
                         <span>📅</span>
                         <span className="text-[var(--color-text-muted)]">Estimated arrival:</span>
                         <span className="font-semibold text-[var(--brand-accent)]">{arrivalDate}</span>
@@ -1381,7 +1381,7 @@ function OrchardView({
                     <button
                       onClick={() => handlePurchase(activeTopGoal.id)}
                       disabled={purchasing === activeTopGoal.id}
-                      className="w-full rounded-xl bg-emerald-500 text-white font-bold py-2.5 text-[13px] hover:bg-emerald-600 disabled:opacity-60 transition-colors cursor-pointer"
+                      className="w-full rounded-xl bg-emerald-500 text-white font-bold py-2.5 text-[0.8125rem] hover:bg-emerald-600 disabled:opacity-60 transition-colors cursor-pointer"
                     >
                       {purchasing === activeTopGoal.id ? '🎉 Saving…' : '🎉 Mark as Purchased!'}
                     </button>
@@ -1393,13 +1393,13 @@ function OrchardView({
             {/* Trade-off tool: secondary goals in same effort unit */}
             {activeGoals.length > 1 && (
               <div className="px-4 py-3 space-y-2">
-                <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">All goals — effort comparison</p>
+                <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">All goals — effort comparison</p>
                 <div className="grid grid-cols-1 gap-2">
                   {activeGoals.map((g, i) => (
                     <div key={g.id} className={`flex items-center gap-2 rounded-lg px-3 py-2 border ${i === 0 ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)]' : 'border-[var(--color-border)] bg-[var(--color-bg)]'}`}>
                       <span className="text-base">{i === 0 ? '🎯' : '⭕'}</span>
-                      <span className="flex-1 text-[12px] font-semibold text-[var(--color-text)] truncate">{g.title}</span>
-                      <span className="text-[11px] text-[var(--color-text-muted)] shrink-0">{effortLabel(g.target_amount)}</span>
+                      <span className="flex-1 text-[0.75rem] font-semibold text-[var(--color-text)] truncate">{g.title}</span>
+                      <span className="text-[0.6875rem] text-[var(--color-text-muted)] shrink-0">{effortLabel(g.target_amount)}</span>
                     </div>
                   ))}
                 </div>
@@ -1410,7 +1410,7 @@ function OrchardView({
       </div>
 
       {unplannedChores.length > 0 && (
-        <p className="text-center text-[12px] text-[var(--color-text-muted)]">
+        <p className="text-center text-[0.75rem] text-[var(--color-text-muted)]">
           {unplannedChores.length} chore{unplannedChores.length > 1 ? 's' : ''} not in your week yet — find {unplannedChores.length > 1 ? 'them' : 'it'} in the Chores tab.
         </p>
       )}
@@ -1461,8 +1461,8 @@ function ProfessionalView({
       {/* Account summary — dense stat row */}
       <div className="bg-[linear-gradient(155deg,color-mix(in_srgb,var(--brand-primary)_10%,var(--color-surface))_0%,var(--color-surface)_60%)] rounded-xl border-t-[3px] border-t-[var(--brand-primary)] border border-[var(--color-border)] overflow-hidden">
         <div className="px-4 py-4 border-b border-[var(--color-border)] flex flex-col items-center text-center">
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">{tone.balance}</p>
-          <p className="text-[36px] font-extrabold text-[var(--color-text)] leading-none tabular-nums mt-1">
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">{tone.balance}</p>
+          <p className="text-[2.25rem] font-extrabold text-[var(--color-text)] leading-none tabular-nums mt-1">
             {balance ? formatCurrency(balance.available, currency) : '£—'}
           </p>
           {balance?.streak && balance.streak.current > 0 && (
@@ -1484,8 +1484,8 @@ function ProfessionalView({
             { label: 'Spent',   value: balance?.spent     ?? 0 },
           ].map(({ label, value }) => (
             <div key={label} className="px-3 py-2.5">
-              <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{label}</p>
-              <p className="text-[13px] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
+              <p className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{label}</p>
+              <p className="text-[0.8125rem] font-bold text-[var(--color-text)] tabular-nums mt-0.5">
                 {formatCurrency(value, currency)}
               </p>
             </div>
@@ -1496,10 +1496,10 @@ function ProfessionalView({
       {/* Pending transactions alert */}
       {pending.length > 0 && (
         <div className="bg-[var(--color-surface)] border border-amber-300 rounded-xl px-4 py-2.5 flex items-center justify-between">
-          <p className="text-[13px] font-semibold text-[var(--color-text)]">
+          <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">
             {pending.length} pending transaction{pending.length > 1 ? 's' : ''}
           </p>
-          <span className="text-[11px] font-bold text-amber-600 bg-amber-100 rounded-full px-2 py-0.5">AWAITING APPROVAL</span>
+          <span className="text-[0.6875rem] font-bold text-amber-600 bg-amber-100 rounded-full px-2 py-0.5">AWAITING APPROVAL</span>
         </div>
       )}
 
@@ -1545,14 +1545,14 @@ function ProfessionalView({
       {goals.length > 0 && (
         <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden">
           <div className="px-4 py-2.5 border-b border-[var(--color-border)]">
-            <p className="text-[12px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Savings Goals</p>
+            <p className="text-[0.75rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">Savings Goals</p>
           </div>
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-alt)]">
-                <th className="px-4 py-2 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Goal</th>
-                <th className="px-4 py-2 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide text-right">Target</th>
-                <th className="px-4 py-2 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide text-right">Progress</th>
+                <th className="px-4 py-2 text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Goal</th>
+                <th className="px-4 py-2 text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide text-right">Target</th>
+                <th className="px-4 py-2 text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide text-right">Progress</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
@@ -1561,17 +1561,17 @@ function ProfessionalView({
                 return (
                   <tr key={goal.id}>
                     <td className="px-4 py-2.5">
-                      <span className="text-[13px] font-semibold text-[var(--color-text)]">{goal.title}</span>
+                      <span className="text-[0.8125rem] font-semibold text-[var(--color-text)]">{goal.title}</span>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className="text-[12px] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(goal.target_amount, goal.currency)}</span>
+                      <span className="text-[0.75rem] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(goal.target_amount, goal.currency)}</span>
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <div className="w-16 h-1.5 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
                           <div className="h-full bg-[var(--brand-primary)] rounded-full" style={{ width: `${pct}%` }} />
                         </div>
-                        <span className="text-[11px] font-bold text-[var(--color-text-muted)] tabular-nums w-8 text-right">{pct}%</span>
+                        <span className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] tabular-nums w-8 text-right">{pct}%</span>
                       </div>
                     </td>
                   </tr>

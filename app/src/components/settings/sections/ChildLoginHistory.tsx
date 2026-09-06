@@ -110,18 +110,18 @@ export function ChildLoginHistory({ childId, childName, onBack }: Props) {
       )}
 
       {!loading && error && (
-        <p className="text-center text-[14px] text-red-500 px-4 py-6">{error}</p>
+        <p className="text-center text-[0.875rem] text-red-500 px-4 py-6">{error}</p>
       )}
 
       {!loading && !error && logins.length === 0 && (
-        <p className="text-center text-[14px] text-[var(--color-text-muted)] px-4 py-8">
+        <p className="text-center text-[0.875rem] text-[var(--color-text-muted)] px-4 py-8">
           No login history yet — logins will appear here once {childName} signs in.
         </p>
       )}
 
       {!loading && !error && groups.map(group => (
         <div key={group.label}>
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">
             {group.label}
           </p>
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
@@ -132,15 +132,15 @@ export function ChildLoginHistory({ childId, childName, onBack }: Props) {
               >
                 <DeviceIcon type={entry.device_type} isCurrent={entry.is_current} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-[var(--color-text)] truncate">
+                  <p className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">
                     {entry.device_label}
                   </p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+                  <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">
                     {entry.ip_address}
                   </p>
                 </div>
                 <p
-                  className="text-[12px] text-[var(--color-text-muted)] shrink-0"
+                  className="text-[0.75rem] text-[var(--color-text-muted)] shrink-0"
                   title={new Date(entry.logged_at * 1000).toISOString().replace('T', ' ').slice(0, 19) + ' UTC'}
                 >
                   {relativeTime(entry.logged_at)}

@@ -52,7 +52,7 @@ export function PaywallScreen() {
           {identity && (
             <a
               href="/parent"
-              className="text-[13px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+              className="text-[0.8125rem] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
             >
               Back to app
             </a>
@@ -62,13 +62,13 @@ export function PaywallScreen() {
 
       {/* Hero */}
       <div className="px-5 pt-10 pb-6 text-center max-w-lg mx-auto w-full">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--brand-primary)] mb-2">
+        <p className="text-[0.6875rem] font-bold uppercase tracking-widest text-[var(--brand-primary)] mb-2">
           Your trial has ended
         </p>
-        <h1 className="text-[26px] font-bold text-[var(--color-text)] leading-tight">
+        <h1 className="text-[1.625rem] font-bold text-[var(--color-text)] leading-tight">
           Choose your plan
         </h1>
-        <p className="text-[14px] text-[var(--color-text-muted)] mt-2 leading-relaxed">
+        <p className="text-[0.875rem] text-[var(--color-text-muted)] mt-2 leading-relaxed">
           One-time purchase. No subscriptions. Your data stays safe forever.
         </p>
       </div>
@@ -84,7 +84,7 @@ export function PaywallScreen() {
 
       {/* Footer */}
       <footer className="px-5 py-5 text-center border-t border-[var(--color-border)]">
-        <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+        <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-relaxed">
           Payments processed securely by Stripe. Your card details are never stored by Morechard.
           <br />
           Questions? <a href="mailto:support@morechard.com" className="underline hover:text-[var(--color-text)] transition-colors">Contact support</a>

@@ -176,10 +176,10 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
         {/* Header */}
         <div className="px-5 pt-4 pb-3 flex items-center justify-between shrink-0">
           <div>
-            <p className="text-[17px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
+            <p className="text-[1.0625rem] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
               Log shared expense
             </p>
-            <p className="text-[12px] text-[var(--color-text-muted)]">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)]">
               for <span className="font-semibold text-[var(--brand-primary)]">{familyName ?? 'the family'}</span>
             </p>
           </div>
@@ -198,7 +198,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
 
             {/* Quick Pick tiles */}
             <div>
-              <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">
+              <p className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">
                 Quick pick
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -216,7 +216,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                         }`}
                     >
                       <CategoryIcon category={preset.category} size={20} />
-                      <span className="text-[9px] font-semibold leading-tight text-center">
+                      <span className="text-[0.5625rem] font-semibold leading-tight text-center">
                         {localiseName(preset, 'en')}
                       </span>
                     </button>
@@ -254,7 +254,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
 
             {/* Description */}
             <div>
-              <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
+              <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                 Description <span className="text-red-500">*</span>
               </label>
               <input
@@ -303,7 +303,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
             {/* Date + Amount row */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
+                <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                   Date <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -314,7 +314,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
+                <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                   Amount ({symbol}) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -333,7 +333,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
             {/* Co-parent split slider */}
             {isCoParenting && (
               <div>
-                <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
+                <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                   Your share — {(splitBp / 100).toFixed(0)}%
                 </label>
                 <input
@@ -349,7 +349,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                   </div>
                 )}
                 {uneven && (
-                  <p className="text-[10px] text-[var(--color-text-muted)] italic mt-1">
+                  <p className="text-[0.625rem] text-[var(--color-text-muted)] italic mt-1">
                     Rounded to {formatP(loggedByAmount)} / {formatP(otherAmount)}.
                   </p>
                 )}

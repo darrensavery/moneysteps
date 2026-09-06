@@ -120,11 +120,11 @@ export function BadgeAlmanac({ earnedBadgeKeys, progress, appView }: Props) {
 
       {/* ── Section header ─────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[13px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
+        <h2 className="text-[0.8125rem] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">
           {appView === 'CLEAN' ? 'Trophy Case' : 'Honours Board'}
         </h2>
         {earnedCount > 0 && (
-          <span className="text-[11px] font-semibold text-[var(--brand-primary)] tabular-nums">
+          <span className="text-[0.6875rem] font-semibold text-[var(--brand-primary)] tabular-nums">
             {earnedCount} / {ALL_BADGE_KEYS.length} earned
           </span>
         )}
@@ -149,23 +149,23 @@ export function BadgeAlmanac({ earnedBadgeKeys, progress, appView }: Props) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-teal-300/90 uppercase tracking-wider mb-0.5">
+              <p className="text-[0.625rem] font-bold text-teal-300/90 uppercase tracking-wider mb-0.5">
                 Next up
               </p>
-              <p className="text-[13px] font-bold text-white leading-tight">
+              <p className="text-[0.8125rem] font-bold text-white leading-tight">
                 {BADGE_META[nextUp.key][appView === 'CLEAN' ? 'label' : 'orchardLabel']}
               </p>
-              <p className="text-[11px] text-white/70 mt-0.5 leading-tight">
+              <p className="text-[0.6875rem] text-white/70 mt-0.5 leading-tight">
                 {BADGE_NARRATIVE[nextUp.key].call}
               </p>
             </div>
 
             <div className="text-right flex-shrink-0">
-              <p className="text-[22px] font-bold text-teal-400 tabular-nums leading-none">
+              <p className="text-[1.375rem] font-bold text-teal-400 tabular-nums leading-none">
                 {nextUp.pct}%
               </p>
               {nextUp.remaining && (
-                <p className="text-[9px] text-white/60 mt-0.5 leading-tight max-w-[72px] text-right">
+                <p className="text-[0.5625rem] text-white/60 mt-0.5 leading-tight max-w-[72px] text-right">
                   {nextUp.remaining} to go
                 </p>
               )}
@@ -230,7 +230,7 @@ export function BadgeAlmanac({ earnedBadgeKeys, progress, appView }: Props) {
 
               {/* ── Label ── */}
               <p className={cn(
-                'text-[12px] font-semibold leading-tight',
+                'text-[0.75rem] font-semibold leading-tight',
                 earned ? 'text-emerald-300'              :
                 isHot  ? 'text-[var(--color-text)]'      :
                          'text-[var(--color-text-muted)]',
@@ -243,13 +243,13 @@ export function BadgeAlmanac({ earnedBadgeKeys, progress, appView }: Props) {
                   caption (e.g. "Keep going — 50 chores") doesn't make one
                   card taller than its row-mates. */}
               {earned ? (
-                <p className="text-[10px] text-teal-400/60 leading-tight font-semibold tracking-wide mt-auto">
+                <p className="text-[0.625rem] text-teal-400/60 leading-tight font-semibold tracking-wide mt-auto">
                   ✓ Earned
                 </p>
               ) : (
                 <>
                   <p className={cn(
-                    'text-[11px] leading-tight text-[var(--color-text-muted)] min-h-[2.5em] line-clamp-2',
+                    'text-[0.6875rem] leading-tight text-[var(--color-text-muted)] min-h-[2.5em] line-clamp-2',
                     isHot ? '' : 'opacity-70',
                   )}>
                     {BADGE_NARRATIVE[key].call}
@@ -274,7 +274,7 @@ export function BadgeAlmanac({ earnedBadgeKeys, progress, appView }: Props) {
 
       {/* ── Bottom micro-copy when nothing earned yet ──────── */}
       {earnedCount === 0 && (
-        <p className="text-[11px] text-[var(--color-text-muted)] opacity-70 text-center mt-4 leading-relaxed">
+        <p className="text-[0.6875rem] text-[var(--color-text-muted)] opacity-70 text-center mt-4 leading-relaxed">
           Every chore gets you closer — keep going
         </p>
       )}

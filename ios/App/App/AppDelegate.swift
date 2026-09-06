@@ -7,8 +7,48 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // WKWebView has no built-in equivalent of Android's WebView textZoom, so
+        // the OS "Text Size" (Dynamic Type) setting never reaches web content on
+        // its own. Mirror it in as a CSS custom property the app's stylesheet
+        // scales its root font-size from (see --os-font-scale in index.css).
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(contentSizeCategoryDidChange),
+            name: UIContentSizeCategory.didChangeNotification,
+            object: nil
+        )
         return true
+    }
+
+    @objc private func contentSizeCategoryDidChange() {
+        applyOSFontScale()
+    }
+
+    private func osFontScale(for category: UIContentSizeCategory) -> Double {
+        switch category {
+        case .extraSmall:                     return 0.82
+        case .small:                          return 0.88
+        case .medium:                         return 0.94
+        case .large:                          return 1.0
+        case .extraLarge:                     return 1.12
+        case .extraExtraLarge:                return 1.24
+        case .extraExtraExtraLarge:           return 1.36
+        case .accessibilityMedium:            return 1.55
+        case .accessibilityLarge:             return 1.75
+        case .accessibilityExtraLarge:        return 1.95
+        case .accessibilityExtraExtraLarge:   return 2.15
+        case .accessibilityExtraExtraExtraLarge: return 2.35
+        default:                              return 1.0
+        }
+    }
+
+    private func applyOSFontScale() {
+        guard let webView = (window?.rootViewController as? CAPBridgeViewController)?.webView else { return }
+        let scale = osFontScale(for: UIApplication.shared.preferredContentSizeCategory)
+        webView.evaluateJavaScript(
+            "document.documentElement.style.setProperty('--os-font-scale', '\(scale)')",
+            completionHandler: nil
+        )
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -27,6 +67,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        applyOSFontScale()
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

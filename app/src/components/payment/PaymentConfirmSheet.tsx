@@ -39,14 +39,14 @@ export function PaymentConfirmSheet({
   return (
     <div className="flex flex-col gap-4 px-4 pb-6">
       <div className="text-center pt-2">
-        <div className="text-[20px] font-bold">Did the payment go through?</div>
-        <div className="mt-1 text-[13px] text-neutral-500">
+        <div className="text-[1.25rem] font-bold">Did the payment go through?</div>
+        <div className="mt-1 text-[0.8125rem] text-neutral-500">
           We can&apos;t check with your bank — just tap Yes if the transfer was sent.
         </div>
-        <div className="mt-3 text-[17px] font-semibold">
+        <div className="mt-3 text-[1.0625rem] font-semibold">
           {formatCurrency(totalMinorUnits, currency)}
           {completionIds.length > 1 && (
-            <span className="ml-2 text-[13px] font-normal text-neutral-500">
+            <span className="ml-2 text-[0.8125rem] font-normal text-neutral-500">
               ({completionIds.length} rewards)
             </span>
           )}
@@ -54,7 +54,7 @@ export function PaymentConfirmSheet({
       </div>
 
       {err && (
-        <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-[13px] text-rose-900">
+        <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-[0.8125rem] text-rose-900">
           Couldn&apos;t update — {err}. Tap retry.
         </div>
       )}

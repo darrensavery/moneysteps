@@ -34,7 +34,7 @@ export function AppearanceSettings({ toast, onBack }: Props) {
           <HighContrastToggle />
         </div>
         <div className="px-4 py-3.5">
-          <p className="text-[13px] font-semibold text-[var(--color-text)] mb-2.5">Language</p>
+          <p className="text-[0.8125rem] font-semibold text-[var(--color-text)] mb-2.5">Language</p>
           <div className="flex rounded-xl border border-[var(--color-border)] overflow-hidden">
             {LANGUAGE_OPTIONS.map(({ value, flag, label }, i) => (
               <button
@@ -50,7 +50,7 @@ export function AppearanceSettings({ toast, onBack }: Props) {
                 )}
               >
                 <span className="text-base leading-none">{flag}</span>
-                <span className="text-[11px] font-semibold leading-tight">{label}</span>
+                <span className="text-[0.6875rem] font-semibold leading-tight">{label}</span>
               </button>
             ))}
           </div>

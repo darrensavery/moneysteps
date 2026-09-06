@@ -151,10 +151,10 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
         <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5">
           <Lock size={15} className="text-muted mt-0.5 shrink-0" />
           <ul className="space-y-1.5">
-            <li className="text-[13px] text-main font-medium leading-snug">
+            <li className="text-[0.8125rem] text-main font-medium leading-snug">
               Your {moneyWord} history is locked to one currency.
             </li>
-            <li className="text-[13px] text-muted leading-snug">
+            <li className="text-[0.8125rem] text-muted leading-snug">
               Moving country? Add a Relocation Audit to your ledger at any time in Settings.
             </li>
           </ul>
@@ -204,7 +204,7 @@ export function Stage2FamilyConstitution({ data, onNext, onBack }: Props) {
                         </p>
                       </div>
                     </div>
-                    <p className="text-[11px] text-muted border-t border-gray-100 pt-2 leading-relaxed">
+                    <p className="text-[0.6875rem] text-muted border-t border-gray-100 pt-2 leading-relaxed">
                       You can change this later — it requires agreement from both parents and is logged permanently.
                     </p>
                   </div>
@@ -295,27 +295,27 @@ function SelectionCard({
     >
       {/* Suggested pill / confirmed tick */}
       {active ? (
-        <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] font-semibold text-teal-700 bg-teal-100 rounded-full px-1.5 py-0.5">
+        <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[0.625rem] font-semibold text-teal-700 bg-teal-100 rounded-full px-1.5 py-0.5">
           <svg className="w-2.5 h-2.5" viewBox="0 0 12 12" fill="none">
             <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Set
         </span>
       ) : suggested ? (
-        <span className="absolute top-2 right-2 text-[9px] font-semibold text-teal-600 bg-white border border-teal-300 rounded-full px-1.5 py-0.5 leading-tight text-center max-w-[52px]">
+        <span className="absolute top-2 right-2 text-[0.5625rem] font-semibold text-teal-600 bg-white border border-teal-300 rounded-full px-1.5 py-0.5 leading-tight text-center max-w-[52px]">
           {confirmLabel}
         </span>
       ) : null}
 
       <span className={cn(
-        'text-[22px] font-extrabold tabular-nums leading-none',
+        'text-[1.375rem] font-extrabold tabular-nums leading-none',
         active ? 'text-teal-700' : 'text-main',
       )}>
         {symbol}
       </span>
       <div>
         <p className={cn('text-xs font-bold leading-tight', active ? 'text-teal-700' : 'text-main')}>{label}</p>
-        <p className="text-[10px] text-muted mt-0.5">{subLabel}</p>
+        <p className="text-[0.625rem] text-muted mt-0.5">{subLabel}</p>
       </div>
     </button>
   )
@@ -353,7 +353,7 @@ function GovernanceCard({
       <div className="space-y-0.5">
         <div className="flex items-center gap-2 flex-wrap">
           <p className={cn('text-sm font-bold', active ? 'text-teal-700' : 'text-main')}>{title}</p>
-          <span className="text-[11px] text-muted border border-subtle rounded-full px-2 py-0.5">{subtitle}</span>
+          <span className="text-[0.6875rem] text-muted border border-subtle rounded-full px-2 py-0.5">{subtitle}</span>
         </div>
         <p className="text-xs text-muted leading-relaxed">{description}</p>
       </div>

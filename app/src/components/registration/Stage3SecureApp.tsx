@@ -143,7 +143,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
           <span className="text-5xl">✓</span>
         </div>
         <div>
-          <h2 ref={headingRef} tabIndex={-1} className="text-[22px] font-extrabold text-main tracking-tight outline-none">Face ID enabled</h2>
+          <h2 ref={headingRef} tabIndex={-1} className="text-[1.375rem] font-extrabold text-main tracking-tight outline-none">Face ID enabled</h2>
           <p className="text-sm text-muted mt-1.5">Your app is now protected. Taking you to your dashboard…</p>
         </div>
       </div>
@@ -160,7 +160,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
             </div>
             <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
           </div>
-          <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-main leading-tight outline-none">
+          <h2 ref={headingRef} tabIndex={-1} className="text-[1.625rem] font-extrabold tracking-tight text-main leading-tight outline-none">
             Secure your App
           </h2>
           <p className="text-sm text-muted leading-relaxed">
@@ -190,7 +190,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
               </svg>
             </div>
           </div>
-          <p className="text-[13px] text-muted text-center">
+          <p className="text-[0.8125rem] text-muted text-center">
             Follow the prompt on your device…
           </p>
         </div>
@@ -219,7 +219,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
           </div>
           <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
         </div>
-        <h2 ref={headingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-main leading-tight outline-none">
+        <h2 ref={headingRef} tabIndex={-1} className="text-[1.625rem] font-extrabold tracking-tight text-main leading-tight outline-none">
           Set a PIN
         </h2>
         <p className="text-sm text-muted leading-relaxed">
@@ -247,7 +247,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
                 autoFocus={i === 0 && pinStage === 'enter'}
                 aria-label={`PIN digit ${i + 1}`}
                 className={cn(
-                  'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-main',
+                  'w-[54px] h-[66px] text-center text-[1.75rem] font-extrabold text-main',
                   'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
                   d ? 'border-teal-500' : 'border-subtle', 'focus:border-teal-500',
                 )}
@@ -269,7 +269,7 @@ export function Stage3SecureApp({ data, onNext, onBack }: Props) {
                 aria-invalid={!!error}
                 aria-describedby={error ? 'pin-mismatch-error' : undefined}
                 className={cn(
-                  'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-main',
+                  'w-[54px] h-[66px] text-center text-[1.75rem] font-extrabold text-main',
                   'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
                   error ? 'border-red-400 bg-red-50 text-red-700' : d ? 'border-teal-500' : 'border-subtle',
                   'focus:border-teal-500',

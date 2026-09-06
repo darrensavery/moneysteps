@@ -90,15 +90,15 @@ export default function AuthCallbackScreen() {
   if (state === 'error') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-[var(--color-bg)] px-6">
-        <p className="text-[16px] text-[var(--color-text-muted)] text-center">
+        <p className="text-[1rem] text-[var(--color-text-muted)] text-center">
           Sign-in failed. Please try again.
         </p>
         {errorMsg && (
-          <p className="text-[12px] text-red-400 text-center max-w-xs break-all">{errorMsg}</p>
+          <p className="text-[0.75rem] text-red-400 text-center max-w-xs break-all">{errorMsg}</p>
         )}
         <button
           onClick={() => navigate('/auth/login')}
-          className="h-11 px-6 rounded-xl bg-[var(--brand-primary)] text-white text-[14px] font-semibold cursor-pointer active:scale-[0.98] transition-all"
+          className="h-11 px-6 rounded-xl bg-[var(--brand-primary)] text-white text-[0.875rem] font-semibold cursor-pointer active:scale-[0.98] transition-all"
         >
           Try signing in again
         </button>
@@ -110,7 +110,7 @@ export default function AuthCallbackScreen() {
     <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-[var(--color-bg)]">
       <FullLogo iconSize={28} />
       <Loader2 className="w-7 h-7 text-[var(--brand-primary)] animate-spin" />
-      <p className="text-[14px] text-[var(--color-text-muted)]">{bridgeText}</p>
+      <p className="text-[0.875rem] text-[var(--color-text-muted)]">{bridgeText}</p>
     </div>
   )
 }

@@ -56,10 +56,10 @@ export function MicroToast({ event, onDismiss }: Props) {
         >
           <span className="text-2xl">{stage.icon}</span>
           <div className="flex-1 min-w-0">
-            <p className={cn('text-[13px] font-semibold leading-snug', stage.headingColor)}>
+            <p className={cn('text-[0.8125rem] font-semibold leading-snug', stage.headingColor)}>
               {stage.heading}
             </p>
-            <p className={cn('text-[11px] leading-snug mt-0.5 truncate', stage.bodyColor)}>
+            <p className={cn('text-[0.6875rem] leading-snug mt-0.5 truncate', stage.bodyColor)}>
               {stage.body}
             </p>
           </div>

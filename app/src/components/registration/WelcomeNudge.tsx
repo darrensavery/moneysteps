@@ -80,7 +80,7 @@ export function WelcomeNudge({ data, onFinish }: Props) {
             <p className="font-semibold text-sm">{persona.name}</p>
             <p className="text-xs opacity-80">{persona.title}</p>
           </div>
-          <span className="ml-auto text-[10px] font-semibold bg-white/20 rounded-full px-2.5 py-1">
+          <span className="ml-auto text-[0.625rem] font-semibold bg-white/20 rounded-full px-2.5 py-1">
             {persona.badge}
           </span>
         </div>

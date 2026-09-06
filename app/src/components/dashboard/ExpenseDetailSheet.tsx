@@ -104,10 +104,10 @@ export function ExpenseDetailSheet({ expense: e, currentUserId, isCoParenting, o
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[var(--color-border)] shrink-0">
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">
+            <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">
               {CATEGORY_LABELS[e.category] ?? e.category}
             </p>
-            <h2 className="text-[16px] font-bold text-[var(--color-text)] leading-snug truncate pr-2">
+            <h2 className="text-[1rem] font-bold text-[var(--color-text)] leading-snug truncate pr-2">
               {e.description}
             </h2>
           </div>
@@ -169,7 +169,7 @@ export function ExpenseDetailSheet({ expense: e, currentUserId, isCoParenting, o
           {/* Note */}
           {e.note && (
             <div className="rounded-xl border border-[var(--color-border)] p-3">
-              <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Note</p>
+              <p className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Note</p>
               <p className="text-sm text-[var(--color-text)] leading-snug">{e.note}</p>
             </div>
           )}
@@ -179,7 +179,7 @@ export function ExpenseDetailSheet({ expense: e, currentUserId, isCoParenting, o
             <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
               <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-surface-alt)] border-b border-[var(--color-border)]">
                 <Receipt size={13} className="text-[var(--color-text-muted)]" />
-                <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Receipt</p>
+                <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Receipt</p>
               </div>
               <div className="p-3">
                 {receiptState === 'loading' && (
@@ -209,7 +209,7 @@ export function ExpenseDetailSheet({ expense: e, currentUserId, isCoParenting, o
                       alt="Receipt"
                       className="w-full rounded-lg object-contain max-h-80"
                     />
-                    <p className="text-[10px] text-center text-[var(--color-text-muted)] mt-1.5">
+                    <p className="text-[0.625rem] text-center text-[var(--color-text-muted)] mt-1.5">
                       Tap image to open full size ↗
                     </p>
                   </a>

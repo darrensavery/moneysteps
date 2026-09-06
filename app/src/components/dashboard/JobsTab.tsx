@@ -214,7 +214,7 @@ export function ChoresTab({ familyId, child, children }: Props) {
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
+  if (loading) return <div className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
 
   return (
     <div className="space-y-4 pb-28">
@@ -233,11 +233,11 @@ export function ChoresTab({ familyId, child, children }: Props) {
               <div key={s.id} className="bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_30%,transparent)] rounded-2xl overflow-hidden">
                 {/* Summary row */}
                 <div className="px-4 pt-4 pb-3">
-                  <p className="text-[11px] font-bold text-[var(--brand-primary)] uppercase tracking-wider mb-1.5">
+                  <p className="text-[0.6875rem] font-bold text-[var(--brand-primary)] uppercase tracking-wider mb-1.5">
                     {hasModule ? '🌱 Learning Lab chore idea' : '💡 Chore suggestion'}
                   </p>
-                  <p className="text-[14px] font-semibold text-[var(--color-text)]">{s.title}</p>
-                  <p className="text-[13px] text-[var(--color-text-muted)] mt-0.5 tabular-nums">
+                  <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{s.title}</p>
+                  <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-0.5 tabular-nums">
                     {hasModule ? (
                       <>Inspired by the <span className="capitalize">{moduleLabel}</span> lesson — {formatCurrency(s.proposed_amount, CURRENCY)}</>
                     ) : (
@@ -245,10 +245,10 @@ export function ChoresTab({ familyId, child, children }: Props) {
                     )}
                   </p>
                   {userReason && (
-                    <p className="text-[12px] text-[var(--color-text-muted)] mt-1 italic">"{userReason}"</p>
+                    <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-1 italic">"{userReason}"</p>
                   )}
                   {s.due_date && (
-                    <p className="text-[12px] text-[var(--color-text-muted)] mt-1">
+                    <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-1">
                       Requested by: <span className="font-semibold">{s.due_date}</span>
                     </p>
                   )}
@@ -259,46 +259,46 @@ export function ChoresTab({ familyId, child, children }: Props) {
                   <div className="px-4 pb-4 flex gap-2">
                     <button
                       onClick={() => openReview(s, 'edit')}
-                      className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2 text-[13px] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all"
+                      className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2 text-[0.8125rem] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all"
                     >
                       Review &amp; approve
                     </button>
                     <button
                       onClick={() => openReview(s, 'decline')}
-                      className="flex-1 border border-[var(--color-border)] rounded-xl py-2 text-[13px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer"
+                      className="flex-1 border border-[var(--color-border)] rounded-xl py-2 text-[0.8125rem] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer"
                     >
                       Decline
                     </button>
                   </div>
                 ) : reviewMode === 'edit' ? (
                   <div className="border-t border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] px-4 pt-3 pb-4 space-y-3">
-                    <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Edit before approving</p>
+                    <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Edit before approving</p>
                     <ErrorBox message={reviewError} />
                     <div>
-                      <label className="text-[11px] font-semibold text-[var(--color-text-muted)] block mb-1">Chore title</label>
+                      <label className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] block mb-1">Chore title</label>
                       <input
                         type="text"
                         value={editTitle}
                         onChange={e => setEditTitle(e.target.value)}
-                        className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                        className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                       />
                     </div>
                     <div className="flex gap-2">
                       <div className="flex-1">
-                        <label className="text-[11px] font-semibold text-[var(--color-text-muted)] block mb-1">Pay (£)</label>
+                        <label className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] block mb-1">Pay (£)</label>
                         <input
                           type="number" min="0.01" step="0.01"
                           value={editAmount}
                           onChange={e => setEditAmount(e.target.value)}
-                          className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                          className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="text-[11px] font-semibold text-[var(--color-text-muted)] block mb-1">Frequency</label>
+                        <label className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] block mb-1">Frequency</label>
                         <select
                           value={editFreq}
                           onChange={e => setEditFreq(e.target.value)}
-                          className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                          className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                         >
                           {FREQUENCY_OPTIONS.map(o => (
                             <option key={o.value} value={o.value}>{o.label}</option>
@@ -307,25 +307,25 @@ export function ChoresTab({ familyId, child, children }: Props) {
                       </div>
                     </div>
                     <div>
-                      <label className="text-[11px] font-semibold text-[var(--color-text-muted)] block mb-1">Due date <span className="font-normal">(optional)</span></label>
+                      <label className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] block mb-1">Due date <span className="font-normal">(optional)</span></label>
                       <input
                         type="date"
                         value={editDueDate}
                         onChange={e => setEditDueDate(e.target.value)}
-                        className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                        className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                       />
                     </div>
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={closeReview}
-                        className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[13px] font-medium text-[var(--color-text-muted)] cursor-pointer"
+                        className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.8125rem] font-medium text-[var(--color-text-muted)] cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleApprove}
                         disabled={reviewBusy}
-                        className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[13px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
+                        className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.8125rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-all"
                       >
                         {reviewBusy ? 'Approving…' : 'Approve →'}
                       </button>
@@ -333,8 +333,8 @@ export function ChoresTab({ familyId, child, children }: Props) {
                   </div>
                 ) : (
                   <div className="border-t border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] px-4 pt-3 pb-4 space-y-3">
-                    <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Explain your decision</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)]">
+                    <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Explain your decision</p>
+                    <p className="text-[0.75rem] text-[var(--color-text-muted)]">
                       {child.display_name} will see this message. Be clear and encouraging.
                     </p>
                     <ErrorBox message={reviewError} />
@@ -344,19 +344,19 @@ export function ChoresTab({ familyId, child, children }: Props) {
                       value={rejectNote}
                       onChange={e => setRejectNote(e.target.value)}
                       autoFocus
-                      className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={closeReview}
-                        className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[13px] font-medium text-[var(--color-text-muted)] cursor-pointer"
+                        className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.8125rem] font-medium text-[var(--color-text-muted)] cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleReject}
                         disabled={reviewBusy || !rejectNote.trim()}
-                        className="flex-1 bg-red-500 text-white rounded-xl py-2.5 text-[13px] font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer active:scale-[0.98] transition-all"
+                        className="flex-1 bg-red-500 text-white rounded-xl py-2.5 text-[0.8125rem] font-bold hover:opacity-90 disabled:opacity-40 cursor-pointer active:scale-[0.98] transition-all"
                       >
                         {reviewBusy ? 'Declining…' : 'Send decline'}
                       </button>
@@ -434,7 +434,7 @@ export function ChoresTab({ familyId, child, children }: Props) {
         <div>
           <button
             onClick={() => setShowArchived(v => !v)}
-            className="text-[13px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer"
+            className="text-[0.8125rem] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer"
           >
             {showArchived ? '▲' : '▼'} Archived ({archived.length})
           </button>
@@ -443,10 +443,10 @@ export function ChoresTab({ familyId, child, children }: Props) {
               {archived.map(chore => (
                 <div key={chore.id} className="bg-[var(--color-surface)] rounded-xl px-4 py-3 flex items-center justify-between opacity-60" style={{ boxShadow: 'var(--shadow-card)' }}>
                   <div>
-                    <p className="text-[14px] font-semibold text-[var(--color-text)]">{chore.title}</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)]">{formatCurrency(chore.reward_amount, chore.currency)}</p>
+                    <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{chore.title}</p>
+                    <p className="text-[0.75rem] text-[var(--color-text-muted)]">{formatCurrency(chore.reward_amount, chore.currency)}</p>
                   </div>
-                  <button onClick={() => handleRestore(chore.id)} className="text-[13px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
+                  <button onClick={() => handleRestore(chore.id)} className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
                     Restore
                   </button>
                 </div>
@@ -457,7 +457,7 @@ export function ChoresTab({ familyId, child, children }: Props) {
       )}
       {/* Archive undo toast */}
       <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-[var(--color-text)] text-[var(--color-surface)] text-[13px] font-medium shadow-xl transition-all duration-300 ${toast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-[var(--color-text)] text-[var(--color-surface)] text-[0.8125rem] font-medium shadow-xl transition-all duration-300 ${toast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
       >
         <span>Chore archived.</span>
         <button
@@ -524,7 +524,7 @@ function MiniScheduleDots({ plannedDays }: { plannedDays: number[] }) {
         <div
           key={i}
           title={['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}
-          className={`w-[18px] h-[18px] rounded-full flex items-center justify-center text-[9px] font-bold transition-colors
+          className={`w-[18px] h-[18px] rounded-full flex items-center justify-center text-[0.5625rem] font-bold transition-colors
             ${plannedDays.includes(i)
               ? 'bg-[var(--brand-primary)] text-white'
               : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]/50'
@@ -551,12 +551,12 @@ function EmptyChoresState({ childName, onAdd }: { childName: string; onAdd: () =
               <MentorAvatar />
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                  <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
                     Orchard Mentor
                   </span>
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 </div>
-                <p className="text-[15px] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+                <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
                   No chores yet for <span style={{ color: '#4ade80' }}>{childName}</span>
                 </p>
               </div>
@@ -564,22 +564,22 @@ function EmptyChoresState({ childName, onAdd }: { childName: string; onAdd: () =
             <ProBadge />
           </div>
           {/* Body */}
-          <p className="text-[13px] leading-relaxed" style={{ color: '#a7c4b5' }}>
+          <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#a7c4b5' }}>
             Once you add chores I can track {childName}'s consistency, spot patterns, and give you genuinely useful coaching — not generic tips.
           </p>
           {/* Action list */}
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Get started</p>
+            <p className="text-[0.625rem] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Get started</p>
             {[
               `Add 2–3 small daily chores so I can spot ${childName}'s consistency patterns.`,
               'Try "Check Going Rates" in the new chore form to set fair rewards instantly.',
               `Plan the week once a chore is added — so ${childName} knows what's expected.`,
             ].map((text, i) => (
               <div key={i} className="flex items-start gap-3">
-                <span className="shrink-0 text-[9px] font-black tracking-wider tabular-nums mt-0.5" style={{ color: '#0d9488' }}>
+                <span className="shrink-0 text-[0.5625rem] font-black tracking-wider tabular-nums mt-0.5" style={{ color: '#0d9488' }}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <p className="text-[12px] leading-relaxed" style={{ color: '#a7c4b5' }}>{text}</p>
+                <p className="text-[0.75rem] leading-relaxed" style={{ color: '#a7c4b5' }}>{text}</p>
               </div>
             ))}
           </div>
@@ -589,7 +589,7 @@ function EmptyChoresState({ childName, onAdd }: { childName: string; onAdd: () =
       {/* Add chore CTA */}
       <button
         onClick={onAdd}
-        className="w-full border-2 border-dashed border-[var(--color-border)] rounded-xl py-3.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
+        className="w-full border-2 border-dashed border-[var(--color-border)] rounded-xl py-3.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
       >
         + Add first chore
       </button>
@@ -666,9 +666,9 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
         {/* Title + metadata */}
         <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            {!!chore.is_flash && <span className="text-[11px] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>}
-            {!!chore.is_priority && !chore.is_flash && <span className="text-[11px] font-bold text-amber-600 bg-amber-100 rounded px-1.5 py-0.5">PRIORITY</span>}
-            <span className="text-[15px] font-semibold text-[var(--color-text)]">{chore.title}</span>
+            {!!chore.is_flash && <span className="text-[0.6875rem] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>}
+            {!!chore.is_priority && !chore.is_flash && <span className="text-[0.6875rem] font-bold text-amber-600 bg-amber-100 rounded px-1.5 py-0.5">PRIORITY</span>}
+            <span className="text-[0.9375rem] font-semibold text-[var(--color-text)]">{chore.title}</span>
             {!expanded && !!chore.description && (
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-text-muted)] opacity-50 shrink-0" aria-label="Has instructions">
                 <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
@@ -680,13 +680,13 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
           {(chore.frequency !== 'as_needed' && chore.frequency !== 'one-off') || dueDateObj ? (
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               {chore.frequency !== 'as_needed' && chore.frequency !== 'one-off' && (
-                <span className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-0.5">
+                <span className="text-[0.625rem] text-[var(--color-text-muted)] flex items-center gap-0.5">
                   <RecurringIcon />
                   {FREQUENCY_OPTIONS.find(o => o.value === chore.frequency)?.label ?? chore.frequency}
                 </span>
               )}
               {dueDateObj && (
-                <span className={`text-[10px] font-semibold ${isOverdue ? 'text-red-500' : 'text-[var(--color-text-muted)]'}`}>
+                <span className={`text-[0.625rem] font-semibold ${isOverdue ? 'text-red-500' : 'text-[var(--color-text-muted)]'}`}>
                   Due {dueDateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </span>
               )}
@@ -700,7 +700,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
 
         {/* Price + chevron */}
         <div className="shrink-0 flex flex-col items-end gap-1 mt-0.5">
-          <span className="text-[14px] font-bold text-[var(--color-text)] tabular-nums">
+          <span className="text-[0.875rem] font-bold text-[var(--color-text)] tabular-nums">
             {formatCurrency(chore.reward_amount, chore.currency)}
           </span>
           {/* Chevron */}
@@ -717,16 +717,16 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] pt-3">
           {chore.description && (
-            <p className="text-[13px] text-[var(--color-text-muted)]">{chore.description}</p>
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)]">{chore.description}</p>
           )}
 
           {/* Overdue nudge — encouraging, not alarming */}
           {isOverdue && (
             <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl px-3 py-2.5">
-              <span className="text-[12px] text-red-600 dark:text-red-400 flex-1">Missed the due date — no worries!</span>
+              <span className="text-[0.75rem] text-red-600 dark:text-red-400 flex-1">Missed the due date — no worries!</span>
               <button
                 onClick={e => { e.stopPropagation(); onEdit() }}
-                className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-primary)] border border-[var(--brand-primary)] rounded-lg px-2.5 py-1 hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
+                className="shrink-0 inline-flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--brand-primary)] border border-[var(--brand-primary)] rounded-lg px-2.5 py-1 hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
               >
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
@@ -738,13 +738,13 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
 
           {/* Schedule planner strip */}
           <div>
-            <p className="text-[12px] font-semibold text-[var(--color-text-muted)] mb-2">Set schedule</p>
+            <p className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] mb-2">Set schedule</p>
             <div className="flex gap-2">
               {DAYS.map((day, i) => (
                 <button
                   key={`${day}-${i}`}
                   onClick={e => { e.stopPropagation(); onTogglePlan(i) }}
-                  className={`flex-1 h-9 rounded-xl text-[12px] font-bold transition-all duration-150 cursor-pointer active:scale-95
+                  className={`flex-1 h-9 rounded-xl text-[0.75rem] font-bold transition-all duration-150 cursor-pointer active:scale-95
                     ${plannedDays.includes(i)
                       ? 'bg-[var(--brand-primary)] text-white shadow-sm'
                       : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] hover:text-[var(--brand-primary)]'
@@ -760,7 +760,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
           <div className="flex items-center justify-between pt-1">
             <button
               onClick={onEdit}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[12px] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.75rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -769,7 +769,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
             </button>
             <button
               onClick={onArchive}
-              className="inline-flex items-center gap-1.5 text-[12px] text-[var(--color-text-muted)] hover:text-red-500 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-[0.75rem] text-[var(--color-text-muted)] hover:text-red-500 transition-colors cursor-pointer"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>

@@ -344,10 +344,10 @@ export function JoinFamilyScreen() {
         {step === 'code' && (
           <div className="w-full space-y-6">
             <div className="text-center">
-              <h1 className="text-[26px] font-extrabold text-main tracking-tight mb-2">
+              <h1 className="text-[1.625rem] font-extrabold text-main tracking-tight mb-2">
                 Join a Family
               </h1>
-              <p className="text-[14px] text-muted leading-relaxed">
+              <p className="text-[0.875rem] text-muted leading-relaxed">
                 Enter the 6-character code shared by the person who set up your account.
               </p>
             </div>
@@ -371,7 +371,7 @@ export function JoinFamilyScreen() {
                 aria-invalid={!!codeError}
                 aria-describedby={codeError ? 'join-code-error' : undefined}
                 className={cn(
-                  'w-full h-16 rounded-xl border-2 px-4 text-center text-[26px] font-extrabold tracking-[0.25em]',
+                  'w-full h-16 rounded-xl border-2 px-4 text-center text-[1.625rem] font-extrabold tracking-[0.25em]',
                   'bg-white outline-none transition-all duration-150',
                   codeError
                     ? 'border-red-400 text-red-600'
@@ -382,11 +382,11 @@ export function JoinFamilyScreen() {
               />
 
               {codeError && (
-                <p id="join-code-error" role="alert" className="text-[13px] font-semibold text-red-600 text-center">{codeError}</p>
+                <p id="join-code-error" role="alert" className="text-[0.8125rem] font-semibold text-red-600 text-center">{codeError}</p>
               )}
 
               {checking && (
-                <p className="text-[13px] text-muted text-center">Checking code…</p>
+                <p className="text-[0.8125rem] text-muted text-center">Checking code…</p>
               )}
 
               <button
@@ -394,7 +394,7 @@ export function JoinFamilyScreen() {
                 disabled={code.length < 6 || checking}
                 className="
                   w-full h-14 rounded-2xl bg-teal-600 text-white
-                  font-semibold text-[15px] tracking-tight
+                  font-semibold text-[0.9375rem] tracking-tight
                   hover:bg-teal-700 active:scale-[0.98] disabled:opacity-40
                   transition-all duration-150 shadow-md cursor-pointer
                 "
@@ -404,7 +404,7 @@ export function JoinFamilyScreen() {
 
               <button
                 onClick={() => navigate('/')}
-                className="w-full text-center text-[13px] text-muted underline underline-offset-2 cursor-pointer hover:text-main transition-colors py-1"
+                className="w-full text-center text-[0.8125rem] text-muted underline underline-offset-2 cursor-pointer hover:text-main transition-colors py-1"
               >
                 Back
               </button>
@@ -416,10 +416,10 @@ export function JoinFamilyScreen() {
         {step === 'details' && (
           <div className="w-full space-y-6">
             <div className="text-center">
-              <h1 ref={detailsHeadingRef} tabIndex={-1} className="text-[26px] font-extrabold text-main tracking-tight mb-2 outline-none">
+              <h1 ref={detailsHeadingRef} tabIndex={-1} className="text-[1.625rem] font-extrabold text-main tracking-tight mb-2 outline-none">
                 {inviteRole === 'child' ? 'What\'s your name?' : 'Create your account'}
               </h1>
-              <p className="text-[14px] text-muted leading-relaxed">
+              <p className="text-[0.875rem] text-muted leading-relaxed">
                 {inviteRole === 'child'
                   ? 'Use the name your parent gave you, or a nickname — your choice.'
                   : 'Set up your account so you can manage the family together.'}
@@ -438,7 +438,7 @@ export function JoinFamilyScreen() {
                 aria-invalid={!!detailError}
                 aria-describedby={detailError ? 'join-detail-error' : undefined}
                 className="
-                  w-full h-14 rounded-xl border-2 border-subtle px-4 text-[16px]
+                  w-full h-14 rounded-xl border-2 border-subtle px-4 text-[1rem]
                   text-main bg-white outline-none focus:border-teal-500 transition-colors
                 "
               />
@@ -455,7 +455,7 @@ export function JoinFamilyScreen() {
                     aria-invalid={!!detailError}
                     aria-describedby={detailError ? 'join-detail-error' : undefined}
                     className="
-                      w-full h-14 rounded-xl border-2 border-subtle px-4 text-[16px]
+                      w-full h-14 rounded-xl border-2 border-subtle px-4 text-[1rem]
                       text-main bg-white outline-none focus:border-teal-500 transition-colors
                     "
                   />
@@ -469,7 +469,7 @@ export function JoinFamilyScreen() {
                     aria-invalid={!!detailError}
                     aria-describedby={detailError ? 'join-detail-error' : undefined}
                     className="
-                      w-full h-14 rounded-xl border-2 border-subtle px-4 text-[16px]
+                      w-full h-14 rounded-xl border-2 border-subtle px-4 text-[1rem]
                       text-main bg-white outline-none focus:border-teal-500 transition-colors
                     "
                   />
@@ -477,7 +477,7 @@ export function JoinFamilyScreen() {
               )}
 
               {detailError && (
-                <p id="join-detail-error" role="alert" className="text-[13px] font-semibold text-red-600 text-center">{detailError}</p>
+                <p id="join-detail-error" role="alert" className="text-[0.8125rem] font-semibold text-red-600 text-center">{detailError}</p>
               )}
 
               <TurnstileWidget onVerify={setTurnstileToken} />
@@ -487,7 +487,7 @@ export function JoinFamilyScreen() {
                 disabled={submitting}
                 className="
                   w-full h-14 rounded-2xl bg-teal-600 text-white
-                  font-semibold text-[15px] tracking-tight
+                  font-semibold text-[0.9375rem] tracking-tight
                   hover:bg-teal-700 active:scale-[0.98] disabled:opacity-40
                   transition-all duration-150 shadow-md cursor-pointer
                   flex items-center justify-center gap-2
@@ -498,7 +498,7 @@ export function JoinFamilyScreen() {
 
               <button
                 onClick={() => { setStep('code'); setDetailError('') }}
-                className="w-full text-center text-[13px] text-muted underline underline-offset-2 cursor-pointer hover:text-main transition-colors py-1"
+                className="w-full text-center text-[0.8125rem] text-muted underline underline-offset-2 cursor-pointer hover:text-main transition-colors py-1"
               >
                 Back
               </button>
@@ -523,7 +523,7 @@ export function JoinFamilyScreen() {
                   <span className="text-5xl">✓</span>
                 </div>
                 <div>
-                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[22px] font-extrabold text-main tracking-tight outline-none">Face ID enabled</h2>
+                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[1.375rem] font-extrabold text-main tracking-tight outline-none">Face ID enabled</h2>
                   <p className="text-sm text-muted mt-1.5">Your app is now protected. Taking you in…</p>
                 </div>
               </div>
@@ -538,7 +538,7 @@ export function JoinFamilyScreen() {
                     </div>
                     <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
                   </div>
-                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-main leading-tight outline-none">
+                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[1.625rem] font-extrabold tracking-tight text-main leading-tight outline-none">
                     Secure your App
                   </h2>
                   <p className="text-sm text-muted leading-relaxed">
@@ -563,7 +563,7 @@ export function JoinFamilyScreen() {
                       <path d="M28 23v5" stroke="#0d9488" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
                   </div>
-                  <p className="text-[13px] text-muted text-center">Follow the prompt on your device…</p>
+                  <p className="text-[0.8125rem] text-muted text-center">Follow the prompt on your device…</p>
                 </div>
 
                 <div className="flex gap-3">
@@ -584,7 +584,7 @@ export function JoinFamilyScreen() {
                     </div>
                     <span className="text-xs font-semibold text-teal-700 tracking-wide uppercase">App security</span>
                   </div>
-                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[26px] font-extrabold tracking-tight text-main leading-tight outline-none">Set a PIN</h2>
+                  <h2 ref={secureHeadingRef} tabIndex={-1} className="text-[1.625rem] font-extrabold tracking-tight text-main leading-tight outline-none">Set a PIN</h2>
                   <p className="text-sm text-muted leading-relaxed">
                     Choose a 4-digit PIN. You'll use this to open the app when your phone is locked.
                   </p>
@@ -608,7 +608,7 @@ export function JoinFamilyScreen() {
                           autoFocus={i === 0 && pinStage === 'enter'}
                           aria-label={`PIN digit ${i + 1}`}
                           className={cn(
-                            'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-main',
+                            'w-[54px] h-[66px] text-center text-[1.75rem] font-extrabold text-main',
                             'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
                             d ? 'border-teal-500' : 'border-subtle', 'focus:border-teal-500',
                           )}
@@ -629,7 +629,7 @@ export function JoinFamilyScreen() {
                           aria-invalid={!!pinError}
                           aria-describedby={pinError ? 'join-pin-mismatch-error' : undefined}
                           className={cn(
-                            'w-[54px] h-[66px] text-center text-[28px] font-extrabold text-main',
+                            'w-[54px] h-[66px] text-center text-[1.75rem] font-extrabold text-main',
                             'border-2 rounded-xl outline-none transition-colors duration-100 bg-white',
                             pinError ? 'border-red-400 bg-red-50 text-red-700' : d ? 'border-teal-500' : 'border-subtle',
                             'focus:border-teal-500',

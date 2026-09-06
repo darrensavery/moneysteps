@@ -185,7 +185,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
   const approveAllTotal    = isMixedCurrency ? 0 : completions.reduce((s, c) => s + c.reward_amount, 0)
   const approveAllCurrency = completions[0]?.currency ?? 'GBP'
 
-  if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
+  if (loading) return <div className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
 
   // Note: even when the list is empty (e.g. the co-parent just resolved the
   // only pending item, or every item was approved), we still render the toast
@@ -200,8 +200,8 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
       {isEmpty && (
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-10 text-center">
           <div className="text-4xl mb-3">✓</div>
-          <p className="text-[16px] font-bold text-[var(--color-text)]">All clear</p>
-          <p className="text-[13px] text-[var(--color-text-muted)] mt-1">Nothing waiting for your review.</p>
+          <p className="text-[1rem] font-bold text-[var(--color-text)]">All clear</p>
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1">Nothing waiting for your review.</p>
         </div>
       )}
       {/* Approve-all bulk action */}
@@ -209,7 +209,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
         <button
           onClick={() => setShowApproveAllModal(true)}
           disabled={approveAllBusy}
-          className="w-full bg-[var(--brand-primary)] text-white font-bold py-3.5 rounded-2xl text-[15px] hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
+          className="w-full bg-[var(--brand-primary)] text-white font-bold py-3.5 rounded-2xl text-[0.9375rem] hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
         >
           {approveAllBusy ? (
             <span className="flex items-center justify-center gap-2">
@@ -249,10 +249,10 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
           >
             {/* Header */}
             <div>
-              <p className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight">
+              <p className="text-[1.125rem] font-extrabold text-[var(--color-text)] tracking-tight">
                 Confirm payment
               </p>
-              <p className="text-[13px] text-[var(--color-text-muted)] mt-1 leading-relaxed">
+              <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1 leading-relaxed">
                 You are about to pay out <strong className="text-[var(--color-text)]">{completions.length} task{completions.length !== 1 ? 's' : ''}</strong>
                 {isMixedCurrency
                   ? <> across <strong className="text-[var(--color-text)]">multiple currencies</strong> (see totals below).</>
@@ -266,8 +266,8 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
             <div className="max-h-48 overflow-y-auto rounded-xl border border-[var(--color-border)] divide-y divide-[var(--color-border)]">
               {completions.map(c => (
                 <div key={c.id} className="flex items-center justify-between px-3.5 py-2.5">
-                  <span className="text-[13px] text-[var(--color-text)] truncate mr-3">{c.chore_title}</span>
-                  <span className="text-[13px] font-semibold tabular-nums text-[var(--brand-primary)] shrink-0">
+                  <span className="text-[0.8125rem] text-[var(--color-text)] truncate mr-3">{c.chore_title}</span>
+                  <span className="text-[0.8125rem] font-semibold tabular-nums text-[var(--brand-primary)] shrink-0">
                     {formatCurrency(c.reward_amount, c.currency)}
                   </span>
                 </div>
@@ -278,13 +278,13 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
             <div className="flex gap-2.5">
               <button
                 onClick={() => setShowApproveAllModal(false)}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => challenge(handleConfirmApproveAll)}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[14px] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all shadow-sm"
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[0.875rem] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all shadow-sm"
               >
                 Confirm &amp; pay
               </button>
@@ -301,7 +301,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
             pendingToastAction.onClick()
             setPendingToastAction(null)
           }}
-          className="fixed bottom-36 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-600 text-white text-[13px] font-semibold shadow-lg"
+          className="fixed bottom-36 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-600 text-white text-[0.8125rem] font-semibold shadow-lg"
         >
           {pendingToastAction.label}
         </button>
@@ -380,7 +380,7 @@ function AuditCard({
           )}
           {proofError && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-[12px] text-[var(--color-text-muted)]">Evidence expired or unavailable</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)]">Evidence expired or unavailable</p>
             </div>
           )}
           {proofUrl && !proofError && (
@@ -393,7 +393,7 @@ function AuditCard({
           {/* Gradient overlay for readability */}
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-2.5 left-3">
-            <span className="text-[11px] font-semibold text-white/90 bg-black/40 rounded-full px-2 py-0.5">
+            <span className="text-[0.6875rem] font-semibold text-white/90 bg-black/40 rounded-full px-2 py-0.5">
               📷 Evidence photo
             </span>
           </div>
@@ -405,22 +405,22 @@ function AuditCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-[15px] font-bold text-[var(--color-text)] leading-tight">{c.chore_title}</p>
+              <p className="text-[0.9375rem] font-bold text-[var(--color-text)] leading-tight">{c.chore_title}</p>
               {isResubmission && (
-                <span className="shrink-0 text-[10px] font-extrabold text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-400 rounded-full px-2 py-0.5 uppercase tracking-wide">
+                <span className="shrink-0 text-[0.625rem] font-extrabold text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-400 rounded-full px-2 py-0.5 uppercase tracking-wide">
                   Re-submission #{c.attempt_count}
                 </span>
               )}
             </div>
-            <p className="text-[13px] font-semibold text-[var(--brand-primary)] mt-0.5">
+            <p className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] mt-0.5">
               {formatCurrency(c.reward_amount, c.currency)}
             </p>
             {c.note && (
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-1 italic">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-1 italic">
                 "{c.note}"
               </p>
             )}
-            <p className="text-[11px] text-[var(--color-text-muted)] mt-1.5">{submittedAt}</p>
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-1.5">{submittedAt}</p>
           </div>
         </div>
       </div>
@@ -428,11 +428,11 @@ function AuditCard({
       {/* Revise drawer */}
       {isRevising ? (
         <div className="px-4 pb-4 space-y-2.5 border-t border-[var(--color-border)] pt-3">
-          <p className="text-[12px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <p className="text-[0.75rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
             Feedback for {c.child_name}
           </p>
           <textarea
-            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
             placeholder="What needs to be improved? Be specific so they know exactly what to fix."
             rows={3}
             value={reviseNote}
@@ -442,14 +442,14 @@ function AuditCard({
           <div className="flex gap-2">
             <button
               onClick={onCancelRevise}
-              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
+              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={onConfirmRevise}
               disabled={busy || !reviseNote.trim()}
-              className="flex-1 bg-amber-500 text-white rounded-xl py-2.5 text-[14px] font-bold hover:bg-amber-600 disabled:opacity-50 cursor-pointer transition-colors"
+              className="flex-1 bg-amber-500 text-white rounded-xl py-2.5 text-[0.875rem] font-bold hover:bg-amber-600 disabled:opacity-50 cursor-pointer transition-colors"
             >
               {busy ? 'Sending…' : 'Send feedback →'}
             </button>
@@ -461,7 +461,7 @@ function AuditCard({
           <button
             onClick={onStartRevise}
             disabled={anyBusy}
-            className="flex-1 py-3.5 text-[14px] font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-40 cursor-pointer transition-colors"
+            className="flex-1 py-3.5 text-[0.875rem] font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-40 cursor-pointer transition-colors"
           >
             Revise
           </button>
@@ -469,7 +469,7 @@ function AuditCard({
           <button
             onClick={onApprove}
             disabled={anyBusy}
-            className="flex-1 py-3.5 text-[14px] font-bold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] disabled:opacity-40 cursor-pointer transition-colors"
+            className="flex-1 py-3.5 text-[0.875rem] font-bold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] disabled:opacity-40 cursor-pointer transition-colors"
           >
             {busy ? (
               <span className="flex items-center justify-center gap-1.5">

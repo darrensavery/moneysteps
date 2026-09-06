@@ -82,11 +82,11 @@ export function SparklineCard({
   let pill: React.ReactNode = null
   if (!isDiscovery && delta !== null) {
     if (direction === 'up')
-      pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-success/10 text-success">↑ {Math.abs(delta)}%</span>
+      pill = <span className="inline-flex items-center gap-0.5 text-[0.5rem] font-bold rounded px-1 py-0.5 bg-success/10 text-success">↑ {Math.abs(delta)}%</span>
     else if (direction === 'down')
-      pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-danger/10 text-danger">↓ {Math.abs(delta)}%</span>
+      pill = <span className="inline-flex items-center gap-0.5 text-[0.5rem] font-bold rounded px-1 py-0.5 bg-danger/10 text-danger">↓ {Math.abs(delta)}%</span>
     else
-      pill = <span className="inline-flex items-center gap-0.5 text-[8px] font-bold rounded px-1 py-0.5 bg-[rgba(156,163,175,0.1)] text-[var(--color-text-muted)]">→</span>
+      pill = <span className="inline-flex items-center gap-0.5 text-[0.5rem] font-bold rounded px-1 py-0.5 bg-[rgba(156,163,175,0.1)] text-[var(--color-text-muted)]">→</span>
   }
 
   return (
@@ -109,7 +109,7 @@ export function SparklineCard({
 
       <div className="w-full relative">
         {activeIdx !== null && (
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-semibold text-[var(--color-text)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-1.5 py-0.5 whitespace-nowrap z-10 pointer-events-none shadow-sm">
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[0.5rem] font-semibold text-[var(--color-text)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-1.5 py-0.5 whitespace-nowrap z-10 pointer-events-none shadow-sm">
             {tooltipText}
           </div>
         )}
@@ -178,16 +178,16 @@ export function SparklineCard({
       </div>
 
       <span
-        className="text-[12px] font-extrabold tabular-nums"
+        className="text-[0.75rem] font-extrabold tabular-nums"
         style={{ color: isDiscovery ? 'var(--color-text-muted)' : stroke }}
       >
         {isDiscovery || value === null ? '—' : `${value}%`}
       </span>
 
-      <span className="text-[11px] font-bold text-[var(--color-text-muted)] leading-tight">{label}</span>
+      <span className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] leading-tight">{label}</span>
 
       {isDiscovery
-        ? <span className="text-[8px] text-[var(--color-text-muted)]">Establishing…</span>
+        ? <span className="text-[0.5rem] text-[var(--color-text-muted)]">Establishing…</span>
         : pill
       }
     </div>

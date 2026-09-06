@@ -29,7 +29,7 @@ interface Props {
 function DotRow({ digits, shake, label }: { digits: string[]; shake: boolean; label: string }) {
   return (
     <div className="space-y-2">
-      <p className="text-[12px] font-semibold text-[var(--color-text-muted)] text-center uppercase tracking-wide">{label}</p>
+      <p className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] text-center uppercase tracking-wide">{label}</p>
       <div className={`flex justify-center gap-4 ${shake ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
         {digits.map((d, i) => (
           <div
@@ -56,7 +56,7 @@ function DigitPad({ onDigit, onBackspace }: { onDigit: (d: string) => void; onBa
           key={d}
           type="button"
           onClick={() => onDigit(d)}
-          className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+          className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.375rem] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
         >
           {d}
         </button>
@@ -65,14 +65,14 @@ function DigitPad({ onDigit, onBackspace }: { onDigit: (d: string) => void; onBa
       <button
         type="button"
         onClick={() => onDigit('0')}
-        className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+        className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.375rem] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
       >
         0
       </button>
       <button
         type="button"
         onClick={onBackspace}
-        className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[18px] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
+        className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.125rem] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer"
         aria-label="Backspace"
       >
         ⌫
@@ -220,21 +220,21 @@ export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
       <div className="space-y-4">
         <SectionHeader title="PIN Updated" onBack={onBack} />
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5 space-y-4">
-          <p className="text-[15px] font-bold text-[var(--color-text)]">Enable Face ID for faster access?</p>
-          <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
+          <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">Enable Face ID for faster access?</p>
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed">
             Instead of entering your PIN every time, use biometrics to approve sensitive actions in seconds.
           </p>
           <button
             type="button"
             onClick={handleEnableBiometrics}
-            className="w-full py-3 rounded-xl text-[14px] font-bold bg-[var(--brand-primary)] text-white cursor-pointer"
+            className="w-full py-3 rounded-xl text-[0.875rem] font-bold bg-[var(--brand-primary)] text-white cursor-pointer"
           >
             Enable Face ID / Touch ID
           </button>
           <button
             type="button"
             onClick={onBack}
-            className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
+            className="w-full py-2.5 rounded-xl text-[0.8125rem] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
           >
             Skip
           </button>
@@ -259,7 +259,7 @@ export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
         <SectionHeader title={title} onBack={onBack} />
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-5 space-y-4">
-            <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">{heading}</p>
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed">{heading}</p>
             <label htmlFor="pin-mgmt-password-input" className="sr-only">Account password</label>
             <input
               id="pin-mgmt-password-input"
@@ -273,13 +273,13 @@ export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
               aria-required="true"
               aria-invalid={!!pwError}
               aria-describedby={pwError ? 'pin-mgmt-password-error' : undefined}
-              className={`w-full px-3 py-2.5 text-[14px] rounded-xl border bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] ${pwError ? 'border-red-400' : 'border-[var(--color-border)]'}`}
+              className={`w-full px-3 py-2.5 text-[0.875rem] rounded-xl border bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] ${pwError ? 'border-red-400' : 'border-[var(--color-border)]'}`}
             />
-            {pwError && <p id="pin-mgmt-password-error" role="alert" className="text-[12px] text-red-500">{pwError}</p>}
+            {pwError && <p id="pin-mgmt-password-error" role="alert" className="text-[0.75rem] text-red-500">{pwError}</p>}
             <button
               type="submit"
               disabled={!password.trim()}
-              className="w-full py-3 rounded-xl text-[14px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-xl text-[0.875rem] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
             >
               Continue
             </button>
@@ -290,7 +290,7 @@ export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
             <button
               type="button"
               onClick={() => { setPassword(''); setPwError(''); setPinState('forgot') }}
-              className="w-full text-center text-[12px] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)]"
+              className="w-full text-center text-[0.75rem] text-[var(--color-text-muted)] underline underline-offset-2 cursor-pointer hover:text-[var(--color-text)]"
             >
               Forgot PIN? Reset with password
             </button>
@@ -323,8 +323,8 @@ export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
         </div>
 
         <div className="h-4 flex items-center justify-center">
-          {pinError && <p className="text-[12px] font-semibold text-red-500">{pinError}</p>}
-          {pinBusy  && <p className="text-[12px] text-[var(--color-text-muted)]">Saving…</p>}
+          {pinError && <p className="text-[0.75rem] font-semibold text-red-500">{pinError}</p>}
+          {pinBusy  && <p className="text-[0.75rem] text-[var(--color-text-muted)]">Saving…</p>}
         </div>
 
         <DigitPad
@@ -333,7 +333,7 @@ export function PinManagementSettings({ profile, hasPassword, onBack }: Props) {
         />
       </div>
 
-      <p className="text-center text-[11px] text-[var(--color-text-muted)] px-4 leading-relaxed">
+      <p className="text-center text-[0.6875rem] text-[var(--color-text-muted)] px-4 leading-relaxed">
         {newFull ? 'Now confirm your PIN' : 'Enter a 4-digit PIN you\'ll remember'}
       </p>
     </div>

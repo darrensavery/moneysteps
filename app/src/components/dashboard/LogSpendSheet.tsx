@@ -143,10 +143,10 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
         {/* Header */}
         <div className="px-5 pt-4 pb-3 flex items-center justify-between shrink-0">
           <div>
-            <p className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
+            <p className="text-[1.125rem] font-extrabold text-[var(--color-text)] tracking-tight leading-tight">
               💸 Log a spend
             </p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">
               What did you spend your money on?
             </p>
           </div>
@@ -167,7 +167,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
 
             {/* Quick picks */}
             <div>
-              <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">
+              <p className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">
                 Quick pick
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -186,7 +186,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                       ].join(' ')}
                     >
                       <SpendIcon id={p.id} />
-                      <span className="text-[9px] font-semibold leading-tight text-center">
+                      <span className="text-[0.5625rem] font-semibold leading-tight text-center">
                         {p.label}
                       </span>
                     </button>
@@ -197,7 +197,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
 
             {/* What did you buy */}
             <div>
-              <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
+              <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                 What did you buy? <span className="text-red-500">*</span>
               </label>
               <input
@@ -205,17 +205,17 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="e.g. Roblox, lunch, book…"
-                className="mt-1.5 w-full border border-[var(--color-border)] rounded-xl px-3 py-3 text-[15px] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                className="mt-1.5 w-full border border-[var(--color-border)] rounded-xl px-3 py-3 text-[0.9375rem] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               />
             </div>
 
             {/* Amount */}
             <div>
-              <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
+              <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                 How much? ({symbol}) <span className="text-red-500">*</span>
               </label>
               <div className="mt-1.5 relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] font-bold text-[var(--color-text-muted)]">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[1.125rem] font-bold text-[var(--color-text-muted)]">
                   {symbol}
                 </span>
                 <input
@@ -226,7 +226,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                   value={amountStr}
                   onChange={e => setAmountStr(e.target.value)}
                   placeholder="0.00"
-                  className="w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-3 text-[22px] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-3 text-[1.375rem] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
             </div>
@@ -237,7 +237,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                 <button
                   type="button"
                   onClick={() => setGoalOpen(v => !v)}
-                  className="flex items-center gap-2 text-[13px] font-semibold text-[var(--brand-primary)] cursor-pointer"
+                  className="flex items-center gap-2 text-[0.8125rem] font-semibold text-[var(--brand-primary)] cursor-pointer"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"/>
@@ -251,7 +251,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                       type="button"
                       onClick={() => { setGoalId(''); setGoalOpen(false) }}
                       className={[
-                        'w-full text-left px-3 py-2.5 rounded-xl border text-[13px] font-medium transition-colors cursor-pointer',
+                        'w-full text-left px-3 py-2.5 rounded-xl border text-[0.8125rem] font-medium transition-colors cursor-pointer',
                         !goalId
                           ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]'
                           : 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]',
@@ -265,14 +265,14 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                         type="button"
                         onClick={() => { setGoalId(g.id); setGoalOpen(false) }}
                         className={[
-                          'w-full text-left px-3 py-2.5 rounded-xl border text-[13px] transition-colors cursor-pointer',
+                          'w-full text-left px-3 py-2.5 rounded-xl border text-[0.8125rem] transition-colors cursor-pointer',
                           goalId === g.id
                             ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]'
                             : 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]',
                         ].join(' ')}
                       >
                         <span className="font-semibold">{g.title}</span>
-                        <span className="ml-2 text-[11px]">
+                        <span className="ml-2 text-[0.6875rem]">
                           {formatCurrency(g.current_saved_pence, g.currency)} saved
                         </span>
                       </button>
@@ -287,7 +287,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
               <button
                 type="button"
                 onClick={() => setNoteOpen(v => !v)}
-                className="text-[13px] font-semibold text-[var(--brand-primary)] cursor-pointer"
+                className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] cursor-pointer"
               >
                 {noteOpen ? '▾ Remove note' : '▸ Add a note'}
               </button>
@@ -297,7 +297,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                   onChange={e => setNote(e.target.value)}
                   placeholder="e.g. birthday money treat"
                   rows={2}
-                  className="mt-2 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] resize-none"
+                  className="mt-2 w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] resize-none"
                 />
               )}
             </div>
@@ -307,7 +307,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
             <button
               type="submit"
               disabled={saving || !canSubmit}
-              className="w-full bg-[var(--brand-primary)] text-white font-bold text-[16px] py-4 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-opacity"
+              className="w-full bg-[var(--brand-primary)] text-white font-bold text-[1rem] py-4 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-opacity"
             >
               {saving ? 'Saving…' : 'Save my spend'}
             </button>

@@ -139,8 +139,8 @@ export function SparklineExpanded({
       {/* ── Header ── */}
       <div className="flex items-start justify-between px-5 pt-5 pb-3 border-b border-[var(--color-border)] shrink-0">
         <div>
-          <p className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight">{label}</p>
-          <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+          <p className="text-[1.125rem] font-extrabold text-[var(--color-text)] tracking-tight">{label}</p>
+          <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">
             All-time trend · {hasLearningLab ? 'tap any point · 🎓 = module unlocked' : 'tap to inspect'}
           </p>
         </div>
@@ -154,12 +154,12 @@ export function SparklineExpanded({
 
       {/* ── Score + hover tooltip ── */}
       <div className="flex items-baseline gap-3 px-5 pt-3 pb-1 shrink-0">
-        <span className="text-[32px] font-black tabular-nums leading-none" style={{ color: 'var(--brand-primary)' }}>
+        <span className="text-[2rem] font-black tabular-nums leading-none" style={{ color: 'var(--brand-primary)' }}>
           {value !== null ? `${value}%` : '—'}
         </span>
-        <span className="text-[13px] text-[var(--color-text-muted)]">{label.toLowerCase()} score</span>
+        <span className="text-[0.8125rem] text-[var(--color-text-muted)]">{label.toLowerCase()} score</span>
         {activeIdx !== null && (
-          <span className="ml-auto text-[12px] font-semibold text-[var(--color-text)] bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-1 whitespace-nowrap">
+          <span className="ml-auto text-[0.75rem] font-semibold text-[var(--color-text)] bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2.5 py-1 whitespace-nowrap">
             {tooltip}
           </span>
         )}
@@ -171,7 +171,7 @@ export function SparklineExpanded({
         {/* Y-axis labels — fixed-width HTML column, no SVG distortion */}
         <div className="flex flex-col justify-between shrink-0 w-10 pr-2 pb-6">
           {Y_LABELS.map(pct => (
-            <span key={pct} className="text-[10px] tabular-nums text-right text-[var(--color-text-muted)] leading-none">
+            <span key={pct} className="text-[0.625rem] tabular-nums text-right text-[var(--color-text-muted)] leading-none">
               {pct}%
             </span>
           ))}
@@ -278,7 +278,7 @@ export function SparklineExpanded({
               const pct = (idx / (points.length - 1)) * 100
               return (
                 <span key={idx}
-                  className="absolute text-[10px] text-[var(--color-text-muted)] -translate-x-1/2 top-1"
+                  className="absolute text-[0.625rem] text-[var(--color-text-muted)] -translate-x-1/2 top-1"
                   style={{ left: `${pct}%` }}>
                   {lbl}
                 </span>
@@ -292,20 +292,20 @@ export function SparklineExpanded({
       <div className="flex flex-wrap gap-x-4 gap-y-1.5 px-5 py-2.5 border-t border-[var(--color-border)] shrink-0">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]"/>
-          <span className="text-[10px] text-[var(--color-text-muted)]">{label} score</span>
+          <span className="text-[0.625rem] text-[var(--color-text-muted)]">{label} score</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)] opacity-50"/>
-          <span className="text-[10px] text-[var(--color-text-muted)]">Chore (first-pass)</span>
+          <span className="text-[0.625rem] text-[var(--color-text-muted)]">Chore (first-pass)</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-warning opacity-50"/>
-          <span className="text-[10px] text-[var(--color-text-muted)]">Chore (revised)</span>
+          <span className="text-[0.625rem] text-[var(--color-text-muted)]">Chore (revised)</span>
         </div>
         {hasLearningLab && (
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px]">🎓</span>
-            <span className="text-[10px] text-[var(--color-text-muted)]">Module unlocked</span>
+            <span className="text-[0.625rem]">🎓</span>
+            <span className="text-[0.625rem] text-[var(--color-text-muted)]">Module unlocked</span>
           </div>
         )}
       </div>
@@ -317,10 +317,10 @@ export function SparklineExpanded({
             background:  'color-mix(in srgb, var(--brand-primary) 8%, var(--color-surface))',
             borderColor: 'color-mix(in srgb, var(--brand-primary) 20%, transparent)',
           }}>
-          <p className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: 'var(--brand-primary)' }}>
+          <p className="text-[0.625rem] font-black uppercase tracking-wider mb-1" style={{ color: 'var(--brand-primary)' }}>
             ✦ Recommended next
           </p>
-          <p className="text-[13px] text-[var(--color-text)] leading-snug">
+          <p className="text-[0.8125rem] text-[var(--color-text)] leading-snug">
             To strengthen this metric, try <strong>"{nextModuleTitle}"</strong> in the Learning Lab.
           </p>
         </div>

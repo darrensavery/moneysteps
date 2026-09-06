@@ -98,7 +98,7 @@ export function MentorAvatar({ accent = '#0d9488' }: { accent?: string }) {
 export function ProBadge() {
   return (
     <span
-      className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
+      className="shrink-0 text-[0.5625rem] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
       style={{
         background: 'rgba(212,160,23,0.15)',
         color:      '#d4a017',
@@ -118,7 +118,7 @@ export function ProBadge() {
 export function AiDisclosurePill() {
   return (
     <span
-      className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
+      className="text-[0.5625rem] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
       style={{
         background: 'rgba(255,255,255,0.08)',
         color:      'rgba(164,196,181,0.85)',

@@ -57,7 +57,7 @@ export function useToast() {
 
 export function Toast({ message }: { message: string }) {
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface text-main text-[13px] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface text-main text-[0.8125rem] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
       🌱 {message}
     </div>
   )
@@ -99,15 +99,15 @@ export function SettingsRow({
         </span>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-semibold text-[var(--color-text)]">
+        <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
           {label}
         </p>
         {description && (
-          <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">{description}</p>
+          <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">{description}</p>
         )}
       </div>
       {badge && (
-        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+        <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
           {badge}
         </span>
       )}
@@ -138,8 +138,8 @@ export function SectionHeader({ title, subtitle, onBack }: { title: string; subt
         </button>
       )}
       <div>
-        <h2 className="text-[16px] font-bold text-[var(--color-text)]">{title}</h2>
-        {subtitle && <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">{subtitle}</p>}
+        <h2 className="text-[1rem] font-bold text-[var(--color-text)]">{title}</h2>
+        {subtitle && <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">{subtitle}</p>}
       </div>
     </div>
   )
@@ -147,7 +147,7 @@ export function SectionHeader({ title, subtitle, onBack }: { title: string; subt
 
 export function ReadOnlyBadge() {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+    <span className="inline-flex items-center gap-1 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
       <Lock size={9} /> Read only
     </span>
   )

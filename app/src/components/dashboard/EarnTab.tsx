@@ -190,7 +190,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
     }
   }
 
-  if (loading) return <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
+  if (loading) return <div className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
 
   const hasAnything = revisions.length > 0 || available.length > 0 || awaiting.length > 0 || openChores.length > 0
 
@@ -202,10 +202,10 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
         <div className="rounded-xl bg-[color-mix(in_srgb,var(--brand-accent)_10%,transparent)] border border-[var(--brand-accent)]/40 px-4 py-3.5 flex items-center gap-3">
           <span className="text-xl shrink-0">💰</span>
           <div className="min-w-0">
-            <p className="text-[13px] font-bold text-[var(--color-text)]">
+            <p className="text-[0.8125rem] font-bold text-[var(--color-text)]">
               {earningsMode === 'ALLOWANCE' ? 'Your pocket money' : 'Weekly allowance'}
             </p>
-            <p className="text-[12px] text-[var(--color-text-muted)] leading-snug">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-snug">
               {earningsMode === 'ALLOWANCE'
                 ? `Your parent sends you ${formatCurrency(allowanceAmountPence, currency)} automatically — no chores needed!`
                 : `You also get ${formatCurrency(allowanceAmountPence, currency)} added automatically each week.`
@@ -217,7 +217,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
 
       {/* ── ALLOWANCE-ONLY empty state — hide chore UI entirely ─────── */}
       {earningsMode === 'ALLOWANCE' && !hasAnything && (
-        <div className="py-10 text-center text-[14px] text-[var(--color-text-muted)]">
+        <div className="py-10 text-center text-[0.875rem] text-[var(--color-text-muted)]">
           Your parent handles your pocket money — nothing to submit here.
         </div>
       )}
@@ -227,7 +227,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
         <section>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <h2 className="text-[13px] font-extrabold text-amber-600 uppercase tracking-wider">
+            <h2 className="text-[0.8125rem] font-extrabold text-amber-600 uppercase tracking-wider">
               Needs your attention
             </h2>
           </div>
@@ -255,7 +255,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
       {/* ── AVAILABLE TASKS ────────────────────────────────────────── */}
       {available.length > 0 && (
         <section>
-          <h2 className="text-[13px] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
+          <h2 className="text-[0.8125rem] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
             Available tasks
           </h2>
           <div className="space-y-2.5">
@@ -288,7 +288,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
       {/* ── OPEN TASKS (anyone can claim) ──────────────────────────── */}
       {openChores.length > 0 && (
         <section>
-          <h2 className="text-[13px] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
+          <h2 className="text-[0.8125rem] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
             Open tasks — first come, first served
           </h2>
           <ErrorBox message={claimError} className="mb-2" />
@@ -297,17 +297,17 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
               <div key={chore.id} className={`bg-[var(--color-surface)] border rounded-xl px-4 py-3 flex items-center gap-3 ${chore.is_flash ? 'border-l-4 border-l-red-500 border-[var(--color-border)]' : 'border-[var(--color-border)]'}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                    {!!chore.is_flash && <span className="text-[10px] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>}
-                    <p className="text-[15px] font-semibold text-[var(--color-text)]">{chore.title}</p>
+                    {!!chore.is_flash && <span className="text-[0.625rem] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>}
+                    <p className="text-[0.9375rem] font-semibold text-[var(--color-text)]">{chore.title}</p>
                   </div>
-                  <p className="text-[13px] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">
+                  <p className="text-[0.8125rem] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">
                     {formatCurrency(chore.reward_amount, currency)}
                   </p>
                   {meaningfulDescription(chore.description) && (
-                    <p className="text-[12px] text-[var(--color-text-muted)] mt-1 leading-relaxed">{meaningfulDescription(chore.description)}</p>
+                    <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-1 leading-relaxed">{meaningfulDescription(chore.description)}</p>
                   )}
                   {!!chore.is_flash && chore.flash_deadline && (
-                    <p className="text-[11px] font-bold text-red-600 mt-1">
+                    <p className="text-[0.6875rem] font-bold text-red-600 mt-1">
                       ⏱ Due by {new Date(chore.flash_deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   )}
@@ -315,7 +315,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
                 <button
                   onClick={() => { triggerHaptic(); handleClaim(chore.id) }}
                   disabled={claiming === chore.id}
-                  className="shrink-0 h-10 px-4 bg-[var(--brand-primary)] text-white rounded-xl font-bold text-[13px] hover:opacity-90 disabled:opacity-50 active:scale-95 transition-all cursor-pointer btn-depth"
+                  className="shrink-0 h-10 px-4 bg-[var(--brand-primary)] text-white rounded-xl font-bold text-[0.8125rem] hover:opacity-90 disabled:opacity-50 active:scale-95 transition-all cursor-pointer btn-depth"
                 >
                   {claiming === chore.id ? '…' : 'Grab it'}
                 </button>
@@ -328,17 +328,17 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
       {/* ── AWAITING REVIEW ────────────────────────────────────────── */}
       {awaiting.length > 0 && (
         <section>
-          <h2 className="text-[13px] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
+          <h2 className="text-[0.8125rem] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
             Waiting for review
           </h2>
           <div className="space-y-2">
             {awaiting.map(c => (
               <div key={c.id} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-3 flex items-center justify-between opacity-70">
                 <div>
-                  <p className="text-[14px] font-semibold text-[var(--color-text)]">{c.chore_title}</p>
-                  <p className="text-[12px] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">{formatCurrency(c.reward_amount, c.currency)}</p>
+                  <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{c.chore_title}</p>
+                  <p className="text-[0.75rem] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">{formatCurrency(c.reward_amount, c.currency)}</p>
                 </div>
-                <span className="text-[11px] font-bold text-[var(--color-text-muted)] bg-[var(--color-surface-alt)] rounded-full px-2.5 py-1">
+                <span className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] bg-[var(--color-surface-alt)] rounded-full px-2.5 py-1">
                   In review…
                 </span>
               </div>
@@ -350,8 +350,8 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
       {!hasAnything && (
         <div className="py-16 text-center">
           <p className="text-4xl mb-3">🌱</p>
-          <p className="text-[15px] font-bold text-[var(--color-text)]">No tasks yet</p>
-          <p className="text-[13px] text-[var(--color-text-muted)] mt-1">Ask your parent to add some tasks for you.</p>
+          <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">No tasks yet</p>
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1">Ask your parent to add some tasks for you.</p>
         </div>
       )}
 
@@ -360,7 +360,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
         <button
           type="button"
           onClick={() => setChoreGuideOpen(true)}
-          className="w-full border-2 border-dashed border-[var(--color-border)] rounded-xl py-3.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
+          className="w-full border-2 border-dashed border-[var(--color-border)] rounded-xl py-3.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer"
         >
           + Suggest a chore
         </button>
@@ -428,12 +428,12 @@ function RevisionCard({
       {/* Parent feedback — primary content */}
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start gap-2.5">
-          <span className="text-[20px] shrink-0">💬</span>
+          <span className="text-[1.25rem] shrink-0">💬</span>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">
+            <p className="text-[0.6875rem] font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">
               Parent's feedback
             </p>
-            <p className="text-[14px] font-semibold text-[var(--color-text)] leading-snug">
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)] leading-snug">
               {parentNotes ?? 'Please redo this task.'}
             </p>
           </div>
@@ -443,11 +443,11 @@ function RevisionCard({
       {/* Chore identity */}
       <div className="px-4 pb-3 flex items-center justify-between">
         <div>
-          <p className="text-[13px] font-semibold text-[var(--color-text-muted)]">{c.chore_title}</p>
-          <p className="text-[12px] font-semibold tabular-nums text-[var(--brand-accent)]">{formatCurrency(c.reward_amount, c.currency)}</p>
+          <p className="text-[0.8125rem] font-semibold text-[var(--color-text-muted)]">{c.chore_title}</p>
+          <p className="text-[0.75rem] font-semibold tabular-nums text-[var(--brand-accent)]">{formatCurrency(c.reward_amount, c.currency)}</p>
         </div>
         {(c.attempt_count ?? 1) > 1 && (
-          <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-200 dark:bg-amber-900/50 rounded-full px-2 py-0.5">
+          <span className="text-[0.625rem] font-bold text-amber-700 dark:text-amber-400 bg-amber-200 dark:bg-amber-900/50 rounded-full px-2 py-0.5">
             Attempt {c.attempt_count}
           </span>
         )}
@@ -458,7 +458,7 @@ function RevisionCard({
         <div className="px-4 pb-4 space-y-2 border-t border-amber-200 dark:border-amber-800 pt-3">
           <ErrorBox message={submitError} />
           <textarea
-            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
+            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
             placeholder="Tell your parent what you've improved…"
             rows={2}
             value={submitNote}
@@ -468,14 +468,14 @@ function RevisionCard({
           <div className="flex gap-2">
             <button
               onClick={onNoteCancel}
-              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[13px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
+              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.8125rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={onNoteSubmit}
               disabled={isSubmitting}
-              className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[13px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer"
+              className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.8125rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? 'Submitting…' : 'Resubmit →'}
             </button>
@@ -486,7 +486,7 @@ function RevisionCard({
           <button
             onClick={onResubmit}
             disabled={isSubmitting}
-            className="w-full h-11 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[14px] rounded-xl cursor-pointer disabled:opacity-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            className="w-full h-11 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[0.875rem] rounded-xl cursor-pointer disabled:opacity-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             {chore?.proof_required ? (
               <><CameraIcon /> Take photo &amp; resubmit</>
@@ -558,38 +558,38 @@ function OpenChoreCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             {!!chore.is_flash && (
-              <span className="text-[10px] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>
+              <span className="text-[0.625rem] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>
             )}
             {!!chore.is_priority && !chore.is_flash && (
-              <span className="text-[10px] font-bold text-amber-600 bg-amber-100 rounded px-1.5 py-0.5">PRIORITY</span>
+              <span className="text-[0.625rem] font-bold text-amber-600 bg-amber-100 rounded px-1.5 py-0.5">PRIORITY</span>
             )}
-            <p className="text-[15px] font-semibold text-[var(--color-text)]">{chore.title}</p>
+            <p className="text-[0.9375rem] font-semibold text-[var(--color-text)]">{chore.title}</p>
           </div>
-          <p className="text-[13px] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">
+          <p className="text-[0.8125rem] font-semibold text-[var(--brand-accent)] mt-0.5 tabular-nums">
             {formatCurrency(chore.reward_amount, currency)}
           </p>
           {meaningfulDescription(chore.description) && (
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-1 leading-relaxed">{meaningfulDescription(chore.description)}</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-1 leading-relaxed">{meaningfulDescription(chore.description)}</p>
           )}
           {!!chore.is_flash && chore.flash_deadline && (
-            <p className="text-[11px] font-bold text-red-600 mt-1">
+            <p className="text-[0.6875rem] font-bold text-red-600 mt-1">
               ⏱ Due by {new Date(chore.flash_deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </p>
           )}
           {chore.proof_required && (
-            <p className="text-[11px] text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
               <CameraIcon small /> Photo required to submit
             </p>
           )}
           {plannedDays.length > 0 && !expanded && (
-            <p className="text-[11px] text-[var(--brand-primary)] mt-1">
+            <p className="text-[0.6875rem] text-[var(--brand-primary)] mt-1">
               Planned: {plannedDays.map(d => DAY_LABELS[d - 1]).join(', ')}
             </p>
           )}
         </div>
 
         {stage === 'uploading' || stage === 'submitting' ? (
-          <span className="shrink-0 flex items-center gap-1.5 text-[12px] font-bold text-[var(--brand-primary)]">
+          <span className="shrink-0 flex items-center gap-1.5 text-[0.75rem] font-bold text-[var(--brand-primary)]">
             <span className="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin" />
             {stage === 'uploading' ? 'Uploading…' : 'Submitting…'}
           </span>
@@ -597,7 +597,7 @@ function OpenChoreCard({
           <button
             type="button"
             onClick={e => { e.stopPropagation(); triggerHaptic(); onStart() }}
-            className={`shrink-0 h-10 rounded-xl font-bold text-[13px] transition-all active:scale-95 cursor-pointer btn-depth
+            className={`shrink-0 h-10 rounded-xl font-bold text-[0.8125rem] transition-all active:scale-95 cursor-pointer btn-depth
               ${chore.proof_required
                 ? 'px-3 bg-[var(--brand-primary)] text-white hover:opacity-90 flex items-center gap-1.5'
                 : 'px-4 bg-[var(--brand-primary)] text-white hover:opacity-90'
@@ -611,7 +611,7 @@ function OpenChoreCard({
       {/* Day picker — shown when expanded */}
       {expanded && !isActive && onTogglePlant && (
         <div className="px-4 pb-3 border-t border-[var(--color-border)] pt-2.5">
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             {chore.frequency === 'one-off' ? 'Pick a day to do this' : 'Plan which days'}
           </p>
           <div className="flex gap-1.5">
@@ -624,7 +624,7 @@ function OpenChoreCard({
                   key={i}
                   type="button"
                   onClick={() => onTogglePlant(dayNum)}
-                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-colors cursor-pointer
+                  className={`flex-1 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors cursor-pointer
                     ${active
                       ? 'bg-[var(--brand-primary)] text-white'
                       : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_15%,transparent)]'
@@ -643,7 +643,7 @@ function OpenChoreCard({
         <div className="px-4 pb-4 space-y-2.5 border-t border-[var(--color-border)] pt-3">
           <ErrorBox message={error} />
           <textarea
-            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
+            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
             placeholder="Add a note for your parent (optional)"
             rows={2}
             value={note}
@@ -653,13 +653,13 @@ function OpenChoreCard({
           <div className="flex gap-2">
             <button
               onClick={onCancel}
-              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[13px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
+              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.8125rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={onNoteSubmit}
-              className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[13px] font-bold hover:opacity-90 cursor-pointer"
+              className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.8125rem] font-bold hover:opacity-90 cursor-pointer"
             >
               Submit →
             </button>
@@ -677,7 +677,7 @@ function HarvestPulse({ label }: { label: string }) {
     <div className="relative rounded-2xl overflow-hidden bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] border-2 border-[var(--brand-primary)] px-4 py-5 flex items-center justify-center gap-3">
       <span className="absolute inset-0 rounded-2xl animate-ping bg-[var(--brand-primary)] opacity-10 pointer-events-none" />
       <span className="text-2xl">🌿</span>
-      <p className="text-[15px] font-extrabold text-[var(--brand-primary)]">{label}</p>
+      <p className="text-[0.9375rem] font-extrabold text-[var(--brand-primary)]">{label}</p>
     </div>
   )
 }

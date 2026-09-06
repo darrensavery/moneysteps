@@ -123,7 +123,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
   const cur = currency
 
   if (loading && goals.length === 0) return (
-    <div className="py-16 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
+    <div className="py-16 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
   )
 
   return (
@@ -135,14 +135,14 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
 
       <div className="bg-[var(--color-surface)] rounded-2xl card-depth border border-[var(--color-border)] overflow-hidden">
         <div className="px-4 pt-4 pb-3">
-          <h2 className="text-[15px] font-bold text-[var(--color-text)]">{appView === 'CLEAN' ? 'My Goals' : '🎯 My Goals'}</h2>
+          <h2 className="text-[0.9375rem] font-bold text-[var(--color-text)]">{appView === 'CLEAN' ? 'My Goals' : '🎯 My Goals'}</h2>
         </div>
 
         {activeGoals.length === 0 ? (
           <div className="px-4 pb-5 text-center flex flex-col items-center">
             <GrowingTree pct={0} size={64} showLabel className="mb-1" />
-            <p className="text-[13px] font-semibold text-[var(--color-text)]">No goals yet</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">Tap "Add Goal" to start saving for something exciting!</p>
+            <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">No goals yet</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">Tap "Add Goal" to start saving for something exciting!</p>
           </div>
         ) : (
           <div className="divide-y divide-[var(--color-border)]">
@@ -166,9 +166,9 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                   <div className="flex items-center gap-4">
                     <GrowingTree pct={pct} size={72} showLabel />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[14px] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</div>
+                      <div className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</div>
                       {activeTopGoal.parent_match_pct > 0 && (
-                        <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">
+                        <div className="text-[0.6875rem] text-emerald-600 font-semibold mt-0.5">
                           🤝 Parent matches {activeTopGoal.parent_match_pct}% — you only need {formatCurrency(effTarget, cur)}!
                         </div>
                       )}
@@ -183,26 +183,26 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                       />
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[11px] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(avail, cur)} saved</span>
-                      <span className="text-[11px] text-[var(--color-text-muted)] tabular-nums">{pct}% • {formatCurrency(effTarget, cur)}</span>
+                      <span className="text-[0.6875rem] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(avail, cur)} saved</span>
+                      <span className="text-[0.6875rem] text-[var(--color-text-muted)] tabular-nums">{pct}% • {formatCurrency(effTarget, cur)}</span>
                     </div>
                   </div>
 
                   <div className="rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] px-3.5 py-2.5 space-y-1.5">
-                    <div className="flex items-center gap-2 text-[12px]">
+                    <div className="flex items-center gap-2 text-[0.75rem]">
                       <span>💪</span>
                       <span className="text-[var(--color-text-muted)]">Total cost:</span>
                       <span className="font-semibold text-[var(--color-text)]">{effortLabel(activeTopGoal.target_amount)}</span>
                     </div>
                     {remaining > 0 && (
-                      <div className="flex items-center gap-2 text-[12px]">
+                      <div className="flex items-center gap-2 text-[0.75rem]">
                         <span>{appView === 'CLEAN' ? '💸' : '🌿'}</span>
                         <span className="text-[var(--color-text-muted)]">Still need:</span>
                         <span className="font-semibold text-[var(--color-text)]">{effortLabel(remaining)}</span>
                       </div>
                     )}
                     {arrivalDate && (
-                      <div className="flex items-center gap-2 text-[12px]">
+                      <div className="flex items-center gap-2 text-[0.75rem]">
                         <span>📅</span>
                         <span className="text-[var(--color-text-muted)]">Estimated arrival:</span>
                         <span className="font-semibold text-[var(--brand-accent)]">{arrivalDate}</span>
@@ -214,7 +214,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                     <button
                       onClick={() => handlePurchase(activeTopGoal.id)}
                       disabled={purchasing === activeTopGoal.id}
-                      className="w-full rounded-xl bg-emerald-500 text-white font-bold py-2.5 text-[13px] hover:bg-emerald-600 disabled:opacity-60 transition-colors cursor-pointer"
+                      className="w-full rounded-xl bg-emerald-500 text-white font-bold py-2.5 text-[0.8125rem] hover:bg-emerald-600 disabled:opacity-60 transition-colors cursor-pointer"
                     >
                       {purchasing === activeTopGoal.id
                         ? (appView === 'CLEAN' ? 'Saving…' : '🎉 Saving…')
@@ -225,7 +225,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                   <button
                     onClick={() => handleDelete(activeTopGoal.id, activeTopGoal.title)}
                     disabled={deleting === activeTopGoal.id}
-                    className="w-full text-center text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-red-500 disabled:opacity-60 transition-colors cursor-pointer py-1"
+                    className="w-full text-center text-[0.6875rem] font-semibold text-[var(--color-text-muted)] hover:text-red-500 disabled:opacity-60 transition-colors cursor-pointer py-1"
                   >
                     {deleting === activeTopGoal.id ? 'Removing…' : 'Stop saving for this'}
                   </button>
@@ -235,13 +235,13 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
 
             {activeGoals.length > 1 && (
               <div className="px-4 py-3 space-y-2">
-                <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">All goals — effort comparison</p>
+                <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">All goals — effort comparison</p>
                 <div className="grid grid-cols-1 gap-2">
                   {activeGoals.map((g, i) => (
                     <div key={g.id} className={`flex items-center gap-2 rounded-lg px-3 py-2 border ${i === 0 ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)]' : 'border-[var(--color-border)] bg-[var(--color-bg)]'}`}>
                       <span className="text-base">{i === 0 ? '🎯' : '⭕'}</span>
-                      <span className="flex-1 text-[12px] font-semibold text-[var(--color-text)] truncate">{g.title}</span>
-                      <span className="text-[11px] text-[var(--color-text-muted)] shrink-0">{effortLabel(g.target_amount)}</span>
+                      <span className="flex-1 text-[0.75rem] font-semibold text-[var(--color-text)] truncate">{g.title}</span>
+                      <span className="text-[0.6875rem] text-[var(--color-text-muted)] shrink-0">{effortLabel(g.target_amount)}</span>
                       <button
                         onClick={() => handleDelete(g.id, g.title)}
                         disabled={deleting === g.id}

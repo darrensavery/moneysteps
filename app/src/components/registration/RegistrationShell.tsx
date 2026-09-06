@@ -358,7 +358,7 @@ function RegistrationLayout({ step, totalSteps, progress, children }: {
             </div>
             {step !== null && (
               <div className="text-right" aria-live="polite">
-                <span className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                <span className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
                   Step {step} of {totalSteps}
                 </span>
                 <p className="text-xs font-semibold text-[var(--color-text)] leading-none mt-0.5">
@@ -387,7 +387,7 @@ function RegistrationLayout({ step, totalSteps, progress, children }: {
       </main>
 
       <footer className="safe-bottom px-5 py-4 text-center border-t border-[var(--color-border)]">
-        <p className="text-[11px] text-[var(--color-text-muted)] tracking-wide">
+        <p className="text-[0.6875rem] text-[var(--color-text-muted)] tracking-wide">
           Your data is private and secure
         </p>
       </footer>

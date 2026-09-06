@@ -58,14 +58,14 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
   }, [load])
 
   if (loading) return (
-    <div className="py-16 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
+    <div className="py-16 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
   )
 
   if (history.length === 0) return (
     <div className="py-16 text-center">
       <p className="text-4xl mb-3">🌱</p>
-      <p className="text-[15px] font-bold text-[var(--color-text)]">No history yet</p>
-      <p className="text-[13px] text-[var(--color-text-muted)] mt-1">
+      <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">No history yet</p>
+      <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1">
         Completed chores will appear here once approved.
       </p>
     </div>
@@ -98,8 +98,8 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
       {variant === 'money' ? (
         totalEarned > 0 && (
           <div className="rounded-xl bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_25%,transparent)] px-4 py-3 flex items-center justify-between">
-            <p className="text-[13px] text-[var(--color-text-muted)]">Total earned</p>
-            <p className="text-[18px] font-extrabold tabular-nums text-[var(--brand-primary)]">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)]">Total earned</p>
+            <p className="text-[1.125rem] font-extrabold tabular-nums text-[var(--brand-primary)]">
               {formatCurrency(totalEarned, currency)}
             </p>
           </div>
@@ -107,8 +107,8 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
       ) : (
         approvedCount > 0 && (
           <div className="rounded-xl bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_25%,transparent)] px-4 py-3 flex items-center justify-between">
-            <p className="text-[13px] text-[var(--color-text-muted)]">Chores completed</p>
-            <p className="text-[18px] font-extrabold tabular-nums text-[var(--brand-primary)]">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)]">Chores completed</p>
+            <p className="text-[1.125rem] font-extrabold tabular-nums text-[var(--brand-primary)]">
               {approvedCount}
             </p>
           </div>
@@ -118,16 +118,16 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--color-border)]">
-          <p className="text-[13px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <p className="text-[0.8125rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
             {variant === 'money' ? 'Earnings history' : 'Chore history'}
-            <span className="ml-1.5 text-[11px] font-semibold normal-case tracking-normal">
+            <span className="ml-1.5 text-[0.6875rem] font-semibold normal-case tracking-normal">
               ({history.length})
             </span>
           </p>
           <button
             type="button"
             onClick={() => setHistorySort(s => s === 'date-desc' ? 'date-asc' : 'date-desc')}
-            className="tap-target-44 flex items-center gap-1 text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-[var(--color-surface-alt)]"
+            className="tap-target-44 flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-[var(--color-surface-alt)]"
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M3 6h18M7 12h10M11 18h2"/>
@@ -166,13 +166,13 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
                     >
                       <path d="M9 18l6-6-6-6"/>
                     </svg>
-                    <span className="text-[12px] font-bold text-[var(--color-text)]">{monthLabel}</span>
-                    <span className="text-[11px] text-[var(--color-text-muted)]">
+                    <span className="text-[0.75rem] font-bold text-[var(--color-text)]">{monthLabel}</span>
+                    <span className="text-[0.6875rem] text-[var(--color-text-muted)]">
                       {items.length} chore{items.length !== 1 ? 's' : ''}
                     </span>
                   </div>
                   {monthEarned > 0 && (
-                    <span className="text-[12px] font-bold tabular-nums text-[var(--brand-primary)]">
+                    <span className="text-[0.75rem] font-bold tabular-nums text-[var(--brand-primary)]">
                       {formatCurrency(monthEarned, cur)}
                     </span>
                   )}
@@ -203,10 +203,10 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
                           className="w-full text-left px-4 py-3 flex items-center justify-between gap-3 hover:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="text-[14px] font-semibold text-[var(--color-text)]">
+                            <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
                               {dateStr}
                             </p>
-                            <p className="text-[12px] text-[var(--color-text-muted)] truncate flex items-center gap-1.5 mt-0.5">
+                            <p className="text-[0.75rem] text-[var(--color-text-muted)] truncate flex items-center gap-1.5 mt-0.5">
                               {variant === 'money'
                                 ? <span className="truncate">{subHeading}</span>
                                 : <span className="tabular-nums">{subHeading}</span>}
@@ -218,10 +218,10 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
                             </p>
                           </div>
                           <div className="shrink-0 flex flex-col items-end gap-1 max-w-[45%]">
-                            <span className={`text-[14px] font-bold text-right ${variant === 'money' ? 'tabular-nums text-[var(--brand-primary)]' : 'text-[var(--color-text)] truncate'}`}>
+                            <span className={`text-[0.875rem] font-bold text-right ${variant === 'money' ? 'tabular-nums text-[var(--brand-primary)]' : 'text-[var(--color-text)] truncate'}`}>
                               {rightValue}
                             </span>
-                            <span className={`text-[10px] font-bold rounded-full px-2 py-0.5 ${s.bg} ${s.text}`}>
+                            <span className={`text-[0.625rem] font-bold rounded-full px-2 py-0.5 ${s.bg} ${s.text}`}>
                               {s.label}
                             </span>
                           </div>

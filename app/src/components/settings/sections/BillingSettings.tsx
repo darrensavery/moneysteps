@@ -108,8 +108,8 @@ function ComparePlansModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--color-border)]">
           <div>
-            <p className="text-[16px] font-bold text-[var(--color-text)]">Compare Plans</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">All plans are one-time purchases — no renewals.</p>
+            <p className="text-[1rem] font-bold text-[var(--color-text)]">Compare Plans</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">All plans are one-time purchases — no renewals.</p>
           </div>
           <button
             type="button"
@@ -125,23 +125,23 @@ function ComparePlansModal({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-4 gap-0 px-5 pt-3 pb-2">
           <div className="col-span-1" />
           <div className="text-center">
-            <p className="text-[10px] font-bold text-teal-600 uppercase tracking-wide">Core</p>
-            <p className="text-[11px] font-semibold text-[var(--color-text)] mt-0.5">£44.99</p>
+            <p className="text-[0.625rem] font-bold text-teal-600 uppercase tracking-wide">Core</p>
+            <p className="text-[0.6875rem] font-semibold text-[var(--color-text)] mt-0.5">£44.99</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] font-bold text-violet-600 uppercase tracking-wide">Core AI</p>
-            <p className="text-[11px] font-semibold text-[var(--color-text)] mt-0.5">£64.99</p>
+            <p className="text-[0.625rem] font-bold text-violet-600 uppercase tracking-wide">Core AI</p>
+            <p className="text-[0.6875rem] font-semibold text-[var(--color-text)] mt-0.5">£64.99</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Shield</p>
-            <p className="text-[11px] font-semibold text-[var(--color-text)] mt-0.5">£149.99</p>
+            <p className="text-[0.625rem] font-bold text-amber-600 uppercase tracking-wide">Shield</p>
+            <p className="text-[0.6875rem] font-semibold text-[var(--color-text)] mt-0.5">£149.99</p>
           </div>
         </div>
 
         <div className="overflow-y-auto px-5 pb-6" style={{ maxHeight: '55vh' }}>
           {COMPARE_ROWS.map(row => (
             <div key={row.feature} className="grid grid-cols-4 gap-0 py-2.5 border-b border-[var(--color-border)] last:border-0 items-center">
-              <p className="col-span-1 text-[12px] text-[var(--color-text)] pr-2 leading-snug">{row.feature}</p>
+              <p className="col-span-1 text-[0.75rem] text-[var(--color-text)] pr-2 leading-snug">{row.feature}</p>
               <div className="flex justify-center">
                 {row.complete
                   ? <Check size={14} className="text-teal-500" />
@@ -161,10 +161,10 @@ function ComparePlansModal({ onClose }: { onClose: () => void }) {
           ))}
 
           <div className="mt-4 space-y-2">
-            <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 leading-relaxed font-medium">
+            <p className="text-[0.6875rem] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 leading-relaxed font-medium">
               UK family mediation averages £140/hr. Morechard Shield AI is a one-time £149.99.
             </p>
-            <p className="text-[11px] text-violet-700 bg-violet-50 rounded-lg px-3 py-2 leading-relaxed font-medium">
+            <p className="text-[0.6875rem] text-violet-700 bg-violet-50 rounded-lg px-3 py-2 leading-relaxed font-medium">
               Already on Core? Add AI Mentor + Learning Lab for £29.99 — one-time.
             </p>
           </div>
@@ -211,8 +211,8 @@ function TrialView({ onBack }: { onBack: () => void }) {
               <Shield size={17} />
             </span>
             <div>
-              <p className="text-[14px] font-bold text-[var(--color-text)]">{planLabel} — active</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              <p className="text-[0.875rem] font-bold text-[var(--color-text)]">{planLabel} — active</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                 One-time purchase. Full access, no renewals, no trial limits.
               </p>
             </div>
@@ -223,7 +223,7 @@ function TrialView({ onBack }: { onBack: () => void }) {
           <div className="px-4 pt-4 pb-3">
             <div className="flex items-center gap-2 mb-3">
               <Clock size={14} className={urgent ? 'text-amber-500' : 'text-teal-600'} />
-              <p className="text-[13px] font-bold text-[var(--color-text)]">
+              <p className="text-[0.8125rem] font-bold text-[var(--color-text)]">
                 {trial?.is_expired
                   ? 'Trial expired'
                   : !trial?.is_activated
@@ -241,19 +241,19 @@ function TrialView({ onBack }: { onBack: () => void }) {
               />
             </div>
 
-            <div className="flex justify-between mt-1.5 text-[11px] text-[var(--color-text-muted)]">
+            <div className="flex justify-between mt-1.5 text-[0.6875rem] text-[var(--color-text-muted)]">
               <span>Day 1</span>
               <span>Day 14</span>
             </div>
 
             {!trial?.is_activated && (
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-3 leading-snug">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-3 leading-snug">
                 Your trial starts automatically when the first chore is approved.
               </p>
             )}
 
             {trial?.is_expired && (
-              <p className="text-[12px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3 leading-snug">
+              <p className="text-[0.75rem] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3 leading-snug">
                 Your trial has ended. Purchase a plan to restore access for your family.
               </p>
             )}
@@ -263,7 +263,7 @@ function TrialView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+          <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-relaxed">
             The trial covers full access to all features including AI Mentor and Learning Lab.
             When it ends, your data is safe — you can still export your ledger at any time.
             Purchase a plan to continue using Morechard.
@@ -400,10 +400,10 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
             {/* Current plan */}
             <SectionCard>
               <div className="px-4 py-3">
-                <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                   Current plan
                 </p>
-                <span className={cn('inline-block px-2.5 py-1 rounded-full text-[12px] font-bold', planColor)}>
+                <span className={cn('inline-block px-2.5 py-1 rounded-full text-[0.75rem] font-bold', planColor)}>
                   {currentPlan}
                 </span>
               </div>
@@ -413,13 +413,13 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
             {!hasShield && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                  <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                     {hasBase ? 'Upgrade' : 'Choose a plan'}
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowCompare(true)}
-                    className="tap-target-44 text-[12px] font-semibold text-[var(--brand-primary)] px-2.5 py-1 rounded-lg border border-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] active:bg-[color-mix(in_srgb,var(--brand-primary)_18%,transparent)] active:scale-[0.97] transition-all duration-150"
+                    className="tap-target-44 text-[0.75rem] font-semibold text-[var(--brand-primary)] px-2.5 py-1 rounded-lg border border-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] active:bg-[color-mix(in_srgb,var(--brand-primary)_18%,transparent)] active:scale-[0.97] transition-all duration-150"
                   >
                     Compare all plans
                   </button>
@@ -428,7 +428,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                 {/* Complete — shown only when user has no paid plan at all */}
                 {!hasBase && !hasAi && !hasShield && (
                   <div className="rounded-2xl border-2 border-[var(--color-border)] overflow-hidden relative">
-                    <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-500 text-white text-[10px] font-bold">
+                    <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-500 text-white text-[0.625rem] font-bold">
                       <Star size={9} />
                       Starter
                     </div>
@@ -438,10 +438,10 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                           <Shield size={16} />
                         </span>
                         <div className="flex-1 min-w-0 pr-16">
-                          <p className="text-[15px] font-bold text-[var(--color-text)]">Morechard Core</p>
-                          <p className="text-[20px] font-bold text-[var(--brand-primary)] leading-none mt-0.5">
+                          <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">Morechard Core</p>
+                          <p className="text-[1.25rem] font-bold text-[var(--brand-primary)] leading-none mt-0.5">
                             £44.99
-                            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] ml-1">one-time</span>
+                            <span className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] ml-1">one-time</span>
                           </p>
                         </div>
                       </div>
@@ -455,7 +455,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                         ].map(item => (
                           <li key={item} className="flex items-start gap-2">
                             <Check size={12} className="shrink-0 text-teal-500 mt-0.5" />
-                            <span className="text-[12px] text-[var(--color-text-muted)] leading-snug">{item}</span>
+                            <span className="text-[0.75rem] text-[var(--color-text-muted)] leading-snug">{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -465,7 +465,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                         type="button"
                         disabled={buying !== null}
                         onClick={() => handlePurchase('COMPLETE')}
-                        className="w-full py-2.5 rounded-xl bg-[var(--brand-primary)] text-white text-[13px] font-bold hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-2.5 rounded-xl bg-[var(--brand-primary)] text-white text-[0.8125rem] font-bold hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {buying === 'COMPLETE' ? 'Loading…' : 'Get Morechard Core — £44.99'}
                       </button>
@@ -477,7 +477,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                 {!hasAi && (
                   <div className="rounded-2xl border-2 border-violet-300 overflow-hidden bg-[color-mix(in_srgb,#7c3aed_4%,var(--color-surface))] relative">
                     {!hasBase && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
+                      <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500 text-white text-[0.625rem] font-bold">
                         <Star size={9} />
                         Best Value
                       </div>
@@ -489,15 +489,15 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-[15px] font-bold text-[var(--color-text)]">Morechard Core AI</p>
-                            <span className="px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-700 text-[10px] font-bold uppercase tracking-wide">Includes AI</span>
+                            <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">Morechard Core AI</p>
+                            <span className="px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-700 text-[0.625rem] font-bold uppercase tracking-wide">Includes AI</span>
                           </div>
-                          <p className="text-[20px] font-bold text-violet-600 leading-none mt-0.5">
+                          <p className="text-[1.25rem] font-bold text-violet-600 leading-none mt-0.5">
                             {hasBase ? '£29.99' : '£64.99'}
-                            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] ml-1">one-time</span>
+                            <span className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] ml-1">one-time</span>
                           </p>
                           {hasBase && (
-                            <p className="text-[11px] text-violet-600 font-medium mt-1">
+                            <p className="text-[0.6875rem] text-violet-600 font-medium mt-1">
                               Upgrade price — you already have Morechard Core
                             </p>
                           )}
@@ -516,7 +516,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                         ]).map(item => (
                           <li key={item} className="flex items-start gap-2">
                             <Check size={12} className="shrink-0 text-violet-500 mt-0.5" />
-                            <span className="text-[12px] text-[var(--color-text-muted)] leading-snug">{item}</span>
+                            <span className="text-[0.75rem] text-[var(--color-text-muted)] leading-snug">{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -526,7 +526,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                         type="button"
                         disabled={buying !== null}
                         onClick={() => handlePurchase(hasBase ? 'AI_UPGRADE' : 'COMPLETE_AI')}
-                        className="w-full py-2.5 rounded-xl bg-violet-500 text-white text-[13px] font-bold hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-2.5 rounded-xl bg-violet-500 text-white text-[0.8125rem] font-bold hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {buying === 'COMPLETE_AI' || buying === 'AI_UPGRADE'
                           ? 'Loading…'
@@ -547,25 +547,25 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-[15px] font-bold text-[var(--color-text)]">Morechard Shield AI</p>
-                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide">Professional</span>
+                          <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">Morechard Shield AI</p>
+                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[0.625rem] font-bold uppercase tracking-wide">Professional</span>
                         </div>
-                        <p className="text-[20px] font-bold text-amber-600 leading-none mt-0.5">
+                        <p className="text-[1.25rem] font-bold text-amber-600 leading-none mt-0.5">
                           {shieldPriceUnknown && shieldPriceFetching
-                            ? <span className="text-[14px] font-semibold text-amber-400">Loading price…</span>
+                            ? <span className="text-[0.875rem] font-semibold text-amber-400">Loading price…</span>
                             : shieldPriceUnknown
-                            ? <span className="text-[14px] font-semibold text-amber-400">Price unavailable</span>
+                            ? <span className="text-[0.875rem] font-semibold text-amber-400">Price unavailable</span>
                             : formatGBP(shieldDelta)}
                           {!shieldPriceUnknown && (
-                            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] ml-1">one-time</span>
+                            <span className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] ml-1">one-time</span>
                           )}
                           {shieldIsUpgrade && (
-                            <span className="ml-2 text-[12px] font-semibold text-[var(--color-text-muted)] line-through">
+                            <span className="ml-2 text-[0.75rem] font-semibold text-[var(--color-text-muted)] line-through">
                               £149.99
                             </span>
                           )}
                         </p>
-                        <p className="text-[11px] text-amber-700 font-medium mt-1">
+                        <p className="text-[0.6875rem] text-amber-700 font-medium mt-1">
                           {shieldPriceUnknown
                             ? 'Reload the page to see your upgrade price'
                             : shieldIsUpgrade
@@ -574,7 +574,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                         </p>
                       </div>
                     </div>
-                    <p className="mt-2 mb-3 text-[12px] text-[var(--color-text-muted)] leading-snug">
+                    <p className="mt-2 mb-3 text-[0.75rem] text-[var(--color-text-muted)] leading-snug">
                       Every export carries a cryptographic hash. If a single figure is altered after export, the seal breaks — proving the record is authentic to solicitors and mediators.
                     </p>
                     <ul className="space-y-1.5">
@@ -586,7 +586,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                       ].map(item => (
                         <li key={item} className="flex items-start gap-2">
                           <Check size={12} className="shrink-0 text-amber-500 mt-0.5" />
-                          <span className="text-[12px] text-[var(--color-text-muted)] leading-snug">{item}</span>
+                          <span className="text-[0.75rem] text-[var(--color-text-muted)] leading-snug">{item}</span>
                         </li>
                       ))}
                     </ul>
@@ -596,7 +596,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                       type="button"
                       disabled={buying !== null || shieldPriceUnknown}
                       onClick={() => handlePurchase('SHIELD_AI')}
-                      className="w-full py-2.5 rounded-xl bg-amber-500 text-white text-[13px] font-bold hover:bg-amber-600 hover:shadow-[0_4px_14px_color-mix(in_srgb,#f59e0b_40%,transparent)] active:bg-amber-700 active:scale-[0.98] active:shadow-none transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-2.5 rounded-xl bg-amber-500 text-white text-[0.8125rem] font-bold hover:bg-amber-600 hover:shadow-[0_4px_14px_color-mix(in_srgb,#f59e0b_40%,transparent)] active:bg-amber-700 active:scale-[0.98] active:shadow-none transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {buying === 'SHIELD_AI'
                         ? 'Loading…'
@@ -617,9 +617,9 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2">
                     <AlertTriangle size={13} className="text-amber-500 shrink-0" />
-                    <p className="text-[12px] font-semibold text-[var(--color-text)]">14-day cooling-off period</p>
+                    <p className="text-[0.75rem] font-semibold text-[var(--color-text)]">14-day cooling-off period</p>
                   </div>
-                  <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                  <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-relaxed">
                     You can cancel and receive a full refund until{' '}
                     <span className="font-semibold text-[var(--color-text)]">
                       {coolingOffDeadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -629,13 +629,13 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                     <button
                       type="button"
                       onClick={() => setShowCancelConfirm(true)}
-                      className="tap-target-44 text-[12px] font-semibold text-red-500 px-2.5 py-1 rounded-lg border border-red-300 hover:bg-red-50 hover:text-red-600 hover:border-red-400 active:bg-red-100 active:scale-[0.97] transition-all duration-150"
+                      className="tap-target-44 text-[0.75rem] font-semibold text-red-500 px-2.5 py-1 rounded-lg border border-red-300 hover:bg-red-50 hover:text-red-600 hover:border-red-400 active:bg-red-100 active:scale-[0.97] transition-all duration-150"
                     >
                       Cancel plan & request refund
                     </button>
                   ) : (
                     <div className="space-y-2 pt-1">
-                      <p className="text-[12px] text-red-600 font-medium">
+                      <p className="text-[0.75rem] text-red-600 font-medium">
                         Are you sure? Your licence will be revoked immediately and a full refund issued to your original payment method.
                       </p>
                       <div className="flex gap-2">
@@ -643,7 +643,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                           type="button"
                           disabled={cancelling}
                           onClick={handleCancel}
-                          className="flex-1 py-2 rounded-xl bg-red-500 text-white text-[12px] font-bold hover:bg-red-600 transition-colors disabled:opacity-50"
+                          className="flex-1 py-2 rounded-xl bg-red-500 text-white text-[0.75rem] font-bold hover:bg-red-600 transition-colors disabled:opacity-50"
                         >
                           {cancelling ? 'Processing…' : 'Yes, cancel & refund'}
                         </button>
@@ -651,7 +651,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
                           type="button"
                           disabled={cancelling}
                           onClick={() => setShowCancelConfirm(false)}
-                          className="flex-1 py-2 rounded-xl bg-[var(--color-surface-alt)] text-[var(--color-text)] text-[12px] font-bold hover:opacity-80 transition-opacity"
+                          className="flex-1 py-2 rounded-xl bg-[var(--color-surface-alt)] text-[var(--color-text)] text-[0.75rem] font-bold hover:opacity-80 transition-opacity"
                         >
                           Keep my plan
                         </button>
@@ -664,7 +664,7 @@ function PlanView({ onBack, showToast, shieldUpgradePrice }: {
 
             <SectionCard>
               <div className="px-4 py-3">
-                <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-relaxed">
                   All purchases are one-time payments — no subscriptions, no renewals.
                   Payments are processed securely. Your card details are never stored by Morechard.
                   For billing queries, contact support.
@@ -705,8 +705,8 @@ function HistoryView({ onBack }: { onBack: () => void }) {
         <SectionCard>
           <div className="px-4 py-6 text-center">
             <Receipt size={28} className="mx-auto text-[var(--color-text-muted)] mb-2 opacity-40" />
-            <p className="text-[13px] font-semibold text-[var(--color-text)]">No payments yet</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-1">
+            <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">No payments yet</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-1">
               Your payment records will appear here after your first purchase.
             </p>
           </div>
@@ -722,12 +722,12 @@ function HistoryView({ onBack }: { onBack: () => void }) {
                 <Receipt size={14} />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-[var(--color-text)]">
+                <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">
                   {PLAN_LABELS[p.payment_type] ?? p.payment_type}
                 </p>
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">{formatDate(p.created_at)}</p>
+                <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">{formatDate(p.created_at)}</p>
               </div>
-              <span className="shrink-0 text-[13px] font-bold text-[var(--color-text)]">
+              <span className="shrink-0 text-[0.8125rem] font-bold text-[var(--color-text)]">
                 {formatAmount(p.amount_paid_int, p.currency)}
               </span>
             </div>

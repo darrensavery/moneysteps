@@ -41,10 +41,10 @@ export function JarCard({ jar, balances, currency, onClick }: JarCardProps) {
       className="flex-1 flex flex-col items-center gap-2 px-3 py-4 bg-[#1a2e25] border border-white/10 rounded-xl cursor-pointer transition-colors hover:bg-[#1f3a2e] active:bg-[#172a21] min-w-0"
     >
       <Icon size={36} decorative />
-      <span className="text-[11px] font-semibold text-white/50 uppercase tracking-widest">
+      <span className="text-[0.6875rem] font-semibold text-white/50 uppercase tracking-widest">
         {label}
       </span>
-      <span className="text-[18px] font-bold text-white tabular-nums">
+      <span className="text-[1.125rem] font-bold text-white tabular-nums">
         {formatJarBalance(balance, currency)}
       </span>
     </button>

@@ -96,7 +96,7 @@ export function ChildMoneyTab({ familyId, childId, currency, appView, nudge, onN
       {jarBalances?.enabled ? (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">My jars</span>
+            <span className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">My jars</span>
             <button
               type="button"
               onClick={() => setShowSettings(true)}
@@ -118,7 +118,7 @@ export function ChildMoneyTab({ familyId, childId, currency, appView, nudge, onN
       ) : (
         <div className="bg-[var(--color-surface)] rounded-2xl card-depth border-t-[3px] border-t-[var(--brand-primary)] border border-[var(--color-border)] p-4">
           <div className="flex items-center justify-between mb-1">
-            <div className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            <div className="text-[0.75rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               Available to spend
             </div>
             {jarConfig && (
@@ -135,11 +135,11 @@ export function ChildMoneyTab({ familyId, childId, currency, appView, nudge, onN
               </button>
             )}
           </div>
-          <div className="text-[46px] font-extrabold text-[var(--color-text)] leading-none tracking-tight tabular-nums">
+          <div className="text-[2.875rem] font-extrabold text-[var(--color-text)] leading-none tracking-tight tabular-nums">
             {loading || !balance ? `${symbol}—` : formatCurrency(balance.available, currency)}
           </div>
           {(balance?.pending ?? 0) > 0 && (
-            <p className="text-[13px] text-[var(--color-text-muted)] mt-2">
+            <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-2">
               Pending approval:{' '}
               <strong className="text-amber-500 tabular-nums">
                 {formatCurrency(balance!.pending, currency)}
@@ -249,10 +249,10 @@ export function ChildMoneyTab({ familyId, childId, currency, appView, nudge, onN
 function StatCard({ label, value, tone }: { label: string; value: string; tone: 'brand' | 'muted' }) {
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-3 py-3 text-center">
-      <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
+      <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
         {label}
       </p>
-      <p className={`text-[15px] font-extrabold tabular-nums ${tone === 'brand' ? 'text-[var(--brand-accent)]' : 'text-[var(--color-text)]'}`}>
+      <p className={`text-[0.9375rem] font-extrabold tabular-nums ${tone === 'brand' ? 'text-[var(--brand-accent)]' : 'text-[var(--color-text)]'}`}>
         {value}
       </p>
     </div>
@@ -278,12 +278,12 @@ function SpendingHistory({ spending, currency }: { spending: SpendingRecord[]; c
           >
             <path d="M9 18l6-6-6-6"/>
           </svg>
-          <span className="text-[13px] font-bold text-[var(--color-text)]">My spending</span>
-          <span className="text-[11px] text-[var(--color-text-muted)]">
+          <span className="text-[0.8125rem] font-bold text-[var(--color-text)]">My spending</span>
+          <span className="text-[0.6875rem] text-[var(--color-text-muted)]">
             ({spending.length} item{spending.length !== 1 ? 's' : ''})
           </span>
         </div>
-        <span className="text-[13px] font-bold tabular-nums text-red-400">
+        <span className="text-[0.8125rem] font-bold tabular-nums text-red-400">
           −{formatCurrency(total, currency)}
         </span>
       </button>
@@ -293,11 +293,11 @@ function SpendingHistory({ spending, currency }: { spending: SpendingRecord[]; c
           {spending.map(record => (
             <div key={record.id} className="px-4 py-3 flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-semibold text-[var(--color-text)] truncate">
+                <p className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">
                   {record.title}
                 </p>
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1.5 flex-wrap">
-                  <span className="rounded-full bg-[var(--color-surface-alt)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--color-text-muted)]">
+                <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1.5 flex-wrap">
+                  <span className="rounded-full bg-[var(--color-surface-alt)] px-1.5 py-0.5 text-[0.625rem] font-semibold text-[var(--color-text-muted)]">
                     {spendCategoryHeading(record.category)}
                   </span>
                   {fmtDate(record.spent_at)}
@@ -306,7 +306,7 @@ function SpendingHistory({ spending, currency }: { spending: SpendingRecord[]; c
                   )}
                 </p>
               </div>
-              <span className="text-[14px] font-bold tabular-nums text-red-400 shrink-0">
+              <span className="text-[0.875rem] font-bold tabular-nums text-red-400 shrink-0">
                 −{formatCurrency(record.amount, record.currency)}
               </span>
             </div>

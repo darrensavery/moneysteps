@@ -265,7 +265,7 @@ export function SavingsGrove({
                 placeholder="https://..."
                 className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               />
-              <p className="text-[11px] text-[var(--color-text-muted)]">
+              <p className="text-[0.6875rem] text-[var(--color-text-muted)]">
                 Your parent can use this to check what you want before contributing.
               </p>
             </div>

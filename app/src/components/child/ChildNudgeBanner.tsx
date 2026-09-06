@@ -56,12 +56,12 @@ export function ChildNudgeBanner({ nudge, appView, onDismiss }: Props) {
           <MentorAvatar accent={accent} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: accent }}>
+              <p className="text-[0.625rem] font-black uppercase tracking-wider" style={{ color: accent }}>
                 Your Orchard Mentor
               </p>
               {nudge.source === 'ai' && <AiDisclosurePill />}
             </div>
-            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(167,196,181,0.7)' }}>
+            <p className="text-[0.6875rem] mt-0.5" style={{ color: 'rgba(167,196,181,0.7)' }}>
               {pillarLabel}
             </p>
           </div>
@@ -79,12 +79,12 @@ export function ChildNudgeBanner({ nudge, appView, onDismiss }: Props) {
         </div>
 
         {/* Nudge text */}
-        <p className="text-[13px] leading-relaxed" style={{ color: '#e2f5ee' }}>
+        <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#e2f5ee' }}>
           {text}
         </p>
 
         {/* Attribution footer — the AI-generated distinction is now carried by the header pill above */}
-        <p className="text-[10px] mt-3 text-center" style={{ color: 'rgba(107,158,135,0.6)' }}>
+        <p className="text-[0.625rem] mt-3 text-center" style={{ color: 'rgba(107,158,135,0.6)' }}>
           ✦ Your Orchard Mentor · Personalised coaching
         </p>
 

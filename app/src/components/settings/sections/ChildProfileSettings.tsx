@@ -95,44 +95,44 @@ function InviteCodeSheet({
         onClick={e => e.stopPropagation()}
       >
         <div className="text-center space-y-1">
-          <p className="text-[17px] font-bold text-[var(--color-text)]">
+          <p className="text-[1.0625rem] font-bold text-[var(--color-text)]">
             {child.display_name}&apos;s Invite Code
           </p>
-          <p className="text-[12px] text-[var(--color-text-muted)]">
+          <p className="text-[0.75rem] text-[var(--color-text-muted)]">
             Share this code so {child.display_name} can log in on their device
           </p>
         </div>
 
         {loading && (
-          <p className="text-center text-[14px] text-[var(--color-text-muted)] py-4">Generating…</p>
+          <p className="text-center text-[0.875rem] text-[var(--color-text-muted)] py-4">Generating…</p>
         )}
 
         {error && (
-          <p className="text-center text-[13px] text-red-500">{error}</p>
+          <p className="text-center text-[0.8125rem] text-red-500">{error}</p>
         )}
 
         {code && !loading && (
           <>
             <div className="flex justify-center">
-              <p className="text-[40px] font-extrabold tracking-[0.25em] text-[var(--brand-primary)] font-mono select-all">
+              <p className="text-[2.5rem] font-extrabold tracking-[0.25em] text-[var(--brand-primary)] font-mono select-all">
                 {code}
               </p>
             </div>
-            <p className="text-[11px] text-[var(--color-text-muted)] text-center">
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] text-center">
               Valid for 72 hours · Single use · Generating a new code invalidates the old one
             </p>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={copyCode}
-                className="flex-1 py-3 rounded-xl text-[14px] font-bold border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
+                className="flex-1 py-3 rounded-xl text-[0.875rem] font-bold border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
               >
                 {copied ? '✓ Copied' : 'Copy Code'}
               </button>
               <button
                 type="button"
                 onClick={shareCode}
-                className="flex-1 py-3 rounded-xl text-[14px] font-bold bg-[var(--brand-primary)] text-white hover:opacity-90 transition-opacity cursor-pointer"
+                className="flex-1 py-3 rounded-xl text-[0.875rem] font-bold bg-[var(--brand-primary)] text-white hover:opacity-90 transition-opacity cursor-pointer"
               >
                 Share
               </button>
@@ -143,7 +143,7 @@ function InviteCodeSheet({
         <button
           type="button"
           onClick={onClose}
-          className="w-full text-[13px] text-[var(--color-text-muted)] hover:underline cursor-pointer pt-1"
+          className="w-full text-[0.8125rem] text-[var(--color-text-muted)] hover:underline cursor-pointer pt-1"
         >
           Close
         </button>
@@ -197,7 +197,7 @@ function ResetPinSheet({
         className="w-full max-w-lg bg-[var(--color-surface)] rounded-t-2xl p-6 space-y-5"
         onClick={e => e.stopPropagation()}
       >
-        <p className="text-[17px] font-bold text-[var(--color-text)] text-center">
+        <p className="text-[1.0625rem] font-bold text-[var(--color-text)] text-center">
           Set a new PIN for {child.display_name}
         </p>
 
@@ -216,7 +216,7 @@ function ResetPinSheet({
           ))}
         </div>
 
-        {errMsg && <p className="text-[13px] text-red-500 text-center">{errMsg}</p>}
+        {errMsg && <p className="text-[0.8125rem] text-red-500 text-center">{errMsg}</p>}
 
         {/* Keypad */}
         <div className="grid grid-cols-3 gap-2">
@@ -226,7 +226,7 @@ function ResetPinSheet({
               type="button"
               onClick={() => handleDigit(d)}
               disabled={saving}
-              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.375rem] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             >
               {d}
             </button>
@@ -236,7 +236,7 @@ function ResetPinSheet({
             type="button"
             onClick={() => handleDigit('0')}
             disabled={saving}
-            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[22px] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.375rem] font-bold text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
           >
             0
           </button>
@@ -244,7 +244,7 @@ function ResetPinSheet({
             type="button"
             onClick={handleBackspace}
             disabled={saving}
-            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[18px] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+            className="h-14 rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[1.125rem] text-[var(--color-text-muted)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
             aria-label="Backspace"
           >
             ⌫
@@ -254,7 +254,7 @@ function ResetPinSheet({
         <button
           type="button"
           onClick={onClose}
-          className="w-full text-[13px] text-[var(--color-text-muted)] hover:underline cursor-pointer pt-1"
+          className="w-full text-[0.8125rem] text-[var(--color-text-muted)] hover:underline cursor-pointer pt-1"
         >
           Cancel
         </button>
@@ -335,31 +335,31 @@ function PaymentSettingsView({
 
       {/* Payment Handles — locale-gated */}
       <div>
-        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Payment Handles</p>
+        <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Payment Handles</p>
         <SectionCard>
           <div className="px-4 py-3">
-            <p className="text-[12px] text-[var(--color-text-muted)] mb-3">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-3">
               Your child&apos;s username for their payment app — no @ sign. Used to
               deep-link into your banking app when you pay rewards.
             </p>
             {handles.map(({ key, label, placeholder }) => (
               <label key={key} className="flex items-center gap-3 py-2 border-b border-[var(--color-border)] last:border-0">
-                <span className="w-20 text-[13px] text-[var(--color-text)]">{label}</span>
+                <span className="w-20 text-[0.8125rem] text-[var(--color-text)]">{label}</span>
                 <input
                   type="text"
                   value={handleValues[key] ?? ''}
                   onChange={e => setHandleValues(prev => ({ ...prev, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 text-[0.875rem] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </label>
             ))}
-            {handleErr && <p className="text-[12px] text-red-500 mt-2">{handleErr}</p>}
+            {handleErr && <p className="text-[0.75rem] text-red-500 mt-2">{handleErr}</p>}
             <button
               type="button"
               onClick={saveHandles}
               disabled={handleSaving}
-              className="mt-3 w-full py-2 rounded-xl text-[13px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-50 cursor-pointer"
+              className="mt-3 w-full py-2 rounded-xl text-[0.8125rem] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-50 cursor-pointer"
             >
               {handleSaving ? 'Saving…' : handleSaved ? '✓ Saved' : 'Save Handles'}
             </button>
@@ -370,13 +370,13 @@ function PaymentSettingsView({
       {/* Bank Transfer / Zelle — locale-gated */}
       {(locale === 'en-GB' || locale === 'en-US') && (
         <div>
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">
             {isUS ? 'Zelle' : 'Bank Transfer Details'}
           </p>
           <SectionCard>
             <div className="px-4 py-3">
               {!isUS && (
-                <div className="rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2 text-[11px] text-neutral-600 mb-3">
+                <div className="rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2 text-[0.6875rem] text-neutral-600 mb-3">
                   Stored on this device only — never sent to our servers. If you switch
                   phones, you&apos;ll re-enter them.
                 </div>
@@ -384,34 +384,34 @@ function PaymentSettingsView({
               {!isUS && (
                 <>
                   <label className="flex items-center gap-3 py-2 border-b border-[var(--color-border)]">
-                    <span className="w-32 text-[13px] text-[var(--color-text)]">Sort code</span>
+                    <span className="w-32 text-[0.8125rem] text-[var(--color-text)]">Sort code</span>
                     <input inputMode="numeric" pattern="[0-9]{6}" maxLength={6}
                       value={sortCode} onChange={e => setSortCode(e.target.value.replace(/\D/g, ''))}
                       placeholder="201575"
-                      className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 font-mono text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" />
+                      className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 font-mono text-[0.875rem] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" />
                   </label>
                   <label className="flex items-center gap-3 py-2">
-                    <span className="w-32 text-[13px] text-[var(--color-text)]">Account number</span>
+                    <span className="w-32 text-[0.8125rem] text-[var(--color-text)]">Account number</span>
                     <input inputMode="numeric" pattern="[0-9]{8}" maxLength={8}
                       value={acctNum} onChange={e => setAcctNum(e.target.value.replace(/\D/g, ''))}
                       placeholder="12345678"
-                      className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 font-mono text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" />
+                      className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 font-mono text-[0.875rem] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" />
                   </label>
                 </>
               )}
               {isUS && (
                 <label className="flex items-center gap-3 py-2">
-                  <span className="w-32 text-[13px] text-[var(--color-text)]">Email / phone</span>
+                  <span className="w-32 text-[0.8125rem] text-[var(--color-text)]">Email / phone</span>
                   <input type="text"
                     value={zelle} onChange={e => setZelle(e.target.value)}
                     placeholder="alex@example.com"
-                    className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" />
+                    className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-2 py-1 text-[0.875rem] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" />
                 </label>
               )}
               <button
                 type="button"
                 onClick={saveBankAndMark}
-                className="mt-3 w-full py-2 rounded-xl text-[13px] font-bold bg-[var(--brand-primary)] text-white cursor-pointer"
+                className="mt-3 w-full py-2 rounded-xl text-[0.8125rem] font-bold bg-[var(--brand-primary)] text-white cursor-pointer"
               >
                 {bankSaved ? '✓ Saved' : isUS ? 'Save Zelle Details' : 'Save Bank Details'}
               </button>
@@ -542,7 +542,7 @@ export function ChildProfileSettings({
 
         {/* Identity & Security */}
         <div>
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Identity & Security</p>
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Identity & Security</p>
           <SectionCard>
             <SettingsRow
               icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
@@ -569,21 +569,21 @@ export function ChildProfileSettings({
                   aria-invalid={!!nameError}
                   aria-describedby={nameError ? 'child-profile-name-error' : undefined}
                   placeholder="Child's name"
-                  className="w-full px-3 py-2 text-[14px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="w-full px-3 py-2 text-[0.875rem] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
-                {nameError && <p id="child-profile-name-error" role="alert" className="text-[12px] text-red-500">{nameError}</p>}
+                {nameError && <p id="child-profile-name-error" role="alert" className="text-[0.75rem] text-red-500">{nameError}</p>}
                 <div className="flex gap-2">
                   <button
                     type="submit"
                     disabled={nameSaving || nameInput.trim().length < 1 || nameInput.trim() === child.display_name}
-                    className="flex-1 py-2 rounded-xl text-[13px] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                    className="flex-1 py-2 rounded-xl text-[0.8125rem] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
                   >
                     {nameSaving ? 'Saving…' : 'Save'}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setEditingName(false); setNameError(null) }}
-                    className="px-4 py-2 rounded-xl text-[13px] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
+                    className="px-4 py-2 rounded-xl text-[0.8125rem] font-semibold text-[var(--color-text-muted)] border border-[var(--color-border)] cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -613,7 +613,7 @@ export function ChildProfileSettings({
 
         {/* Payment Settings */}
         <div>
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Payments</p>
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Payments</p>
           <SectionCard>
             <SettingsRow
               icon={<CreditCard size={15} />}
@@ -626,7 +626,7 @@ export function ChildProfileSettings({
 
         {/* Rules & Experience */}
         <div>
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Rules & Experience</p>
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Rules & Experience</p>
           <SectionCard>
             {/* App View — two-option selector */}
             <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
@@ -635,8 +635,8 @@ export function ChildProfileSettings({
                   <TreePine size={15} />
                 </span>
                 <div>
-                  <p className="text-[14px] font-semibold text-[var(--color-text)]">App View</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+                  <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">App View</p>
+                  <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">
                     {appView === 'ORCHARD' ? 'Orchard View — nature metaphors' : 'No Metaphors — plain language'}
                   </p>
                 </div>
@@ -649,7 +649,7 @@ export function ChildProfileSettings({
                     disabled={appViewBusy}
                     onClick={() => { if (appView !== v) onAppViewToggle(child.id, v) }}
                     className={cn(
-                      'py-2.5 rounded-xl border text-[13px] font-semibold transition-colors cursor-pointer disabled:opacity-50',
+                      'py-2.5 rounded-xl border text-[0.8125rem] font-semibold transition-colors cursor-pointer disabled:opacity-50',
                       appView === v
                         ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] text-[var(--brand-primary)]'
                         : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)]',
@@ -675,13 +675,13 @@ export function ChildProfileSettings({
                     <TreePine size={15} />
                   </span>
                   <div className="text-left min-w-0">
-                    <p className="text-[14px] font-semibold text-[var(--color-text)]">Earning Method</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">
+                    <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">Earning Method</p>
+                    <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">
                       {GROWTH_PATHS.find(p => p.mode === (growth?.earnings_mode ?? 'HYBRID'))?.title ?? 'Chores + Allowance'}
                     </p>
                   </div>
                 </div>
-                <span className={cn('text-[var(--color-text-muted)] text-[12px] transition-transform duration-150', expanded ? 'rotate-180' : '')}>▾</span>
+                <span className={cn('text-[var(--color-text-muted)] text-[0.75rem] transition-transform duration-150', expanded ? 'rotate-180' : '')}>▾</span>
               </button>
 
               {expanded && (
@@ -702,12 +702,12 @@ export function ChildProfileSettings({
                         )}
                       >
                         <div className="flex items-center gap-3">
-                          <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[14px]">
+                          <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)] text-[0.875rem]">
                             {path.icon}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className={cn('text-[13px] font-semibold', active ? 'text-[var(--brand-primary)]' : 'text-[var(--color-text)]')}>{path.title}</p>
-                            <p className="text-[11px] text-[var(--color-text-muted)] leading-snug mt-0.5">{path.description}</p>
+                            <p className={cn('text-[0.8125rem] font-semibold', active ? 'text-[var(--brand-primary)]' : 'text-[var(--color-text)]')}>{path.title}</p>
+                            <p className="text-[0.6875rem] text-[var(--color-text-muted)] leading-snug mt-0.5">{path.description}</p>
                           </div>
                           {active && <Check size={14} className="shrink-0 text-[var(--brand-primary)]" />}
                         </div>
@@ -718,7 +718,7 @@ export function ChildProfileSettings({
                   {(growth?.earnings_mode ?? 'HYBRID') !== 'CHORES' && (
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       <div>
-                        <label htmlFor="child-growth-allowance-amount" className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                        <label htmlFor="child-growth-allowance-amount" className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                           Amount ({currencySymbol})
                         </label>
                         <input
@@ -730,16 +730,16 @@ export function ChildProfileSettings({
                             if (!isNaN(whole) && whole >= 0)
                               onGrowthUpdate(child.id, { allowance_amount: Math.round(whole * minorDivisor) })
                           }}
-                          className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                          className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                         />
                       </div>
                       <div>
-                        <label htmlFor="child-growth-allowance-frequency" className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Frequency</label>
+                        <label htmlFor="child-growth-allowance-frequency" className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Frequency</label>
                         <select
                           id="child-growth-allowance-frequency"
                           value={growth?.allowance_frequency ?? 'WEEKLY'}
                           onChange={e => onGrowthUpdate(child.id, { allowance_frequency: e.target.value as 'WEEKLY' | 'BI_WEEKLY' | 'MONTHLY' })}
-                          className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[13px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer"
+                          className="mt-1 w-full border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] cursor-pointer"
                         >
                           {Object.entries(FREQ_LABELS).map(([val, label]) => (
                             <option key={val} value={val}>{label}</option>
@@ -757,7 +757,7 @@ export function ChildProfileSettings({
         {/* Danger Zone */}
         {isLead && (
           <div>
-            <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Danger Zone</p>
+            <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">Danger Zone</p>
             <div className="rounded-xl border-2 border-red-500 overflow-hidden">
               <SettingsRow
                 icon={<AlertTriangle size={15} />}

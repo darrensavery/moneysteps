@@ -101,14 +101,14 @@ function WhatsNewView({ onBack }: { onBack: () => void }) {
               {/* Header row */}
               <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-bold text-[var(--color-text)]">
+                  <span className="text-[0.875rem] font-bold text-[var(--color-text)]">
                     v{release.version}
                   </span>
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${TAG_STYLES[release.tag]}`}>
+                  <span className={`inline-flex items-center gap-1 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${TAG_STYLES[release.tag]}`}>
                     {TAG_ICONS[release.tag]} {release.tag}
                   </span>
                 </div>
-                <span className="text-[11px] text-[var(--color-text-muted)]">{release.date}</span>
+                <span className="text-[0.6875rem] text-[var(--color-text-muted)]">{release.date}</span>
               </div>
 
               {/* Items */}
@@ -116,7 +116,7 @@ function WhatsNewView({ onBack }: { onBack: () => void }) {
                 {release.items.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="mt-[5px] shrink-0 w-1.5 h-1.5 rounded-full bg-[var(--brand-primary)] opacity-60" />
-                    <span className="text-[12px] text-[var(--color-text-muted)] leading-snug">{item}</span>
+                    <span className="text-[0.75rem] text-[var(--color-text-muted)] leading-snug">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -127,7 +127,7 @@ function WhatsNewView({ onBack }: { onBack: () => void }) {
 
       <SectionCard>
         <div className="px-4 py-3">
-          <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+          <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-relaxed">
             Morechard is actively developed. Updates are released regularly — check back often for new features and improvements.
           </p>
         </div>
@@ -163,9 +163,9 @@ function LinkRow({
         {icon}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-semibold text-[var(--color-text)]">{label}</p>
+        <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{label}</p>
         {description && (
-          <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">{description}</p>
+          <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">{description}</p>
         )}
       </div>
       <ExternalLink size={13} className="shrink-0 text-[var(--color-text-muted)]" />
@@ -260,8 +260,8 @@ export function SupportSettings({ toast, onBack }: Props) {
             <Search size={15} />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-[var(--color-text)]">Contact Support</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">Contact Support</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
               Send us a message — we'll get back to you by email
             </p>
           </div>
@@ -271,7 +271,7 @@ export function SupportSettings({ toast, onBack }: Props) {
 
       {/* ── App updates ── */}
       <div>
-        <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
+        <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
           Updates
         </p>
         <SectionCard>
@@ -284,8 +284,8 @@ export function SupportSettings({ toast, onBack }: Props) {
               <Sparkles size={15} />
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-semibold text-[var(--color-text)]">What's New</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">What's New</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                 Recent updates and improvements
               </p>
             </div>
@@ -296,7 +296,7 @@ export function SupportSettings({ toast, onBack }: Props) {
 
       {/* ── Legal footer ── */}
       <div>
-        <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
+        <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5 px-1">
           Legal
         </p>
         <SectionCard>
@@ -318,8 +318,8 @@ export function SupportSettings({ toast, onBack }: Props) {
       {/* ── Version ── */}
       <SectionCard>
         <div className="px-4 py-3.5 flex items-center justify-between">
-          <p className="text-[13px] font-semibold text-[var(--color-text-muted)]">App version</p>
-          <p className="text-[13px] font-bold text-[var(--color-text)] tabular-nums">{version}</p>
+          <p className="text-[0.8125rem] font-semibold text-[var(--color-text-muted)]">App version</p>
+          <p className="text-[0.8125rem] font-bold text-[var(--color-text)] tabular-nums">{version}</p>
         </div>
       </SectionCard>
 
@@ -335,7 +335,7 @@ export function SupportSettings({ toast, onBack }: Props) {
             className="w-full max-w-sm bg-[var(--color-surface)] rounded-2xl p-5 space-y-4"
           >
             <div className="flex items-center justify-between">
-              <p className="text-[15px] font-bold text-[var(--color-text)]">Contact Support</p>
+              <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">Contact Support</p>
               <button
                 onClick={() => { setShowContactModal(false); setContactText('') }}
                 className="tap-target-44 text-[var(--color-text-muted)] cursor-pointer"
@@ -345,7 +345,7 @@ export function SupportSettings({ toast, onBack }: Props) {
             </div>
 
             {contactSent ? (
-              <p className="text-[13px] text-[var(--color-text-muted)]">
+              <p className="text-[0.8125rem] text-[var(--color-text-muted)]">
                 Thanks — we've received your message and will get back to you by email.
               </p>
             ) : (
@@ -361,16 +361,16 @@ export function SupportSettings({ toast, onBack }: Props) {
                   aria-required="true"
                   aria-invalid={!!contactError}
                   aria-describedby={contactError ? 'support-contact-error' : undefined}
-                  className="w-full rounded-xl border border-[var(--color-border)] px-3 py-2 text-[13px] text-[var(--color-text)] bg-[var(--color-surface)]"
+                  className="w-full rounded-xl border border-[var(--color-border)] px-3 py-2 text-[0.8125rem] text-[var(--color-text)] bg-[var(--color-surface)]"
                 />
                 {contactError && (
-                  <p id="support-contact-error" role="alert" className="text-[12px] text-red-600">{contactError}</p>
+                  <p id="support-contact-error" role="alert" className="text-[0.75rem] text-red-600">{contactError}</p>
                 )}
                 <button
                   type="button"
                   disabled={contactSubmitting || !contactText.trim()}
                   onClick={submitContactRequest}
-                  className="w-full py-3 rounded-xl bg-[var(--brand-primary)] text-white text-[14px] font-bold disabled:opacity-50 cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-[var(--brand-primary)] text-white text-[0.875rem] font-bold disabled:opacity-50 cursor-pointer"
                 >
                   {contactSubmitting ? 'Sending…' : 'Send'}
                 </button>

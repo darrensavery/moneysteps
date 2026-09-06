@@ -30,11 +30,11 @@ export function PaymentTileGrid({ onSelect, availability }: Props) {
             {t.id === 'bank' ? (
               <Landmark size={24} />
             ) : (
-              <span className="text-[22px]" aria-hidden>{t.emoji}</span>
+              <span className="text-[1.375rem]" aria-hidden>{t.emoji}</span>
             )}
-            <span className="text-[13px] font-semibold">{t.label}</span>
+            <span className="text-[0.8125rem] font-semibold">{t.label}</span>
             {!ok && t.id !== 'bank' && (
-              <span className="text-[10px] text-neutral-400">No handle</span>
+              <span className="text-[0.625rem] text-neutral-400">No handle</span>
             )}
           </button>
         );

@@ -280,13 +280,13 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
         >
           <button
             onClick={() => setShowPayout(true)}
-            className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[14px] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
+            className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
           >
             Pay out
           </button>
           <button
             onClick={() => setShowBonus(true)}
-            className="flex-1 border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold py-3 rounded-xl text-[14px] bg-[var(--color-surface)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)] active:scale-[0.98] transition-all cursor-pointer shadow-lg"
+            className="flex-1 border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold py-3 rounded-xl text-[0.875rem] bg-[var(--color-surface)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)] active:scale-[0.98] transition-all cursor-pointer shadow-lg"
           >
             + Bonus
           </button>
@@ -297,7 +297,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
       {siblingsWithPending.length > 0 && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 px-3.5 py-2.5 flex items-center gap-2.5">
           <span className="text-amber-500 text-base shrink-0">⏳</span>
-          <p className="text-[12px] text-amber-800 dark:text-amber-300 leading-snug">
+          <p className="text-[0.75rem] text-amber-800 dark:text-amber-300 leading-snug">
             <strong>{siblingsWithPending.join(' & ')}</strong> also {siblingsWithPending.length === 1 ? 'has' : 'have'} submissions waiting — switch child to review.
           </p>
         </div>
@@ -307,10 +307,10 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
       {!pendingLoading && completions.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[12px] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider">
+            <p className="text-[0.75rem] font-extrabold text-[var(--color-text-muted)] uppercase tracking-wider">
               Pending Approvals
             </p>
-            <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5 leading-none">
+            <span className="bg-red-500 text-white text-[0.625rem] font-bold rounded-full px-2 py-0.5 leading-none">
               {completions.length}
             </span>
           </div>
@@ -320,7 +320,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             <button
               onClick={() => setShowApproveAllModal(true)}
               disabled={approveAllBusy}
-              className="w-full bg-[var(--brand-primary)] text-white font-bold py-3.5 rounded-2xl text-[15px] hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
+              className="w-full bg-[var(--brand-primary)] text-white font-bold py-3.5 rounded-2xl text-[0.9375rem] hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
             >
               {approveAllBusy ? (
                 <span className="flex items-center justify-center gap-2">
@@ -367,8 +367,8 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             className="relative bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4"
           >
             <div>
-              <p className="text-[18px] font-extrabold text-[var(--color-text)] tracking-tight">Confirm payment</p>
-              <p className="text-[13px] text-[var(--color-text-muted)] mt-1 leading-relaxed">
+              <p className="text-[1.125rem] font-extrabold text-[var(--color-text)] tracking-tight">Confirm payment</p>
+              <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1 leading-relaxed">
                 You are about to pay out <strong className="text-[var(--color-text)]">{completions.length} chore{completions.length !== 1 ? 's' : ''}</strong> totalling{' '}
                 <strong className="text-[var(--brand-primary)]">{formatCurrency(approveAllTotal, approveAllCurrency)}</strong>.
                 Have you verified that these chores meet the agreed standard?
@@ -377,8 +377,8 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             <div className="max-h-48 overflow-y-auto rounded-xl border border-[var(--color-border)] divide-y divide-[var(--color-border)]">
               {completions.map(c => (
                 <div key={c.id} className="flex items-center justify-between px-3.5 py-2.5">
-                  <span className="text-[13px] text-[var(--color-text)] truncate mr-3">{c.chore_title}</span>
-                  <span className="text-[13px] font-semibold tabular-nums text-[var(--brand-primary)] shrink-0">
+                  <span className="text-[0.8125rem] text-[var(--color-text)] truncate mr-3">{c.chore_title}</span>
+                  <span className="text-[0.8125rem] font-semibold tabular-nums text-[var(--brand-primary)] shrink-0">
                     {formatCurrency(c.reward_amount, c.currency)}
                   </span>
                 </div>
@@ -387,13 +387,13 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             <div className="flex gap-2.5">
               <button
                 onClick={() => setShowApproveAllModal(false)}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-3 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => challenge(handleConfirmApproveAll)}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[14px] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all shadow-sm"
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-3 text-[0.875rem] font-bold hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all shadow-sm"
               >
                 Confirm &amp; pay
               </button>
@@ -411,7 +411,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
           !!bankDetails?.zelleHandle
         return (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-[13px] font-semibold text-amber-900">
+            <p className="text-[0.8125rem] font-semibold text-amber-900">
               {formatCurrency(unpaidRow.unpaid_total, unpaidRow.currency)} approved but not yet transferred
             </p>
             {hasPaymentDetails && onOpenBridge ? (
@@ -419,14 +419,14 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                 <button
                   type="button"
                   onClick={onOpenBridge}
-                  className="rounded-lg bg-amber-800 px-3 py-1.5 text-[12px] font-semibold text-white"
+                  className="rounded-lg bg-amber-800 px-3 py-1.5 text-[0.75rem] font-semibold text-white"
                 >
                   Pay now
                 </button>
-                <span className="text-[11px] text-amber-700">or use Pay out above to log cash</span>
+                <span className="text-[0.6875rem] text-amber-700">or use Pay out above to log cash</span>
               </div>
             ) : (
-              <p className="text-[12px] text-amber-700 mt-0.5">
+              <p className="text-[0.75rem] text-amber-700 mt-0.5">
                 Use the Pay out button above to transfer earnings
               </p>
             )}
@@ -444,7 +444,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
         <MiniSheet onClose={() => { setShowPayout(false); setPayoutError(null) }}>
           <form onSubmit={handlePayout} className="px-5 pb-5 space-y-3" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[15px] font-bold text-[var(--color-text)]">Pay out to {child.display_name}</p>
+              <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">Pay out to {child.display_name}</p>
               <button type="button" onClick={() => { setShowPayout(false); setPayoutError(null) }}
                 className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -452,28 +452,28 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             </div>
             <ErrorBox message={payoutError} />
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">{currencySymbol(unpaidRow?.currency ?? familyCurrency)}</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.875rem] text-[var(--color-text-muted)]">{currencySymbol(unpaidRow?.currency ?? familyCurrency)}</span>
               <input
                 type="number" min="0.01" step="0.01" required autoFocus
-                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 placeholder="0.00"
                 value={payoutAmount}
                 onChange={e => setPayoutAmount(e.target.value)}
               />
             </div>
             <input
-              className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+              className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               placeholder="Note (optional)"
               value={payoutNote}
               onChange={e => setPayoutNote(e.target.value)}
             />
             <div className="flex gap-2 pt-1">
               <button type="button" onClick={() => { setShowPayout(false); setPayoutError(null) }}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">
                 Cancel
               </button>
               <button type="submit" disabled={payoutBusy}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-extrabold hover:opacity-90 disabled:opacity-50 cursor-pointer ring-2 ring-[var(--brand-primary)] ring-offset-1">
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.875rem] font-extrabold hover:opacity-90 disabled:opacity-50 cursor-pointer ring-2 ring-[var(--brand-primary)] ring-offset-1">
                 {payoutBusy ? 'Saving…' : '✓ Confirm payment'}
               </button>
             </div>
@@ -486,7 +486,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
         <MiniSheet onClose={() => { setShowBonus(false); setBonusError(null) }}>
           <form onSubmit={handleBonus} className="px-5 pb-5 space-y-3" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[15px] font-bold text-[var(--color-text)]">Add bonus for {child.display_name}</p>
+              <p className="text-[0.9375rem] font-bold text-[var(--color-text)]">Add bonus for {child.display_name}</p>
               <button type="button" onClick={() => { setShowBonus(false); setBonusError(null) }}
                 className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] cursor-pointer">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -494,10 +494,10 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             </div>
             <ErrorBox message={bonusError} />
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--color-text-muted)]">{currencySymbol(familyCurrency)}</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.875rem] text-[var(--color-text-muted)]">{currencySymbol(familyCurrency)}</span>
               <input
                 type="number" min="0.01" step="0.01" required autoFocus
-                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                className="w-full border border-[var(--color-border)] rounded-lg pl-7 pr-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 placeholder="0.00"
                 value={bonusAmount}
                 onChange={e => setBonusAmount(e.target.value)}
@@ -505,18 +505,18 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             </div>
             <input
               required
-              className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[14px] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+              className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               placeholder="Reason (required)"
               value={bonusReason}
               onChange={e => setBonusReason(e.target.value)}
             />
             <div className="flex gap-2 pt-1">
               <button type="button" onClick={() => { setShowBonus(false); setBonusError(null) }}
-                className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">
+                className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer">
                 Cancel
               </button>
               <button type="submit" disabled={bonusBusy}
-                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.875rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
                 {bonusBusy ? 'Saving…' : 'Add bonus'}
               </button>
             </div>
@@ -527,17 +527,17 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
       {/* ── Recent payouts ───────────────────────────────────────────────────── */}
       {payouts.length > 0 && (
         <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl divide-y divide-[var(--color-border)]">
-          <p className="px-4 py-2.5 text-[13px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Recent payouts</p>
+          <p className="px-4 py-2.5 text-[0.8125rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Recent payouts</p>
           {payouts.slice(0, 3).map(p => (
             <div key={p.id} className="px-4 py-3 flex items-center justify-between">
               <div>
-                <p className="text-[14px] font-semibold text-[var(--color-text)]">{formatCurrency(p.amount, p.currency)}</p>
-                <p className="text-[12px] text-[var(--color-text-muted)]">
+                <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{formatCurrency(p.amount, p.currency)}</p>
+                <p className="text-[0.75rem] text-[var(--color-text-muted)]">
                   {new Date(p.paid_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                   {p.note && ` · ${p.note}`}
                 </p>
               </div>
-              <span className="text-[12px] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] rounded-full px-2 py-1">Paid</span>
+              <span className="text-[0.75rem] font-semibold text-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_12%,transparent)] rounded-full px-2 py-1">Paid</span>
             </div>
           ))}
         </div>
@@ -577,7 +577,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
               <button
                 type="button"
                 onClick={() => setHistoryOpen(o => !o)}
-                className="flex items-center gap-2 text-[13px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide cursor-pointer"
+                className="flex items-center gap-2 text-[0.8125rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide cursor-pointer"
               >
                 <svg
                   width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -588,7 +588,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                 </svg>
                 Chore history
                 {history.length > 0 && (
-                  <span className="text-[11px] font-semibold text-[var(--color-text-muted)] normal-case tracking-normal">
+                  <span className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] normal-case tracking-normal">
                     ({history.length})
                   </span>
                 )}
@@ -597,7 +597,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                 <button
                   type="button"
                   onClick={() => setHistorySort(s => s === 'date-desc' ? 'date-asc' : 'date-desc')}
-                  className="tap-target-44 flex items-center gap-1 text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-[var(--color-surface-alt)]"
+                  className="tap-target-44 flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-[var(--color-surface-alt)]"
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M3 6h18M7 12h10M11 18h2"/>
@@ -608,9 +608,9 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
             </div>
 
             {!historyOpen ? null : loading && history.length === 0 ? (
-              <div className="px-4 py-6 text-center text-[14px] text-[var(--color-text-muted)]">Loading…</div>
+              <div className="px-4 py-6 text-center text-[0.875rem] text-[var(--color-text-muted)]">Loading…</div>
             ) : history.length === 0 ? (
-              <div className="px-4 py-6 text-center text-[14px] text-[var(--color-text-muted)]">No history yet.</div>
+              <div className="px-4 py-6 text-center text-[0.875rem] text-[var(--color-text-muted)]">No history yet.</div>
             ) : (
               <div className="divide-y divide-[var(--color-border)]">
                 {groups.map(([key, items]) => {
@@ -641,13 +641,13 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                           >
                             <path d="M9 18l6-6-6-6"/>
                           </svg>
-                          <span className="text-[12px] font-bold text-[var(--color-text)]">{monthLabel}</span>
-                          <span className="text-[11px] text-[var(--color-text-muted)]">
+                          <span className="text-[0.75rem] font-bold text-[var(--color-text)]">{monthLabel}</span>
+                          <span className="text-[0.6875rem] text-[var(--color-text-muted)]">
                             {items.length} chore{items.length !== 1 ? 's' : ''}
                           </span>
                         </div>
                         {monthTotal > 0 && (
-                          <span className="text-[12px] font-bold tabular-nums text-[var(--brand-primary)]">
+                          <span className="text-[0.75rem] font-bold tabular-nums text-[var(--brand-primary)]">
                             {formatCurrency(monthTotal, currency)}
                           </span>
                         )}
@@ -667,7 +667,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                                 className="w-full text-left px-4 py-3 flex items-center justify-between gap-2 hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer opacity-90 hover:opacity-100"
                               >
                                 <div className="min-w-0 flex-1">
-                                  <p className="text-[14px] font-semibold text-[var(--color-text)] truncate flex items-center gap-1.5">
+                                  <p className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate flex items-center gap-1.5">
                                     {item.chore_title}
                                     {item.proof_url && (
                                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-label="Has photo">
@@ -675,12 +675,12 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                                       </svg>
                                     )}
                                   </p>
-                                  <p className="text-[12px] text-[var(--color-text-muted)]">
+                                  <p className="text-[0.75rem] text-[var(--color-text-muted)]">
                                     {formatCurrency(item.reward_amount, item.currency)} ·{' '}
                                     {itemDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                   </p>
                                 </div>
-                                <span className={`shrink-0 text-[11px] font-bold rounded-full px-2 py-1 ${s.bg} ${s.text}`}>
+                                <span className={`shrink-0 text-[0.6875rem] font-bold rounded-full px-2 py-1 ${s.bg} ${s.text}`}>
                                   {s.label}
                                 </span>
                               </button>
@@ -755,8 +755,8 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-3 pb-3 border-b border-[var(--color-border)] shrink-0">
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">Chore</p>
-            <h2 className="text-[16px] font-bold text-[var(--color-text)] leading-snug truncate pr-2">{c.chore_title}</h2>
+            <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-0.5">Chore</p>
+            <h2 className="text-[1rem] font-bold text-[var(--color-text)] leading-snug truncate pr-2">{c.chore_title}</h2>
           </div>
           <button
             type="button"
@@ -776,7 +776,7 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
             <p className="text-2xl font-bold tabular-nums text-[var(--brand-primary)]">
               {formatCurrency(c.reward_amount, c.currency)}
             </p>
-            <span className={`text-[11px] font-bold rounded-full px-2.5 py-1 ${s.bg} ${s.text}`}>
+            <span className={`text-[0.6875rem] font-bold rounded-full px-2.5 py-1 ${s.bg} ${s.text}`}>
               {statusLabel[c.status] ?? c.status}
             </span>
           </div>
@@ -798,7 +798,7 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
           {/* Child's note */}
           {c.note && (
             <div className="rounded-xl border border-[var(--color-border)] p-3">
-              <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
+              <p className="text-[0.625rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
                 {c.child_name}'s note
               </p>
               <p className="text-sm text-[var(--color-text)] leading-snug italic">"{c.note}"</p>
@@ -808,7 +808,7 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
           {/* Parent notes */}
           {(c.parent_notes || c.rejection_note) && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
-              <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider mb-1">Parent feedback</p>
+              <p className="text-[0.625rem] font-semibold text-amber-700 uppercase tracking-wider mb-1">Parent feedback</p>
               <p className="text-sm text-amber-900 leading-snug">
                 {c.parent_notes ?? c.rejection_note}
               </p>
@@ -822,7 +822,7 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-text-muted)]">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
                 </svg>
-                <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Proof photo</p>
+                <p className="text-[0.6875rem] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Proof photo</p>
               </div>
               <div className="p-3">
                 {proofState === 'loading' && (
@@ -839,7 +839,7 @@ export function ChoreDetailSheet({ completion: c, onClose }: { completion: Compl
                 {proofState === 'loaded' && proofUrl && (
                   <a href={proofUrl} target="_blank" rel="noopener noreferrer" className="block">
                     <img src={proofUrl} alt="Proof of work" className="w-full rounded-lg object-contain max-h-80" />
-                    <p className="text-[10px] text-center text-[var(--color-text-muted)] mt-1.5">Tap image to open full size ↗</p>
+                    <p className="text-[0.625rem] text-center text-[var(--color-text-muted)] mt-1.5">Tap image to open full size ↗</p>
                   </a>
                 )}
               </div>
@@ -898,19 +898,19 @@ function MentorEmptyCard({
             <MentorAvatar />
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
                   Orchard Mentor
                 </span>
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
               </div>
-              <p className="text-[15px] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
                 {heading}
               </p>
             </div>
           </div>
           <ProBadge />
         </div>
-        <p className="text-[13px] leading-relaxed" style={{ color: '#a7c4b5' }}>
+        <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#a7c4b5' }}>
           {mentorLine}
         </p>
       </div>
@@ -971,7 +971,7 @@ function AuditCard({
 
       {/* Proof image / archived evidence guard */}
       {c.pruned_at != null && c.proof_exif == null ? (
-        <p className="px-4 pt-3 pb-1 text-[12px] text-[var(--color-text-muted)] italic">
+        <p className="px-4 pt-3 pb-1 text-[0.75rem] text-[var(--color-text-muted)] italic">
           Details archived (2+ years old)
         </p>
       ) : hasProof && (
@@ -983,7 +983,7 @@ function AuditCard({
           )}
           {proofError && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-[12px] text-[var(--color-text-muted)]">Evidence expired or unavailable</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)]">Evidence expired or unavailable</p>
             </div>
           )}
           {proofUrl && !proofError && (
@@ -1003,13 +1003,13 @@ function AuditCard({
           {/* Gradient overlay for readability */}
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
           <div className="absolute bottom-2.5 left-3 pointer-events-none">
-            <span className="text-[11px] font-semibold text-white/90 bg-black/40 rounded-full px-2 py-0.5">
+            <span className="text-[0.6875rem] font-semibold text-white/90 bg-black/40 rounded-full px-2 py-0.5">
               📷 Evidence photo
             </span>
           </div>
           {proofUrl && !proofError && (
             <div className="absolute bottom-2.5 right-3 pointer-events-none">
-              <span className="text-[11px] font-semibold text-white/90 bg-black/40 rounded-full px-2 py-0.5">
+              <span className="text-[0.6875rem] font-semibold text-white/90 bg-black/40 rounded-full px-2 py-0.5">
                 ⤢ Tap to expand
               </span>
             </div>
@@ -1046,22 +1046,22 @@ function AuditCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-[15px] font-bold text-[var(--color-text)] leading-tight">{c.chore_title}</p>
+              <p className="text-[0.9375rem] font-bold text-[var(--color-text)] leading-tight">{c.chore_title}</p>
               {isResubmission && (
-                <span className="shrink-0 text-[10px] font-extrabold text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-400 rounded-full px-2 py-0.5 uppercase tracking-wide">
+                <span className="shrink-0 text-[0.625rem] font-extrabold text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-400 rounded-full px-2 py-0.5 uppercase tracking-wide">
                   Re-submission #{c.attempt_count}
                 </span>
               )}
             </div>
-            <p className="text-[13px] font-semibold text-[var(--brand-primary)] mt-0.5">
+            <p className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] mt-0.5">
               {formatCurrency(c.reward_amount, c.currency)}
             </p>
             {c.note && (
-              <p className="text-[12px] text-[var(--color-text-muted)] mt-1 italic">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-1 italic">
                 "{c.note}"
               </p>
             )}
-            <p className="text-[11px] text-[var(--color-text-muted)] mt-1.5">{submittedAt}</p>
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-1.5">{submittedAt}</p>
           </div>
         </div>
       </div>
@@ -1069,11 +1069,11 @@ function AuditCard({
       {/* Revise drawer */}
       {isRevising && (
         <div className="px-4 pb-4 space-y-2.5 border-t border-[var(--color-border)] pt-3">
-          <p className="text-[12px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <p className="text-[0.75rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">
             Feedback for {c.child_name}
           </p>
           <textarea
-            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+            className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
             placeholder="What needs to be improved? Be specific so they know exactly what to fix."
             rows={3}
             value={reviseNote}
@@ -1083,14 +1083,14 @@ function AuditCard({
           <div className="flex gap-2">
             <button
               onClick={onCancelRevise}
-              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
+              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={onConfirmRevise}
               disabled={busy || !reviseNote.trim()}
-              className="flex-1 bg-amber-500 text-white rounded-xl py-2.5 text-[14px] font-bold hover:bg-amber-600 disabled:opacity-50 cursor-pointer transition-colors"
+              className="flex-1 bg-amber-500 text-white rounded-xl py-2.5 text-[0.875rem] font-bold hover:bg-amber-600 disabled:opacity-50 cursor-pointer transition-colors"
             >
               {busy ? 'Sending…' : 'Send feedback →'}
             </button>
@@ -1101,11 +1101,11 @@ function AuditCard({
       {/* Reject drawer */}
       {isRejecting && (
         <div className="px-4 pb-4 space-y-2.5 border-t border-red-200 dark:border-red-900 pt-3 bg-red-50 dark:bg-red-950/20">
-          <p className="text-[12px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">
+          <p className="text-[0.75rem] font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">
             Reject this submission
           </p>
           <textarea
-            className="w-full border border-red-200 dark:border-red-800 rounded-xl px-3.5 py-2.5 text-[13px] resize-none bg-white dark:bg-red-950/30 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+            className="w-full border border-red-200 dark:border-red-800 rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-white dark:bg-red-950/30 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
             placeholder="Explain why this is rejected (optional but helpful)"
             rows={2}
             value={rejectNote}
@@ -1115,14 +1115,14 @@ function AuditCard({
           <div className="flex gap-2">
             <button
               onClick={onCancelReject}
-              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
+              className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={onConfirmReject}
               disabled={busy}
-              className="flex-1 bg-red-600 text-white rounded-xl py-2.5 text-[14px] font-bold hover:bg-red-700 disabled:opacity-50 cursor-pointer transition-colors"
+              className="flex-1 bg-red-600 text-white rounded-xl py-2.5 text-[0.875rem] font-bold hover:bg-red-700 disabled:opacity-50 cursor-pointer transition-colors"
             >
               {busy ? 'Rejecting…' : 'Reject ✗'}
             </button>
@@ -1136,7 +1136,7 @@ function AuditCard({
           <button
             onClick={onStartReject}
             disabled={anyBusy}
-            className="flex-1 py-3.5 text-[13px] font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 cursor-pointer transition-colors"
+            className="flex-1 py-3.5 text-[0.8125rem] font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 cursor-pointer transition-colors"
           >
             Reject
           </button>
@@ -1144,7 +1144,7 @@ function AuditCard({
           <button
             onClick={onStartRevise}
             disabled={anyBusy}
-            className="flex-1 py-3.5 text-[13px] font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-40 cursor-pointer transition-colors"
+            className="flex-1 py-3.5 text-[0.8125rem] font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-40 cursor-pointer transition-colors"
           >
             Revise
           </button>
@@ -1152,7 +1152,7 @@ function AuditCard({
           <button
             onClick={onApprove}
             disabled={anyBusy}
-            className="flex-1 py-3.5 text-[13px] font-bold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] disabled:opacity-40 cursor-pointer transition-colors"
+            className="flex-1 py-3.5 text-[0.8125rem] font-bold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] disabled:opacity-40 cursor-pointer transition-colors"
           >
             {busy ? (
               <span className="flex items-center justify-center gap-1.5">

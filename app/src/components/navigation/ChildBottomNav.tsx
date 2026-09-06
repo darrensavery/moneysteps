@@ -99,7 +99,7 @@ export function ChildBottomNav({ activeTab, onTabChange, badges = {}, disabled =
                     {badge != null && badge > 0 && (
                       <span
                         key={badge}
-                        className="badge-pop absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[15px] h-[15px] flex items-center justify-center px-[3px] leading-none tabular-nums"
+                        className="badge-pop absolute -top-1.5 -right-2 bg-red-500 text-white text-[0.5625rem] font-bold rounded-full min-w-[15px] h-[15px] flex items-center justify-center px-[3px] leading-none tabular-nums"
                       >
                         {badge > 9 ? '9+' : badge}
                       </span>
@@ -108,7 +108,7 @@ export function ChildBottomNav({ activeTab, onTabChange, badges = {}, disabled =
 
                   {/* Label */}
                   <span
-                    className={`text-[10px] font-semibold tracking-tight transition-colors duration-200 ${
+                    className={`text-[0.625rem] font-semibold tracking-tight transition-colors duration-200 ${
                       isActive
                         ? 'text-[var(--brand-primary)]'
                         : 'text-[var(--color-text-muted)]'

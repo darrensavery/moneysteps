@@ -59,10 +59,10 @@ export function GovernanceConsentBanner({ familyId, userId }: Props) {
       <div className="flex items-start gap-3">
         <span className="text-amber-500 text-lg shrink-0 mt-0.5">⚖️</span>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold text-amber-700 dark:text-amber-300 mb-1">
+          <p className="text-[0.8125rem] font-bold text-amber-700 dark:text-amber-300 mb-1">
             {isRequester ? 'Awaiting co-parent consent' : 'Co-parent consent required'}
           </p>
-          <p className="text-[12px] text-amber-800/80 dark:text-amber-300/80 leading-snug mb-3">
+          <p className="text-[0.75rem] text-amber-800/80 dark:text-amber-300/80 leading-snug mb-3">
             {isRequester
               ? `You requested a switch to ${modeLabel}. Waiting for your co-parent to confirm. Expires in ${fmtExpiry(pending.expires_at)}.`
               : `Your co-parent wants to switch to ${modeLabel}. This changes how chore payments are verified. Expires in ${fmtExpiry(pending.expires_at)}.`
@@ -74,7 +74,7 @@ export function GovernanceConsentBanner({ familyId, userId }: Props) {
                 type="button"
                 onClick={handleConfirm}
                 disabled={busy}
-                className="flex-1 rounded-lg bg-amber-600 text-white text-[12px] font-semibold py-2 px-3 disabled:opacity-50 cursor-pointer hover:bg-amber-700 transition-colors"
+                className="flex-1 rounded-lg bg-amber-600 text-white text-[0.75rem] font-semibold py-2 px-3 disabled:opacity-50 cursor-pointer hover:bg-amber-700 transition-colors"
               >
                 {busy ? '…' : 'Confirm'}
               </button>
@@ -82,7 +82,7 @@ export function GovernanceConsentBanner({ familyId, userId }: Props) {
                 type="button"
                 onClick={handleReject}
                 disabled={busy}
-                className="flex-1 rounded-lg bg-white/10 text-[var(--color-text-muted)] text-[12px] py-2 px-3 disabled:opacity-50 cursor-pointer hover:bg-white/20 transition-colors"
+                className="flex-1 rounded-lg bg-white/10 text-[var(--color-text-muted)] text-[0.75rem] py-2 px-3 disabled:opacity-50 cursor-pointer hover:bg-white/20 transition-colors"
               >
                 Decline
               </button>

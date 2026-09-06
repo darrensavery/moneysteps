@@ -143,18 +143,18 @@ export function ActiveSessionsSettings({ onBack }: Props) {
       {loading && (
         <div className="flex items-center justify-center py-10 gap-2 text-[var(--color-text-muted)]">
           <Loader2 size={18} className="animate-spin" />
-          <span className="text-[13px]">Loading sessions…</span>
+          <span className="text-[0.8125rem]">Loading sessions…</span>
         </div>
       )}
 
       {error && !loading && (
         <div className="bg-[var(--color-surface)] border border-red-200 rounded-xl p-5 flex flex-col items-center gap-3 text-center">
           <AlertCircle size={22} className="text-red-500" />
-          <p className="text-[13px] text-[var(--color-text-muted)]">Could not load sessions. Try again.</p>
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)]">Could not load sessions. Try again.</p>
           <button
             type="button"
             onClick={load}
-            className="px-4 py-2 rounded-xl text-[13px] font-bold bg-[var(--brand-primary)] text-white cursor-pointer"
+            className="px-4 py-2 rounded-xl text-[0.8125rem] font-bold bg-[var(--brand-primary)] text-white cursor-pointer"
           >
             Retry
           </button>
@@ -165,7 +165,7 @@ export function ActiveSessionsSettings({ onBack }: Props) {
         <>
           {sessions.length === 0 ? (
             <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-6 text-center">
-              <p className="text-[13px] text-[var(--color-text-muted)]">No active sessions found.</p>
+              <p className="text-[0.8125rem] text-[var(--color-text-muted)]">No active sessions found.</p>
             </div>
           ) : (
             <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">
@@ -186,14 +186,14 @@ export function ActiveSessionsSettings({ onBack }: Props) {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-[14px] font-semibold text-[var(--color-text)] truncate">{label}</p>
+                        <p className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">{label}</p>
                         {isCurrent && (
-                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-teal-100 text-teal-700">
+                          <span className="shrink-0 text-[0.625rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-teal-100 text-teal-700">
                             current
                           </span>
                         )}
                       </div>
-                      <p className="text-[12px] text-[var(--color-text-muted)] mt-0.5">{age}</p>
+                      <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5">{age}</p>
                     </div>
 
                     {!isCurrent && (
@@ -201,7 +201,7 @@ export function ActiveSessionsSettings({ onBack }: Props) {
                         type="button"
                         onClick={() => handleRevoke(session.jti)}
                         disabled={isRevoking}
-                        className="tap-target-44 shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-bold text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                        className="tap-target-44 shrink-0 px-3 py-1.5 rounded-lg text-[0.75rem] font-bold text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-colors"
                       >
                         {isRevoking ? '…' : 'Revoke'}
                       </button>
@@ -217,18 +217,18 @@ export function ActiveSessionsSettings({ onBack }: Props) {
               type="button"
               onClick={handleRevokeAll}
               disabled={revokeAll}
-              className="w-full py-3 rounded-xl text-[14px] font-bold text-red-600 bg-transparent border border-red-200 hover:bg-red-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 rounded-xl text-[0.875rem] font-bold text-red-600 bg-transparent border border-red-200 hover:bg-red-50 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
             >
               {revokeAll ? 'Revoking…' : 'Revoke All Other Devices'}
             </button>
           )}
 
           {otherSessions.length === 0 && sessions.length > 0 && (
-            <p className="text-center text-[12px] text-[var(--color-text-muted)]">No other devices logged in.</p>
+            <p className="text-center text-[0.75rem] text-[var(--color-text-muted)]">No other devices logged in.</p>
           )}
 
           {revokeError && (
-            <p className="text-center text-[12px] text-red-500">{revokeError}</p>
+            <p className="text-center text-[0.75rem] text-red-500">{revokeError}</p>
           )}
         </>
       )}

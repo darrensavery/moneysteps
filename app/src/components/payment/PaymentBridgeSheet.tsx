@@ -162,11 +162,11 @@ export function PaymentBridgeSheet(props: Props) {
           </div>
 
           <div className="px-4 pt-1 pb-2">
-            <div className="text-[13px] text-neutral-500">Pay {child.display_name}</div>
-            <div className="text-[22px] font-bold">
+            <div className="text-[0.8125rem] text-neutral-500">Pay {child.display_name}</div>
+            <div className="text-[1.375rem] font-bold">
               {formatCurrency(totalMinorUnits, currency)}
               {completionIds.length > 1 && (
-                <span className="ml-2 text-[13px] font-normal text-neutral-500">
+                <span className="ml-2 text-[0.8125rem] font-normal text-neutral-500">
                   ({completionIds.length} rewards)
                 </span>
               )}
@@ -179,15 +179,15 @@ export function PaymentBridgeSheet(props: Props) {
 
           {view.kind === 'bank-empty' && (
             <div className="px-4 py-8 text-center">
-              <div className="text-[14px] font-semibold">No bank details saved</div>
-              <div className="mt-1 text-[13px] text-neutral-500">
+              <div className="text-[0.875rem] font-semibold">No bank details saved</div>
+              <div className="mt-1 text-[0.8125rem] text-neutral-500">
                 Add {child.display_name}&apos;s sort code and account number in their
                 profile first.
               </div>
               <button
                 type="button"
                 onClick={() => setView({ kind: 'grid' })}
-                className="mt-4 rounded-2xl bg-neutral-100 px-4 py-2 text-[13px] font-semibold"
+                className="mt-4 rounded-2xl bg-neutral-100 px-4 py-2 text-[0.8125rem] font-semibold"
               >
                 Back
               </button>
@@ -196,7 +196,7 @@ export function PaymentBridgeSheet(props: Props) {
 
           {view.kind === 'deep-link-pending' && (
             <>
-              <div className="px-4 py-6 text-center text-[14px] text-neutral-500">
+              <div className="px-4 py-6 text-center text-[0.875rem] text-neutral-500">
                 Opening your {view.provider} app…
               </div>
               <DeepLinkHandler

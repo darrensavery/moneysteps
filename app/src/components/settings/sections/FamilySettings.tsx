@@ -189,10 +189,10 @@ export function FamilySettings({
 
         <SectionCard>
           <div className="px-4 py-3.5">
-            <p className="text-[13px] font-semibold text-[var(--color-text)] mb-0.5">
+            <p className="text-[0.8125rem] font-semibold text-[var(--color-text)] mb-0.5">
               Weekly payout day
             </p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mb-3 leading-snug">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-3 leading-snug">
               The day each child's allowance is automatically added to their balance.
             </p>
             <div className="flex gap-1.5">
@@ -201,7 +201,7 @@ export function FamilySettings({
                   key={idx}
                   type="button"
                   onClick={() => setSelectedDay(idx)}
-                  className={`flex-1 py-2 rounded-lg text-[12px] font-semibold border cursor-pointer transition-colors ${
+                  className={`flex-1 py-2 rounded-lg text-[0.75rem] font-semibold border cursor-pointer transition-colors ${
                     selectedDay === idx
                       ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
                       : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]'
@@ -217,7 +217,7 @@ export function FamilySettings({
         <button
           onClick={handleSaveDay}
           disabled={savingDay}
-          className="w-full bg-[var(--brand-primary)] text-white font-semibold text-[14px] py-3 rounded-xl disabled:opacity-50 cursor-pointer"
+          className="w-full bg-[var(--brand-primary)] text-white font-semibold text-[0.875rem] py-3 rounded-xl disabled:opacity-50 cursor-pointer"
         >
           {savingDay ? 'Saving…' : 'Save Changes'}
         </button>
@@ -245,8 +245,8 @@ export function FamilySettings({
           {/* Toggle row */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--color-border)]">
             <div className="flex-1 min-w-0 pr-4">
-              <p className="text-[13px] font-semibold text-[var(--color-text)]">Allow Overdraft</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] leading-snug">
+              <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">Allow Overdraft</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] leading-snug">
                 Let children's balances go negative
               </p>
             </div>
@@ -265,12 +265,12 @@ export function FamilySettings({
           {/* Limit input — shown only when enabled */}
           {localEnabled && (
             <div className="px-4 py-3.5">
-              <p className="text-[13px] font-semibold text-[var(--color-text)] mb-0.5">Overdraft Limit</p>
-              <p className="text-[12px] text-[var(--color-text-muted)] mb-2.5 leading-snug">
+              <p className="text-[0.8125rem] font-semibold text-[var(--color-text)] mb-0.5">Overdraft Limit</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-2.5 leading-snug">
                 Maximum amount a child can go into the negative.
               </p>
               <div className="flex items-center gap-2">
-                <span className="text-[14px] text-[var(--color-text-muted)]">£</span>
+                <span className="text-[0.875rem] text-[var(--color-text-muted)]">£</span>
                 <label htmlFor="overdraft-limit-input" className="sr-only">Overdraft limit</label>
                 <input
                   id="overdraft-limit-input"
@@ -282,7 +282,7 @@ export function FamilySettings({
                   aria-required="true"
                   value={(localLimitPence / 100).toFixed(0)}
                   onChange={e => setLocalLimitPence(Math.round(parseFloat(e.target.value || '0') * 100))}
-                  className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[14px] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                  className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[0.875rem] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
             </div>
@@ -292,7 +292,7 @@ export function FamilySettings({
         <button
           onClick={handleSaveOverdraft}
           disabled={savingOverdraft}
-          className="w-full bg-[var(--brand-primary)] text-white font-semibold text-[14px] py-3 rounded-xl disabled:opacity-50 cursor-pointer"
+          className="w-full bg-[var(--brand-primary)] text-white font-semibold text-[0.875rem] py-3 rounded-xl disabled:opacity-50 cursor-pointer"
         >
           {savingOverdraft ? 'Saving…' : 'Save Changes'}
         </button>
@@ -309,12 +309,12 @@ export function FamilySettings({
         <SectionCard>
           {/* Approval threshold */}
           <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
-            <p className="text-[13px] font-semibold text-[var(--color-text)] mb-0.5">Approval Threshold</p>
-            <p className="text-[12px] text-[var(--color-text-muted)] mb-2.5">
+            <p className="text-[0.8125rem] font-semibold text-[var(--color-text)] mb-0.5">Approval Threshold</p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-2.5">
               Expenses above this amount require the other parent's approval (Verification mode only).
             </p>
             <div className="flex items-center gap-2">
-              <span className="text-[14px] text-[var(--color-text-muted)]">£</span>
+              <span className="text-[0.875rem] text-[var(--color-text-muted)]">£</span>
               <label htmlFor="shared-expense-threshold-input" className="sr-only">Approval threshold</label>
               <input
                 id="shared-expense-threshold-input"
@@ -326,17 +326,17 @@ export function FamilySettings({
                 aria-required="true"
                 value={(sharedExpenseThreshold / 100).toFixed(0)}
                 onChange={e => onSharedExpenseThresholdChange(Math.round(parseFloat(e.target.value || '0') * 100))}
-                className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[14px] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[0.875rem] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               />
             </div>
           </div>
 
           {/* Default split */}
           <div className="px-4 py-3.5">
-            <label htmlFor="shared-expense-split-input" className="text-[13px] font-semibold text-[var(--color-text)] mb-0.5 block">
+            <label htmlFor="shared-expense-split-input" className="text-[0.8125rem] font-semibold text-[var(--color-text)] mb-0.5 block">
               Default Split — {(sharedExpenseSplitBp / 100).toFixed(0)}% / {(100 - sharedExpenseSplitBp / 100).toFixed(0)}%
             </label>
-            <p className="text-[12px] text-[var(--color-text-muted)] mb-2.5">
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-2.5">
               Your share vs. the co-parent's share for new shared expenses.
             </p>
             <input
@@ -355,7 +355,7 @@ export function FamilySettings({
         <button
           onClick={onSaveSharedExpense}
           disabled={savingSharedExpense}
-          className="w-full bg-[var(--brand-primary)] text-white font-semibold text-[14px] py-3 rounded-xl disabled:opacity-50 cursor-pointer"
+          className="w-full bg-[var(--brand-primary)] text-white font-semibold text-[0.875rem] py-3 rounded-xl disabled:opacity-50 cursor-pointer"
         >
           {savingSharedExpense ? 'Saving…' : 'Save Changes'}
         </button>
@@ -370,7 +370,7 @@ export function FamilySettings({
         <SectionHeader title="Remove Co-Parent" onBack={() => { setShowRemoveCoParent(false); setRemoveCoParentError(null) }} />
 
         {loadingCoParent && (
-          <p className="text-center text-[14px] text-[var(--color-text-muted)] py-8">Loading…</p>
+          <p className="text-center text-[0.875rem] text-[var(--color-text-muted)] py-8">Loading…</p>
         )}
 
         {!loadingCoParent && coParentInfo && (
@@ -382,11 +382,11 @@ export function FamilySettings({
                     <AlertTriangle size={18} className="text-red-600" />
                   </span>
                   <div>
-                    <p className="text-[14px] font-semibold text-[var(--color-text)]">{coParentInfo.display_name}</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)]">Co-parent</p>
+                    <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{coParentInfo.display_name}</p>
+                    <p className="text-[0.75rem] text-[var(--color-text-muted)]">Co-parent</p>
                   </div>
                 </div>
-                <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
+                <p className="text-[0.8125rem] text-[var(--color-text-muted)] leading-relaxed">
                   Removing <strong>{coParentInfo.display_name}</strong> will immediately revoke their access. They will be
                   logged out on all devices and won't be able to view or manage the family. Any pending shared expenses will
                   be voided. This cannot be undone — you would need to send a new invite to re-add them.
@@ -395,20 +395,20 @@ export function FamilySettings({
             </SectionCard>
 
             {removeCoParentError && (
-              <p className="text-[13px] text-red-600 font-semibold px-1">{removeCoParentError}</p>
+              <p className="text-[0.8125rem] text-red-600 font-semibold px-1">{removeCoParentError}</p>
             )}
 
             <button
               onClick={handleConfirmRemoveCoParent}
               disabled={removingCoParent}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold text-[14px] py-3 rounded-xl disabled:opacity-50 cursor-pointer transition-colors"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold text-[0.875rem] py-3 rounded-xl disabled:opacity-50 cursor-pointer transition-colors"
             >
               {removingCoParent ? 'Removing…' : `Remove ${coParentInfo.display_name}`}
             </button>
 
             <button
               onClick={() => { setShowRemoveCoParent(false); setRemoveCoParentError(null) }}
-              className="w-full border border-[var(--color-border)] text-[var(--color-text-muted)] font-semibold text-[14px] py-3 rounded-xl cursor-pointer hover:bg-[var(--color-surface-alt)] transition-colors"
+              className="w-full border border-[var(--color-border)] text-[var(--color-text-muted)] font-semibold text-[0.875rem] py-3 rounded-xl cursor-pointer hover:bg-[var(--color-surface-alt)] transition-colors"
             >
               Cancel
             </button>
@@ -416,11 +416,11 @@ export function FamilySettings({
         )}
 
         {!loadingCoParent && !coParentInfo && !removeCoParentError && (
-          <p className="text-center text-[14px] text-[var(--color-text-muted)] py-8">No co-parent found.</p>
+          <p className="text-center text-[0.875rem] text-[var(--color-text-muted)] py-8">No co-parent found.</p>
         )}
 
         {removeCoParentError && !coParentInfo && (
-          <p className="text-[13px] text-red-600 font-semibold px-1">{removeCoParentError}</p>
+          <p className="text-[0.8125rem] text-red-600 font-semibold px-1">{removeCoParentError}</p>
         )}
       </div>
     )
@@ -456,16 +456,16 @@ export function FamilySettings({
       {/* Children */}
       <div>
         <div className="flex items-center justify-between px-1 mb-2">
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Children</p>
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Children</p>
           {isLead && (
-            <button onClick={() => setShowAddChild(v => !v)} className="text-[12px] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
+            <button onClick={() => setShowAddChild(v => !v)} className="text-[0.75rem] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
               + Add child
             </button>
           )}
         </div>
         <SectionCard>
           {children.length === 0 && !showAddChild && (
-            <p className="px-4 py-6 text-center text-[14px] text-[var(--color-text-muted)]">No children yet.</p>
+            <p className="px-4 py-6 text-center text-[0.875rem] text-[var(--color-text-muted)]">No children yet.</p>
           )}
           {children.map(child => (
             <button
@@ -476,9 +476,9 @@ export function FamilySettings({
             >
               <AvatarSVG id={child.avatar_id ?? 'bottts:spark'} size={36} />
               <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-[var(--color-text)]">{child.display_name}</p>
+                <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{child.display_name}</p>
                 {child.locked_until && child.locked_until > Date.now() / 1000 && (
-                  <p className="text-[12px] text-red-600 font-semibold">Locked</p>
+                  <p className="text-[0.75rem] text-red-600 font-semibold">Locked</p>
                 )}
               </div>
               <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />
@@ -489,9 +489,9 @@ export function FamilySettings({
             <form onSubmit={handleAddChild} className="px-4 py-3 space-y-2.5 border-t border-[var(--color-border)] bg-[var(--color-surface-alt)]">
               {addChildResult && (
                 <div className="bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] border border-[color-mix(in_srgb,var(--brand-primary)_25%,transparent)] rounded-lg p-3">
-                  <p className="text-[13px] font-semibold text-[var(--brand-primary)] mb-1">Child added!</p>
-                  <p className="text-[12px] text-[var(--color-text)]">Share this PIN code with them to log in:</p>
-                  <p className="text-[20px] font-extrabold text-[var(--brand-primary)] tracking-widest mt-1">{addChildResult.invite_code}</p>
+                  <p className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] mb-1">Child added!</p>
+                  <p className="text-[0.75rem] text-[var(--color-text)]">Share this PIN code with them to log in:</p>
+                  <p className="text-[1.25rem] font-extrabold text-[var(--brand-primary)] tracking-widest mt-1">{addChildResult.invite_code}</p>
                 </div>
               )}
               <label htmlFor="family-add-child-name" className="sr-only">Child's name</label>
@@ -499,14 +499,14 @@ export function FamilySettings({
                 id="family-add-child-name"
                 required
                 aria-required="true"
-                className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+                className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-[0.875rem] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 placeholder="Child's name"
                 value={newChildName}
                 onChange={e => setNewChildName(e.target.value)}
               />
               <div className="flex gap-2">
-                <button type="button" onClick={() => { setShowAddChild(false); setAddChildResult(null) }} className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] bg-white cursor-pointer">Cancel</button>
-                <button type="submit" disabled={addingChild} className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[14px] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                <button type="button" onClick={() => { setShowAddChild(false); setAddChildResult(null) }} className="flex-1 border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] bg-white cursor-pointer">Cancel</button>
+                <button type="submit" disabled={addingChild} className="flex-1 bg-[var(--brand-primary)] text-white rounded-xl py-2.5 text-[0.875rem] font-bold hover:opacity-90 disabled:opacity-50 cursor-pointer">
                   {addingChild ? 'Adding…' : 'Add'}
                 </button>
               </div>
@@ -518,35 +518,35 @@ export function FamilySettings({
       {/* Partner / Co-parenting */}
       <div>
         {hasCoParent && <GovernanceConsentBanner familyId={familyId} userId={userId} />}
-        <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">
+        <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide px-1 mb-2">
           {hasCoParent ? 'Co-parenting' : 'Partner'}
         </p>
         <SectionCard>
           <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
-            <p className="text-[14px] font-semibold text-[var(--color-text)] mb-2">
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)] mb-2">
               {hasCoParent ? 'Invite a Co-Parent' : 'Add a Partner'}
             </p>
             {!hasCoParent && (
-              <p className="text-[12px] text-[var(--color-text-muted)] mb-2 leading-snug">
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-2 leading-snug">
                 Share an invite code so your partner can join the family.
               </p>
             )}
             {inviteCode ? (
               <div className="space-y-1">
-                <p className="text-[13px] text-[var(--color-text-muted)]">Share this code (expires {inviteExpiry}):</p>
-                <p className="text-[22px] font-extrabold tracking-widest text-[var(--color-text)]">{inviteCode}</p>
+                <p className="text-[0.8125rem] text-[var(--color-text-muted)]">Share this code (expires {inviteExpiry}):</p>
+                <p className="text-[1.375rem] font-extrabold tracking-widest text-[var(--color-text)]">{inviteCode}</p>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
                     onClick={handleShare}
-                    className="text-[12px] font-semibold text-[var(--color-text)] hover:underline cursor-pointer"
+                    className="text-[0.75rem] font-semibold text-[var(--color-text)] hover:underline cursor-pointer"
                   >
                     {copied ? 'Copied!' : 'Share'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setInviteCode(null)}
-                    className="text-[12px] text-[var(--color-text-muted)] hover:underline cursor-pointer"
+                    className="text-[0.75rem] text-[var(--color-text-muted)] hover:underline cursor-pointer"
                   >
                     Clear
                   </button>
@@ -556,7 +556,7 @@ export function FamilySettings({
               <button
                 onClick={handleGenerateInvite}
                 disabled={genningInvite}
-                className="w-full border border-[var(--color-border)] rounded-xl py-2.5 text-[14px] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] disabled:opacity-50 cursor-pointer"
+                className="w-full border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] disabled:opacity-50 cursor-pointer"
               >
                 {genningInvite ? 'Generating…' : 'Generate invite code'}
               </button>
@@ -579,7 +579,7 @@ export function FamilySettings({
       {/* Global Family Rules */}
       <div>
         <div className="flex items-center gap-2 px-1 mb-2">
-          <p className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Global Family Rules</p>
+          <p className="text-[0.6875rem] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">Global Family Rules</p>
           {!isLead && <ReadOnlyBadge />}
         </div>
         <SectionCard>
