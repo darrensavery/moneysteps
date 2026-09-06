@@ -707,12 +707,12 @@ export async function handleMePatch(request: Request, env: Env): Promise<Respons
     .first<{ id: string; display_name: string; email: string | null; locale: string; email_verified: number; email_pending: string | null }>();
   if (!user) return error('User not found', 404);
 
-  // Fetch family default_currency for ledger entries
+  // Fetch family base_currency for ledger entries
   const family = await env.DB
-    .prepare('SELECT default_currency FROM families WHERE id = ?')
+    .prepare('SELECT base_currency FROM families WHERE id = ?')
     .bind(caller.family_id)
-    .first<{ default_currency: string }>();
-  const currency = family?.default_currency ?? 'GBP';
+    .first<{ base_currency: string }>();
+  const currency = family?.base_currency ?? 'GBP';
 
   // Helper: write a system_note ledger entry
   async function writeSystemNote(description: string): Promise<void> {
@@ -722,7 +722,16 @@ export async function handleMePatch(request: Request, env: Env): Promise<Respons
       .first<{ id: number; record_hash: string }>();
     const previousHash = prevRow?.record_hash ?? GENESIS_HASH;
 
-    const newId = (prevRow?.id ?? 0) + 1;
+    // `ledger.id` is a single AUTOINCREMENT sequence shared by every family, not
+    // scoped per family — so the next id must be derived from the table's global
+    // max, not this family's own last row. Using the family-scoped id here caused
+    // a PRIMARY KEY collision (and an uncaught 500) for any family that wasn't the
+    // most recent writer to the table, which happens easily for a rarely-used
+    // audit path like a profile name/email change.
+    const globalMax = await env.DB
+      .prepare('SELECT MAX(id) AS max_id FROM ledger')
+      .first<{ max_id: number | null }>();
+    const newId = (globalMax?.max_id ?? 0) + 1;
 
     const recordHash = await computeRecordHash(
       newId,
@@ -746,6 +755,16 @@ export async function handleMePatch(request: Request, env: Env): Promise<Respons
       .run();
   }
 
+  // The audit-trail note is best-effort — it must never fail the profile
+  // update it's describing.
+  async function writeSystemNoteSafe(description: string): Promise<void> {
+    try {
+      await writeSystemNote(description);
+    } catch (err) {
+      logger.error('handleMePatch', 'writeSystemNote failed', { err: String(err) });
+    }
+  }
+
   // ── Display name update ──────────────────────────────────────
   if (display_name !== undefined) {
     const trimmed = display_name.trim();
@@ -756,7 +775,7 @@ export async function handleMePatch(request: Request, env: Env): Promise<Respons
       .prepare('UPDATE users SET display_name = ? WHERE id = ?')
       .bind(trimmed, caller.sub)
       .run();
-    await writeSystemNote(`🌱 ${trimmed} updated their family name`);
+    await writeSystemNoteSafe(`🌱 ${trimmed} updated their family name`);
   }
 
   // ── Email update — staged via email_pending; confirmed by verify link ────────
@@ -814,7 +833,7 @@ export async function handleMePatch(request: Request, env: Env): Promise<Respons
       return error('Could not send verification email — please try again', 502);
     }
 
-    await writeSystemNote('🌱 Email change requested — awaiting verification');
+    await writeSystemNoteSafe('🌱 Email change requested — awaiting verification');
   }
 
   // Return updated profile
