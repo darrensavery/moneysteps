@@ -54,6 +54,8 @@ interface SubmitState {
   note: string
   error: string | null
   startedAt: number            // epoch ms — for velocity tracking
+  /** Object URL for the just-picked proof photo — shown while it uploads, revoked once done. */
+  proofPreviewUrl?: string
 }
 
 export function EarnTab({ familyId, childId, currency, grovePlans = {}, onTogglePlant, appView = 'ORCHARD', earningsMode = 'CHORES', allowanceAmountPence = 0 }: Props) {
@@ -160,16 +162,20 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
     if (!file || !submit) return
     e.target.value = ''
 
-    setSubmit(s => s ? { ...s, stage: 'uploading', error: null } : s)
+    // Show the picked photo immediately — same "confirm what you're sending"
+    // pattern as ReceiptPicker, instead of a bare spinner with no preview.
+    const previewUrl = URL.createObjectURL(file)
+    setSubmit(s => s ? { ...s, stage: 'uploading', error: null, proofPreviewUrl: previewUrl } : s)
     try {
       const res = await submitChore(submit.choreId, submit.note || undefined)
       await uploadProof(res.id, file)
       const velocityMs = Date.now() - submit.startedAt
       track.taskSubmitted({ chore_id: submit.choreId, is_revision: submit.isRevision, velocity_ms: velocityMs, had_proof: true })
       setSubmit(s => s ? { ...s, stage: 'harvesting' } : s)
-      setTimeout(() => { load().then(() => setSubmit(null)) }, 1800)
+      setTimeout(() => { URL.revokeObjectURL(previewUrl); load().then(() => setSubmit(null)) }, 1800)
     } catch (err: unknown) {
-      setSubmit(s => s ? { ...s, stage: 'note', error: (err as Error).message } : s)
+      URL.revokeObjectURL(previewUrl)
+      setSubmit(s => s ? { ...s, stage: 'note', error: (err as Error).message, proofPreviewUrl: undefined } : s)
     }
   }
 
@@ -273,6 +279,7 @@ export function EarnTab({ familyId, childId, currency, grovePlans = {}, onToggle
                   stage={submit?.choreId === chore.id ? submit.stage : null}
                   note={submit?.choreId === chore.id ? submit.note : ''}
                   error={submit?.choreId === chore.id ? submit.error : null}
+                  proofPreviewUrl={submit?.choreId === chore.id ? submit.proofPreviewUrl : undefined}
                   plannedDays={grovePlans[chore.id] ?? []}
                   onTogglePlant={onTogglePlant ? (day) => onTogglePlant(chore, day) : undefined}
                   onStart={() => startSubmit(comp, false)}
@@ -509,6 +516,7 @@ interface OpenChoreCardProps {
   stage: SubmitState['stage'] | null
   note: string
   error: string | null
+  proofPreviewUrl?: string
   plannedDays: number[]
   onTogglePlant?: (day: number) => void
   onStart: () => void
@@ -533,7 +541,7 @@ function meaningfulDescription(desc?: string | null): string | null {
 }
 
 function OpenChoreCard({
-  chore, currency, appView, isActive, stage, note, error,
+  chore, currency, appView, isActive, stage, note, error, proofPreviewUrl,
   plannedDays, onTogglePlant,
   onStart, onNoteChange, onNoteSubmit, onCancel,
 }: OpenChoreCardProps) {
@@ -591,7 +599,11 @@ function OpenChoreCard({
 
         {stage === 'uploading' || stage === 'submitting' ? (
           <span className="shrink-0 flex items-center gap-1.5 text-[0.75rem] font-bold text-[var(--brand-primary)]">
-            <span className="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin" />
+            {proofPreviewUrl ? (
+              <img src={proofPreviewUrl} alt="" className="w-7 h-7 rounded-md object-cover border border-[var(--brand-primary)]/40" />
+            ) : (
+              <span className="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin" />
+            )}
             {stage === 'uploading' ? 'Uploading…' : 'Submitting…'}
           </span>
         ) : (

@@ -28,6 +28,7 @@ type Step = 'code' | 'details' | 'securing' | 'done'
 type SecureScreen = 'checking' | 'biometric-prompt' | 'biometric-success' | 'pin'
 
 const PIN_LENGTH = 4
+const CODE_LENGTH = 6
 
 interface RedeemResponse {
   token:       string
@@ -51,12 +52,14 @@ export function JoinFamilyScreen() {
 
   const [step,        setStep]        = useState<Step>('code')
 
-  // Code step state
-  const [code,        setCode]        = useState('')
+  // Code step state — array of chars (one per box), same pattern as the PIN
+  // entry below; `code` is the derived joined string other logic reads.
+  const [codeChars,   setCodeChars]   = useState<string[]>(Array(CODE_LENGTH).fill(''))
+  const code = codeChars.join('')
   const [codeError,   setCodeError]   = useState('')
   const [codeShake,   setCodeShake]   = useState(false)
   const [checking,    setChecking]    = useState(false)
-  const codeRef = useRef<HTMLInputElement>(null)
+  const codeRefs = useRef<(HTMLInputElement | null)[]>([])
 
   // Resolved after code check
   const [inviteRole,  setInviteRole]  = useState<'child' | 'co-parent' | null>(null)
@@ -86,7 +89,7 @@ export function JoinFamilyScreen() {
   // ── Auto-focus code input on mount ─────────────────────────────────────────
   useEffect(() => {
     if (step === 'code') {
-      setTimeout(() => codeRef.current?.focus(), 80)
+      setTimeout(() => codeRefs.current[0]?.focus(), 80)
     }
   }, [step])
 
@@ -103,20 +106,48 @@ export function JoinFamilyScreen() {
 
   // ── Step 1: code input ─────────────────────────────────────────────────────
 
-  function handleCodeChange(raw: string) {
-    const val = raw.toUpperCase().slice(0, 6)
-    setCode(val)
+  // Segmented-box entry — mirrors the PIN box pattern below (auto-advance,
+  // backspace-to-previous), so the two 6th and 4th shared screen no longer
+  // feel like two different input systems.
+  function handleCodeBoxInput(idx: number, value: string) {
+    const raw = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+    if (!raw) return
+    const char = raw.slice(-1)
+    const next = [...codeChars]
+    next[idx] = char
+    setCodeChars(next)
     setCodeError('')
 
-    // Haptic: light tap per character
-    if ('vibrate' in navigator && val.length > code.length) {
-      navigator.vibrate(8)
-    }
+    if ('vibrate' in navigator) navigator.vibrate(8)
 
-    // Auto-submit on 6th character
-    if (val.length === 6) {
-      validateCode(val)
+    if (idx < CODE_LENGTH - 1) {
+      codeRefs.current[idx + 1]?.focus()
+    } else {
+      const full = next.join('')
+      if (full.length === CODE_LENGTH) validateCode(full)
     }
+  }
+
+  function handleCodeBoxKeyDown(idx: number, e: React.KeyboardEvent) {
+    if (e.key !== 'Backspace') return
+    if (codeChars[idx]) {
+      const next = [...codeChars]; next[idx] = ''; setCodeChars(next)
+    } else if (idx > 0) {
+      codeRefs.current[idx - 1]?.focus()
+      const next = [...codeChars]; next[idx - 1] = ''; setCodeChars(next)
+    }
+  }
+
+  function handleCodePaste(e: React.ClipboardEvent) {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, CODE_LENGTH)
+    if (!pasted) return
+    const next = Array(CODE_LENGTH).fill('')
+    for (let i = 0; i < pasted.length; i++) next[i] = pasted[i]
+    setCodeChars(next)
+    setCodeError('')
+    codeRefs.current[Math.min(pasted.length, CODE_LENGTH - 1)]?.focus()
+    if (pasted.length === CODE_LENGTH) validateCode(pasted)
   }
 
   async function validateCode(codeToCheck: string) {
@@ -353,33 +384,40 @@ export function JoinFamilyScreen() {
             </div>
 
             <div className="space-y-3">
-              <input
-                ref={codeRef}
-                type="text"
-                inputMode="text"
-                autoCapitalize="characters"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                value={code}
-                onChange={e => handleCodeChange(e.target.value)}
-                placeholder="A3F7K2"
-                maxLength={6}
-                disabled={checking}
-                required
-                aria-required="true"
+              <div
+                className={cn('flex justify-center gap-2', codeShake && 'animate-shake')}
+                role="group"
+                aria-label="6-character invite code"
                 aria-invalid={!!codeError}
                 aria-describedby={codeError ? 'join-code-error' : undefined}
-                className={cn(
-                  'w-full h-16 rounded-xl border-2 px-4 text-center text-[1.625rem] font-extrabold tracking-[0.25em]',
-                  'bg-white outline-none transition-all duration-150',
-                  codeError
-                    ? 'border-red-400 text-red-600'
-                    : 'border-subtle text-main focus:border-teal-500',
-                  codeShake && 'animate-shake',
-                  checking && 'opacity-60',
-                )}
-              />
+              >
+                {codeChars.map((char, i) => (
+                  <input
+                    key={i}
+                    ref={el => { codeRefs.current[i] = el }}
+                    type="text"
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    maxLength={1}
+                    value={char}
+                    onChange={e => handleCodeBoxInput(i, e.target.value)}
+                    onKeyDown={e => handleCodeBoxKeyDown(i, e)}
+                    onPaste={handleCodePaste}
+                    disabled={checking}
+                    aria-label={`Invite code character ${i + 1}`}
+                    className={cn(
+                      'w-11 h-14 rounded-xl border-2 text-center text-[1.375rem] font-extrabold text-main',
+                      'bg-white outline-none transition-colors duration-100',
+                      codeError ? 'border-red-400 bg-red-50 text-red-600' : char ? 'border-teal-500' : 'border-subtle',
+                      'focus:border-teal-500',
+                      checking && 'opacity-60',
+                    )}
+                  />
+                ))}
+              </div>
 
               {codeError && (
                 <p id="join-code-error" role="alert" className="text-[0.8125rem] font-semibold text-red-600 text-center">{codeError}</p>

@@ -143,6 +143,21 @@
     --text-15: 0.9375rem;  /* 15px */
   }
 
+  /* ── Baseline keyboard-focus ring ───────────────────────────────────────
+     The shared Button/Input components already carry their own
+     `focus-visible:ring-2`, but dozens of ad hoc `<button>`s across the
+     dashboard (JobsTab, HistoryTab, PendingTab, ChildHistoryTab, PoolTab,
+     etc.) have no focus-visible styling of their own — keyboard/switch-device
+     navigation had no visible indicator on them at all. This is a global
+     fallback rather than hand-editing every one of them; a component that
+     already defines its own focus-visible ring (a box-shadow) simply gets
+     this outline alongside it, which reads as one slightly thicker ring,
+     not a conflict. */
+  *:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+  }
+
   /* ── High Contrast overrides (WCAG 2.1 AA) ─────────────────────────────
      Values computed in app/src/lib/contrastRatio.ts / verified by
      contrastRatio.test.ts. Light-mode brand colors are darkened to clear

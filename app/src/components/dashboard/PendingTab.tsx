@@ -476,6 +476,13 @@ function AuditCard({
             onChange={e => onReviseNoteChange(e.target.value)}
             autoFocus
           />
+          {/* Visible instead of a hover/press tooltip — this is a mostly-mobile
+              app, and native `title` never shows on touch. */}
+          {!reviseNote.trim() && (
+            <p className="text-[0.6875rem] text-[var(--color-text-muted)] -mt-1">
+              Add feedback so they know what to fix.
+            </p>
+          )}
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={onCancelRevise}>
               Cancel
@@ -485,7 +492,6 @@ function AuditCard({
               className="flex-1"
               onClick={onConfirmRevise}
               disabled={busy || !reviseNote.trim()}
-              title={!reviseNote.trim() ? 'Add feedback so they know what to fix' : undefined}
             >
               {busy ? 'Sending…' : 'Send feedback →'}
             </Button>

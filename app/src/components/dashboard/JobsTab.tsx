@@ -7,6 +7,7 @@ import {
 } from '../../lib/api'
 import { CreateChoreSheet } from './CreateChoreSheet'
 import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
+import { SwipeRevealCard } from '../ui/SwipeRevealCard'
 import { Button } from '../ui/button'
 import { SkeletonList } from '../ui/Skeleton'
 import { useLocale } from '../../lib/locale'
@@ -339,6 +340,13 @@ export function ChoresTab({ familyId, child, children }: Props) {
                       autoFocus
                       className="w-full border border-[var(--color-border)] rounded-xl px-3.5 py-2.5 text-[0.8125rem] resize-none bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-red-400"
                     />
+                    {/* Visible instead of a hover/press tooltip — this is a
+                        mostly-mobile app, and native `title` never shows on touch. */}
+                    {!rejectNote.trim() && (
+                      <p className="text-[0.6875rem] text-[var(--color-text-muted)] -mt-1.5">
+                        Explain why you're declining before sending.
+                      </p>
+                    )}
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1 h-10" onClick={closeReview}>
                         Cancel
@@ -349,7 +357,6 @@ export function ChoresTab({ familyId, child, children }: Props) {
                         className="flex-1 h-10"
                         onClick={handleReject}
                         disabled={reviewBusy || !rejectNote.trim()}
-                        title={!rejectNote.trim() ? 'Explain why you\'re declining first' : undefined}
                       >
                         {reviewBusy ? 'Declining…' : 'Send decline'}
                       </Button>
@@ -635,8 +642,9 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
   }
 
   return (
+    <SwipeRevealCard onAction={onArchive} actionLabel="Archive" className="rounded-xl overflow-hidden">
     <div
-      className={`${bgClass} ${accentBorderClass} rounded-xl overflow-hidden`}
+      className={`${bgClass} ${accentBorderClass}`}
       style={shadowStyle}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -784,5 +792,6 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
         </div>
       </div>
     </div>
+    </SwipeRevealCard>
   )
 }
