@@ -18,7 +18,7 @@ import {
   formatCurrency, effectiveTarget, getTrialStatus,
 } from '../../lib/api'
 import { GoalMentorNudge } from './GoalMentorNudge'
-import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles } from '../ui/PremiumShell'
+import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
 
 const MATCH_OPTIONS = [0, 10, 25, 50, 100]
 
@@ -116,13 +116,13 @@ export function GoalBoostingTab({ familyId, child }: Props) {
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
                   <MentorAvatar />
-                  <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#9ca3af' }}>
+                  <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: MENTOR_COLORS.label }}>
                     Orchard Mentor
                   </span>
                 </div>
                 <ProBadge />
               </div>
-              <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#a7c4b5' }}>
+              <p className="text-[0.8125rem] leading-relaxed" style={{ color: MENTOR_COLORS.body }}>
                 {child.display_name} has no active goals yet. Goals unlock Learning Lab lessons on delayed gratification and needs vs. wants — two of the most important financial habits we can build. You can create one together from their Savings Grove.
               </p>
             </div>

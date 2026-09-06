@@ -9,7 +9,7 @@ import {
 import { useGatekeeper } from '../../hooks/useGatekeeper'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
-import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles } from '../ui/PremiumShell'
+import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
 import { getDetails, type StoredBankDetails } from '../../lib/localBankDetails'
 import { useLocale, currencySymbol } from '../../lib/locale'
 import { ErrorBox } from '../ui/ErrorBox'
@@ -938,19 +938,19 @@ function MentorEmptyCard({
             <MentorAvatar />
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: MENTOR_COLORS.label }}>
                   Orchard Mentor
                 </span>
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
               </div>
-              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: MENTOR_COLORS.heading }}>
                 {heading}
               </p>
             </div>
           </div>
           <ProBadge />
         </div>
-        <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#a7c4b5' }}>
+        <p className="text-[0.8125rem] leading-relaxed" style={{ color: MENTOR_COLORS.body }}>
           {mentorLine}
         </p>
       </div>

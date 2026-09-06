@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { getFamilyAudit } from '../../lib/api'
 import type { FamilyAuditData } from '../../lib/api'
-import { PremiumShell, MentorAvatar, ProBadge, AiDisclosurePill, injectPremiumStyles } from '../ui/PremiumShell'
+import { PremiumShell, MentorAvatar, ProBadge, AiDisclosurePill, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
 
 interface Props {
   familyId: string
@@ -52,12 +52,12 @@ export function FamilyAuditCard({ familyId }: Props) {
             <MentorAvatar />
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: MENTOR_COLORS.label }}>
                   Orchard Mentor
                 </span>
                 {data.source === 'ai' && <AiDisclosurePill />}
               </div>
-              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: MENTOR_COLORS.heading }}>
                 This Month, Family-Wide
               </p>
             </div>
@@ -68,7 +68,7 @@ export function FamilyAuditCard({ familyId }: Props) {
         <div className="grid grid-cols-4 gap-2 mb-3.5">
           {STAT_LABELS.map(({ key, label }) => (
             <div key={key} className="text-center">
-              <p className="text-[0.8125rem] font-extrabold tabular-nums" style={{ color: '#f0fdf4' }}>
+              <p className="text-[0.8125rem] font-extrabold tabular-nums" style={{ color: MENTOR_COLORS.heading }}>
                 {formatPence(data.totals![key])}
               </p>
               <p className="text-[0.5625rem] uppercase tracking-wide" style={{ color: 'rgba(167,196,181,0.6)' }}>
@@ -80,8 +80,8 @@ export function FamilyAuditCard({ familyId }: Props) {
 
         <div className="space-y-1.5">
           <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#e2f5ee' }}>{data.observation}</p>
-          <p className="text-[0.75rem] leading-relaxed" style={{ color: '#a7c4b5' }}>{data.behavioral_root}</p>
-          <p className="text-[0.75rem] leading-relaxed font-semibold" style={{ color: '#6b9e87' }}>{data.the_action}</p>
+          <p className="text-[0.75rem] leading-relaxed" style={{ color: MENTOR_COLORS.body }}>{data.behavioral_root}</p>
+          <p className="text-[0.75rem] leading-relaxed font-semibold" style={{ color: MENTOR_COLORS.label }}>{data.the_action}</p>
         </div>
 
       </div>

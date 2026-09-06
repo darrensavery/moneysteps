@@ -128,6 +128,21 @@
     --color-warning:     var(--color-warning);
   }
 
+  /* ── Named font-size steps (fills the gaps in Tailwind's default scale) ──
+     The de facto type scale already in use across the app is these exact 9
+     values, reached today via arbitrary brackets (`text-[0.8125rem]` etc.).
+     Registering them as real theme keys makes them available as ordinary
+     utilities (`text-13`) for new code, without touching existing call sites
+     — Tailwind's own xs/sm/base/lg (0.75/0.875/1/1.125rem) already cover the
+     other 4 steps in the scale, so only the in-between sizes are added here. */
+  @theme {
+    --text-9:  0.5625rem;  /* 9px  */
+    --text-10: 0.625rem;   /* 10px */
+    --text-11: 0.6875rem;  /* 11px */
+    --text-13: 0.8125rem;  /* 13px */
+    --text-15: 0.9375rem;  /* 15px */
+  }
+
   /* ── High Contrast overrides (WCAG 2.1 AA) ─────────────────────────────
      Values computed in app/src/lib/contrastRatio.ts / verified by
      contrastRatio.test.ts. Light-mode brand colors are darkened to clear

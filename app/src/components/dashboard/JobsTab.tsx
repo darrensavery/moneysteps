@@ -6,7 +6,7 @@ import {
   formatCurrency, getMondayISO,
 } from '../../lib/api'
 import { CreateChoreSheet } from './CreateChoreSheet'
-import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles } from '../ui/PremiumShell'
+import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
 import { Button } from '../ui/button'
 import { SkeletonList } from '../ui/Skeleton'
 import { useLocale } from '../../lib/locale'
@@ -498,7 +498,7 @@ function ChoreIcon({ title, size = 20 }: { title: string; size?: number }) {
 
 function RecurringIcon() {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block opacity-70">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block opacity-70">
       <path d="M17 2l4 4-4 4"/>
       <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
       <path d="M7 22l-4-4 4-4"/>
@@ -544,20 +544,20 @@ function EmptyChoresState({ childName, onAdd }: { childName: string; onAdd: () =
               <MentorAvatar />
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                  <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: MENTOR_COLORS.label }}>
                     Orchard Mentor
                   </span>
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 </div>
-                <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
-                  No chores yet for <span style={{ color: '#4ade80' }}>{childName}</span>
+                <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: MENTOR_COLORS.heading }}>
+                  No chores yet for <span style={{ color: MENTOR_COLORS.bright }}>{childName}</span>
                 </p>
               </div>
             </div>
             <ProBadge />
           </div>
           {/* Body */}
-          <p className="text-[0.8125rem] leading-relaxed" style={{ color: '#a7c4b5' }}>
+          <p className="text-[0.8125rem] leading-relaxed" style={{ color: MENTOR_COLORS.body }}>
             Once you add chores I can track {childName}'s consistency, spot patterns, and give you genuinely useful coaching — not generic tips.
           </p>
           {/* Action list */}
@@ -569,10 +569,10 @@ function EmptyChoresState({ childName, onAdd }: { childName: string; onAdd: () =
               `Plan the week once a chore is added — so ${childName} knows what's expected.`,
             ].map((text, i) => (
               <div key={i} className="flex items-start gap-3">
-                <span className="shrink-0 text-[0.5625rem] font-black tracking-wider tabular-nums mt-0.5" style={{ color: '#0d9488' }}>
+                <span className="shrink-0 text-[0.5625rem] font-black tracking-wider tabular-nums mt-0.5" style={{ color: MENTOR_COLORS.accent }}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <p className="text-[0.75rem] leading-relaxed" style={{ color: '#a7c4b5' }}>{text}</p>
+                <p className="text-[0.75rem] leading-relaxed" style={{ color: MENTOR_COLORS.body }}>{text}</p>
               </div>
             ))}
           </div>
@@ -653,7 +653,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
             ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400'
             : 'bg-[var(--color-surface-alt)] text-[var(--brand-primary)]'
         }`}>
-          <ChoreIcon title={chore.title} size={18} />
+          <ChoreIcon title={chore.title} size={20} />
         </div>
 
         {/* Title + metadata */}
@@ -663,7 +663,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
             {!!chore.is_priority && !chore.is_flash && <span className="text-[0.6875rem] font-bold text-amber-600 bg-amber-100 rounded px-1.5 py-0.5">PRIORITY</span>}
             <span className="text-[0.9375rem] font-semibold text-[var(--color-text)]">{chore.title}</span>
             {!expanded && !!chore.description && (
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-text-muted)] opacity-50 shrink-0" aria-label="Has instructions">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-text-muted)] opacity-50 shrink-0" aria-label="Has instructions">
                 <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
                 <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
               </svg>
@@ -731,7 +731,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
                 onClick={e => { e.stopPropagation(); onEdit() }}
                 className="shrink-0 inline-flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--brand-primary)] border border-[var(--brand-primary)] rounded-lg px-2.5 py-1 hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
               >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
                 </svg>
                 Reschedule
@@ -774,7 +774,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
               onClick={onArchive}
               className="inline-flex items-center gap-1.5 text-[0.75rem] text-[var(--color-text-muted)] hover:text-red-500 transition-colors cursor-pointer"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
               </svg>
               Archive

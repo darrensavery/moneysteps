@@ -21,7 +21,7 @@ import { AnimatePresence } from 'framer-motion'
 import type { ChildRecord, InsightsData, MentorBriefing, TrialStatus } from '../../lib/api'
 import { getInsights, formatCurrency, getChildNudges } from '../../lib/api'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
-import { PremiumShell, MentorAvatar, ProBadge, AiDisclosurePill, injectPremiumStyles } from '../ui/PremiumShell'
+import { PremiumShell, MentorAvatar, ProBadge, AiDisclosurePill, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
 import { SparklineCard } from './SparklineCard'
 import { SparklineExpanded } from './SparklineExpanded'
 import { LabSection } from './LabSection'
@@ -216,13 +216,13 @@ function InsightsDashboard({
           style={{ background: 'rgba(13,148,136,0.07)', border: '1px solid rgba(13,148,136,0.15)' }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-               stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+               stroke={MENTOR_COLORS.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                className="shrink-0 mt-0.5">
             <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
             <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
           </svg>
-          <p className="text-[0.6875rem] leading-relaxed" style={{ color: '#6b9e87' }}>
-            <span className="font-semibold" style={{ color: '#0d9488' }}>
+          <p className="text-[0.6875rem] leading-relaxed" style={{ color: MENTOR_COLORS.label }}>
+            <span className="font-semibold" style={{ color: MENTOR_COLORS.accent }}>
               Sent to {childFirstName} this week:
             </span>{' '}
             {childNudgeSummary}
@@ -447,14 +447,14 @@ function DiscoveryCard({ data, name }: { data: InsightsData; name: string }) {
             <MentorAvatar />
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: MENTOR_COLORS.label }}>
                   Orchard Mentor
                 </span>
                 {briefing?.source === 'ai'
                   ? <AiDisclosurePill />
                   : <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
               </div>
-              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+              <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: MENTOR_COLORS.heading }}>
                 Getting to know {name}
               </p>
             </div>
@@ -463,12 +463,12 @@ function DiscoveryCard({ data, name }: { data: InsightsData; name: string }) {
           <div className="relative w-9 h-9 shrink-0">
             <svg width={36} height={36} viewBox="0 0 36 36">
               <circle cx={18} cy={18} r={13} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={4}/>
-              <circle cx={18} cy={18} r={13} fill="none" stroke="#0d9488" strokeWidth={4}
+              <circle cx={18} cy={18} r={13} fill="none" stroke={MENTOR_COLORS.accent} strokeWidth={4}
                 strokeDasharray={`${Math.round((Math.min(data.all_time_completed, 3) / 3) * 82)} 82`}
                 strokeLinecap="round"
                 transform="rotate(-90 18 18)"
               />
-              <text x={18} y={22} textAnchor="middle" fontSize={8} fontWeight={700} fill="#0d9488">
+              <text x={18} y={22} textAnchor="middle" fontSize={8} fontWeight={700} fill={MENTOR_COLORS.accent}>
                 {data.all_time_completed}/3
               </text>
             </svg>
@@ -477,7 +477,7 @@ function DiscoveryCard({ data, name }: { data: InsightsData; name: string }) {
         </div>
 
         {/* Body — advisor prose style */}
-        <p className="text-[0.8125rem] leading-relaxed mb-4" style={{ color: '#a7c4b5' }}>
+        <p className="text-[0.8125rem] leading-relaxed mb-4" style={{ color: MENTOR_COLORS.body }}>
           {briefing
             ? briefing.intro
             : <>I'm building a picture of how <span style={{ color: '#e2f5ee', fontWeight: 600 }}>{name}</span> approaches their responsibilities.</>}
@@ -501,10 +501,10 @@ function DiscoveryAction({ step, text }: { step: string; text: string }) {
   return (
     <div className="flex items-start gap-3">
       <span className="shrink-0 text-[0.5625rem] font-black tracking-wider tabular-nums mt-0.5"
-            style={{ color: '#0d9488' }}>
+            style={{ color: MENTOR_COLORS.accent }}>
         {step}
       </span>
-      <p className="text-[0.75rem] leading-relaxed" style={{ color: '#a7c4b5' }}>{text}</p>
+      <p className="text-[0.75rem] leading-relaxed" style={{ color: MENTOR_COLORS.body }}>{text}</p>
     </div>
   )
 }
@@ -512,7 +512,7 @@ function DiscoveryAction({ step, text }: { step: string; text: string }) {
 // ── Live Briefing Card ────────────────────────────────────────────────────────
 
 const PERSONA_CONFIG = {
-  coach:      { label: 'Coach',      accent: '#0d9488', accentDim: 'rgba(13,148,136,0.15)'  },
+  coach:      { label: 'Coach',      accent: MENTOR_COLORS.accent, accentDim: 'rgba(13,148,136,0.15)'  },
   accountant: { label: 'Accountant', accent: '#d4a017', accentDim: 'rgba(212,160,23,0.15)'  },
   analyst:    { label: 'Analyst',    accent: '#8b5cf6', accentDim: 'rgba(139,92,246,0.15)'  },
 }
@@ -552,7 +552,7 @@ function LiveBriefingCard({
               <MentorAvatar accent={p.accent} />
               <div>
                 <div className="flex items-center flex-wrap gap-2 mb-0.5">
-                  <span className="text-[0.625rem] font-bold tracking-widest uppercase shrink-0 whitespace-nowrap" style={{ color: '#6b9e87' }}>
+                  <span className="text-[0.625rem] font-bold tracking-widest uppercase shrink-0 whitespace-nowrap" style={{ color: MENTOR_COLORS.label }}>
                     Orchard Mentor
                   </span>
                   {/* Persona lens pill */}
@@ -563,7 +563,7 @@ function LiveBriefingCard({
                   {/* EU AI Act Article 50 disclosure — visible on every AI-generated card */}
                   {briefing.source !== 'fallback' && <AiDisclosurePill />}
                 </div>
-                <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: '#f0fdf4' }}>
+                <p className="text-[0.9375rem] font-extrabold tracking-tight" style={{ color: MENTOR_COLORS.heading }}>
                   {PERIOD_NOTE_LABEL[period]}
                 </p>
               </div>
@@ -603,10 +603,10 @@ function LiveBriefingCard({
                style={{ background: 'rgba(13,148,136,0.12)', border: '1px solid rgba(13,148,136,0.2)' }}>
             <div className="flex items-center gap-1.5 mb-1">
               {/* Sparkle icon */}
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={MENTOR_COLORS.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
               </svg>
-              <span className="text-[0.5625rem] font-black uppercase tracking-wider" style={{ color: '#0d9488' }}>
+              <span className="text-[0.5625rem] font-black uppercase tracking-wider" style={{ color: MENTOR_COLORS.accent }}>
                 Recommended action
               </span>
             </div>
@@ -630,7 +630,7 @@ function LiveBriefingCard({
             </button>
             <button
               className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[0.8125rem] font-semibold cursor-pointer transition-opacity hover:opacity-85"
-              style={{ background: 'rgba(255,255,255,0.07)', color: '#a7c4b5', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'rgba(255,255,255,0.07)', color: MENTOR_COLORS.body, border: '1px solid rgba(255,255,255,0.1)' }}
               onClick={onViewTrends}
             >
               View trends

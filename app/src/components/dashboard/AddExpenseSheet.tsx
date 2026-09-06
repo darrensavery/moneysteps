@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { createSharedExpense, uploadReceipt } from '../../lib/api';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { ErrorBox } from '../ui/ErrorBox';
+import { Input } from '../ui/input';
 import { useDragToClose } from '../../hooks/useDragToClose';
 import type { ExpensePreset, ExpenseCategory } from '../../lib/sharedExpensePresets';
 import {
@@ -263,14 +264,14 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
               <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                 Description <span className="text-red-500">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 onBlur={() => setDescriptionTouched(true)}
                 placeholder="e.g. School trip payment"
-                aria-invalid={!!descriptionError}
-                className={`mt-1.5 w-full border rounded-xl px-3 py-2.5 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 ${descriptionError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
+                error={!!descriptionError}
+                className="mt-1.5 h-auto py-2.5 text-sm"
               />
               {descriptionError && <p className="mt-1 text-xs text-red-500">{descriptionError}</p>}
             </div>
@@ -326,7 +327,7 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                 <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                   Amount ({symbol}) <span className="text-red-500">*</span>
                 </label>
-                <input
+                <Input
                   type="number"
                   inputMode="numeric"
                   step="0.01"
@@ -335,8 +336,8 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                   onChange={e => setAmountStr(e.target.value)}
                   onBlur={() => setAmountTouched(true)}
                   placeholder="0.00"
-                  aria-invalid={!!amountError}
-                  className={`mt-1.5 w-full border rounded-xl px-3 py-2.5 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] tabular-nums focus:outline-none focus:ring-2 ${amountError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
+                  error={!!amountError}
+                  className="mt-1.5 h-auto py-2.5 text-sm tabular-nums"
                 />
                 {amountError && <p className="mt-1 text-xs text-red-500">{amountError}</p>}
               </div>

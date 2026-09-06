@@ -6,6 +6,7 @@ import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
 import { useEffect } from 'react'
 import { ErrorBox } from '../ui/ErrorBox'
+import { Input } from '../ui/input'
 
 const SVG_PROPS = {
   width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none',
@@ -206,14 +207,14 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
               <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest">
                 What did you buy? <span className="text-red-500">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 onBlur={() => setTitleTouched(true)}
                 placeholder="e.g. Roblox, lunch, book…"
-                aria-invalid={!!titleError}
-                className={`mt-1.5 w-full border rounded-xl px-3 py-3 text-[0.9375rem] bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 ${titleError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
+                error={!!titleError}
+                className="mt-1.5 h-auto py-3 text-15"
               />
               {titleError && <p className="mt-1 text-[0.75rem] text-red-500">{titleError}</p>}
             </div>
@@ -227,7 +228,7 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[1.125rem] font-bold text-[var(--color-text-muted)]">
                   {symbol}
                 </span>
-                <input
+                <Input
                   type="number"
                   inputMode="decimal"
                   step="0.01"
@@ -236,8 +237,8 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                   onChange={e => setAmountStr(e.target.value)}
                   onBlur={() => setAmountTouched(true)}
                   placeholder="0.00"
-                  aria-invalid={!!amountError}
-                  className={`w-full border rounded-xl pl-8 pr-3 py-3 text-[1.375rem] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 ${amountError ? 'border-red-400 focus:ring-red-400' : 'border-[var(--color-border)] focus:ring-[var(--brand-primary)]'}`}
+                  error={!!amountError}
+                  className="h-auto pl-8 pr-3 py-3 text-[1.375rem] font-bold tabular-nums"
                 />
               </div>
               {amountError && <p className="mt-1 text-[0.75rem] text-red-500">{amountError}</p>}

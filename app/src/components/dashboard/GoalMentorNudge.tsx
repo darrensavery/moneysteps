@@ -10,7 +10,7 @@
 import { useEffect } from 'react'
 import type { Goal } from '../../lib/api'
 import { effectiveTarget, formatCurrency } from '../../lib/api'
-import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles } from '../ui/PremiumShell'
+import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
 
 interface Props {
   goal:      Goal
@@ -96,7 +96,7 @@ export function GoalMentorNudge({ goal, childName }: Props) {
             <MentorAvatar />
             <span
               className="text-[0.625rem] font-bold tracking-widest uppercase"
-              style={{ color: '#9ca3af' }}
+              style={{ color: MENTOR_COLORS.label }}
             >
               Orchard Mentor
             </span>
@@ -106,14 +106,14 @@ export function GoalMentorNudge({ goal, childName }: Props) {
 
         {/* Velocity nudge */}
         {velocity && (
-          <p className="text-[0.8125rem] leading-relaxed mb-2" style={{ color: '#a7c4b5' }}>
+          <p className="text-[0.8125rem] leading-relaxed mb-2" style={{ color: MENTOR_COLORS.body }}>
             {velocity}
           </p>
         )}
 
         {/* Pillar nudge — dimmer, smaller */}
         {pillar && (
-          <p className="text-[0.75rem] leading-relaxed" style={{ color: '#6b9e87' }}>
+          <p className="text-[0.75rem] leading-relaxed" style={{ color: MENTOR_COLORS.label }}>
             {pillar}
           </p>
         )}
