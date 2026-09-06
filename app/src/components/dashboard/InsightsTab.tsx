@@ -551,12 +551,12 @@ function LiveBriefingCard({
             <div className="flex items-center gap-3">
               <MentorAvatar accent={p.accent} />
               <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[0.625rem] font-bold tracking-widest uppercase" style={{ color: '#6b9e87' }}>
+                <div className="flex items-center flex-wrap gap-2 mb-0.5">
+                  <span className="text-[0.625rem] font-bold tracking-widest uppercase shrink-0 whitespace-nowrap" style={{ color: '#6b9e87' }}>
                     Orchard Mentor
                   </span>
                   {/* Persona lens pill */}
-                  <span className="text-[0.5625rem] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                  <span className="text-[0.5625rem] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap"
                         style={{ background: p.accentDim, color: p.accent }}>
                     {p.label}
                   </span>

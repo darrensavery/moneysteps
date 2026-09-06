@@ -95,8 +95,11 @@ export function ParentDashboard() {
   const [poolRefreshKey, setPoolRefreshKey] = useState(0)
 
   function handleTabChange(t: Tab) {
-    setTab(t)
-    localStorage.setItem('mc_parent_tab', t)
+    if (t === tab) return
+    // Push a history entry per tab so the browser/OS back gesture steps back
+    // through tabs one at a time, like a normal multi-page back button —
+    // picked up by the ?tab= sync effect above, which also persists it.
+    navigate(`/parent?tab=${t}`)
   }
 
   function handleSetActiveChild(child: ChildRecord) {

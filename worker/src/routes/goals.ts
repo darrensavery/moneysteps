@@ -154,6 +154,16 @@ export async function handleGoalCreate(request: Request, env: Env): Promise<Resp
   return json(goal, 201);
 }
 
+// The goal belongs to the child who created it — a parent can only adjust
+// their own match percentage, never rewrite the child's title/target/deadline
+// unilaterally. current_saved_pence/parent_fixed_contribution are write-only
+// via /contribute; status is write-only via /purchase — neither is editable here.
+const PARENT_UPDATABLE_FIELDS = ['parent_match_pct'];
+const CHILD_UPDATABLE_FIELDS = [
+  'title', 'target_amount', 'currency', 'category', 'deadline', 'alloc_pct',
+  'match_rate', 'product_url',
+];
+
 export async function handleGoalUpdate(request: Request, env: Env, id: string): Promise<Response> {
   const auth = (request as AuthedRequest).auth;
   const parsed = await parseValidatedBody(request, goalUpdateSchema);
@@ -161,16 +171,36 @@ export async function handleGoalUpdate(request: Request, env: Env, id: string): 
   const body = parsed;
 
   const goal = await env.DB
-    .prepare('SELECT family_id, child_id FROM goals WHERE id = ?')
-    .bind(id).first<{ family_id: string; child_id: string }>();
+    .prepare('SELECT family_id, child_id, current_saved_pence FROM goals WHERE id = ?')
+    .bind(id).first<{ family_id: string; child_id: string; current_saved_pence: number }>();
   if (!goal) return error('Goal not found', 404);
   if (goal.family_id !== auth.family_id) return error('Forbidden', 403);
   if (auth.role === 'child' && goal.child_id !== auth.sub) return error('Forbidden', 403);
 
-  const allowed = [
-    'title','target_amount','currency','category','deadline','alloc_pct','match_rate',
-    'product_url','parent_match_pct','parent_fixed_contribution','status',
-  ];
+  const allowed = auth.role === 'parent' ? PARENT_UPDATABLE_FIELDS : CHILD_UPDATABLE_FIELDS;
+  const disallowed = Object.keys(body).filter(key => !allowed.includes(key));
+  if (disallowed.length > 0) {
+    return error(
+      auth.role === 'parent'
+        ? 'Parents can only adjust the parental match percentage — the goal itself belongs to your child'
+        : `Cannot update field(s): ${disallowed.join(', ')}`,
+      403,
+    );
+  }
+
+  // A child can lower their own target, but not below what's already been
+  // gifted toward it — that would leave the contribution stranded above 100%.
+  if ('target_amount' in body) {
+    const newTarget = Number(body.target_amount);
+    if (!Number.isInteger(newTarget) || newTarget <= 0) return error('target_amount must be a positive integer');
+    if (newTarget < goal.current_saved_pence) {
+      return error(
+        `Target can't be lower than the ${(goal.current_saved_pence / 100).toFixed(2)} already contributed toward this goal`,
+        422,
+      );
+    }
+  }
+
   const updates: string[] = [];
   const values: unknown[] = [];
 

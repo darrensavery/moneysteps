@@ -148,11 +148,17 @@ export function GoalBoostingTab({ familyId, child }: Props) {
         const isSaving  = saving === goal.id
         const isContrib = contributing === goal.id
         const msg       = contribMsg[goal.id]
+        const daysOverdue = goal.deadline
+          ? Math.floor((Date.now() - new Date(goal.deadline).getTime()) / 86_400_000)
+          : -1
+        const isOverdue = goal.status === 'ACTIVE' && daysOverdue >= 0
 
         return (
           <div key={goal.id} className="space-y-2">
           <div
-            className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden"
+            className={`bg-[var(--color-surface)] rounded-2xl border overflow-hidden ${
+              isOverdue ? 'border-[var(--color-border)] border-l-4 border-l-amber-400' : 'border-[var(--color-border)]'
+            }`}
           >
             {/* Goal header */}
             <div className="px-4 pt-4 pb-3 space-y-2">
@@ -168,9 +174,18 @@ export function GoalBoostingTab({ familyId, child }: Props) {
                 <div className="text-right shrink-0">
                   <p className="text-[0.8125rem] font-semibold text-[var(--color-text)] tabular-nums">{formatCurrency(goal.target_amount, currency)}</p>
                   {goal.deadline && (
-                    <p className="text-[0.6875rem] text-[var(--color-text-muted)]">
-                      by {new Date(goal.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
+                    isOverdue ? (
+                      <p className="inline-flex items-center gap-1 text-[0.6875rem] font-semibold text-amber-600">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+                        </svg>
+                        {daysOverdue === 0 ? 'Due today' : `${daysOverdue} day${daysOverdue === 1 ? '' : 's'} overdue`}
+                      </p>
+                    ) : (
+                      <p className="text-[0.6875rem] text-[var(--color-text-muted)]">
+                        by {new Date(goal.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    )
                   )}
                 </div>
               </div>
@@ -194,7 +209,7 @@ export function GoalBoostingTab({ familyId, child }: Props) {
               {/* Progress */}
               <div className="space-y-1">
                 <div className="w-full h-3 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--brand-primary)] rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                  <div className={`h-full rounded-full transition-all duration-700 ${isOverdue ? 'bg-amber-400' : 'bg-[var(--brand-primary)]'}`} style={{ width: `${pct}%` }} />
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[0.6875rem] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(saved, currency)} saved</span>

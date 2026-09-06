@@ -1,17 +1,19 @@
 /**
- * SavingsGrove — Goal creation sheet for child view.
+ * SavingsGrove — Goal creation/edit sheet for child view.
  *
  * Shows:
  *  - Name, Target Amount, Category, Save-by Date (mandatory)
  *  - Product URL (teen mode only)
  *  - Live "Labor Equivalent" preview: "This will take N [chore title]s"
  *
- * On submit: calls createGoal API and calls onCreated() callback.
+ * Pass `goal` to edit an existing goal in place instead of creating a new
+ * one — only the child who owns a goal can edit it (enforced server-side).
+ * On submit: calls createGoal/updateGoal API and calls onCreated() callback.
  */
 
 import { useState, useMemo, useEffect } from 'react'
 import type { Chore, Goal } from '../../lib/api'
-import { createGoal, formatCurrency } from '../../lib/api'
+import { createGoal, updateGoal, formatCurrency } from '../../lib/api'
 import { currencySymbol } from '../../lib/locale'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
@@ -34,19 +36,22 @@ interface Props {
   chores:   Chore[]
   appView: 'ORCHARD' | 'CLEAN'
   weeklyAllowancePence: number   // 0 if none
+  /** When set, edits this goal in place instead of creating a new one. */
+  goal?:      Goal | null
   onCreated: (goal: Goal) => void
   onClose:   () => void
 }
 
 export function SavingsGrove({
   familyId, childId, currency, chores, appView,
-  weeklyAllowancePence, onCreated, onClose,
+  weeklyAllowancePence, goal, onCreated, onClose,
 }: Props) {
-  const [title,      setTitle]      = useState('')
-  const [amountStr,  setAmountStr]  = useState('')
-  const [category,   setCategory]   = useState('Other')
-  const [deadline,   setDeadline]   = useState('')
-  const [productUrl, setProductUrl] = useState('')
+  const isEditing = Boolean(goal)
+  const [title,      setTitle]      = useState(goal?.title ?? '')
+  const [amountStr,  setAmountStr]  = useState(goal ? (goal.target_amount / 100).toFixed(2) : '')
+  const [category,   setCategory]   = useState(goal?.category ?? 'Other')
+  const [deadline,   setDeadline]   = useState(goal?.deadline ?? '')
+  const [productUrl, setProductUrl] = useState(goal?.product_url ?? '')
   const [saving,     setSaving]     = useState(false)
   const [err,        setErr]        = useState<string | null>(null)
 
@@ -100,6 +105,9 @@ export function SavingsGrove({
     if (!title.trim())  return setErr('Please enter a goal name.')
     if (!targetPence)   return setErr('Enter a target amount greater than £0.')
     if (!deadline)      return setErr('Choose a save-by date.')
+    if (isEditing && goal && targetPence < goal.current_saved_pence) {
+      return setErr(`Target can't be lower than the ${formatCurrency(goal.current_saved_pence, currency)} already contributed toward this goal.`)
+    }
     if (productUrl.trim()) {
       try {
         const parsed = new URL(productUrl.trim())
@@ -113,17 +121,25 @@ export function SavingsGrove({
 
     setSaving(true)
     try {
-      const goal = await createGoal({
-        family_id: familyId,
-        child_id:  childId,
-        title:     title.trim(),
-        target_amount: targetPence,
-        currency,
-        category,
-        deadline,
-        product_url: productUrl.trim() || undefined,
-      } as Parameters<typeof createGoal>[0])
-      onCreated(goal)
+      const result = isEditing && goal
+        ? await updateGoal(goal.id, {
+            title:         title.trim(),
+            target_amount: targetPence,
+            category,
+            deadline,
+            product_url: productUrl.trim() || null,
+          } as Partial<Goal>)
+        : await createGoal({
+            family_id: familyId,
+            child_id:  childId,
+            title:     title.trim(),
+            target_amount: targetPence,
+            currency,
+            category,
+            deadline,
+            product_url: productUrl.trim() || undefined,
+          } as Parameters<typeof createGoal>[0])
+      onCreated(result)
     } catch (ex: unknown) {
       setErr((ex as Error).message ?? 'Could not save goal.')
     } finally {
@@ -136,7 +152,7 @@ export function SavingsGrove({
       className="fixed inset-0 z-50 flex flex-col justify-end"
       role="dialog"
       aria-modal="true"
-      aria-label={appView === 'CLEAN' ? 'Add a Goal' : 'Add a Goal — Savings Grove'}
+      aria-label={isEditing ? 'Edit Goal' : (appView === 'CLEAN' ? 'Add a Goal' : 'Add a Goal — Savings Grove')}
       tabIndex={-1}
     >
       {/* Backdrop */}
@@ -152,7 +168,9 @@ export function SavingsGrove({
         <form onSubmit={handleSubmit} className="px-5 pb-8 space-y-5">
           {/* Header */}
           <div className="flex items-center justify-between pt-1">
-            <h2 className="text-lg font-bold text-[var(--color-text)]">{appView === 'CLEAN' ? 'Add a Goal' : '🎯 Add a Goal'}</h2>
+            <h2 className="text-lg font-bold text-[var(--color-text)]">
+              {isEditing ? '✏️ Edit Goal' : (appView === 'CLEAN' ? 'Add a Goal' : '🎯 Add a Goal')}
+            </h2>
             <button
               type="button"
               onClick={onClose}
@@ -199,6 +217,11 @@ export function SavingsGrove({
                 className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] pl-8 pr-3.5 py-2.5 text-sm tabular-nums text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               />
             </div>
+            {isEditing && goal && goal.current_saved_pence > 0 && (
+              <p className="text-[0.6875rem] text-[var(--color-text-muted)]">
+                {formatCurrency(goal.current_saved_pence, currency)} already contributed — the target can't go below this.
+              </p>
+            )}
             {/* Live effort preview */}
             {effortText && (
               <div className="flex items-start gap-2 rounded-xl bg-[var(--color-surface-alt)] px-3.5 py-2.5 border border-[var(--color-border)]">
@@ -280,7 +303,9 @@ export function SavingsGrove({
           >
             {saving
               ? 'Saving…'
-              : (appView === 'CLEAN' ? 'Save this Goal' : 'Add this Goal 🎯')}
+              : isEditing
+                ? 'Save changes'
+                : (appView === 'CLEAN' ? 'Save this Goal' : 'Add this Goal 🎯')}
           </button>
         </form>
       </div>

@@ -22,6 +22,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
   const [chores,   setChores]   = useState<Chore[]>([])
   const [loading,  setLoading]  = useState(true)
   const [showGrove, setShowGrove] = useState(false)
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [purchasing, setPurchasing] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [goalBarPct, setGoalBarPct] = useState(0)
@@ -161,12 +162,29 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                 ? new Date(Date.now() + weeksLeft * 7 * 86_400_000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
                 : null
 
+              const daysOverdue = activeTopGoal.deadline
+                ? Math.floor((Date.now() - new Date(activeTopGoal.deadline).getTime()) / 86_400_000)
+                : -1
+              const isOverdue = daysOverdue >= 0
+
               return (
                 <div className="px-4 py-4 space-y-3">
                   <div className="flex items-center gap-4">
                     <GrowingTree pct={pct} size={72} showLabel />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[0.875rem] font-semibold text-[var(--color-text)] truncate">{activeTopGoal.title}</span>
+                        <button
+                          onClick={() => setEditingGoal(activeTopGoal)}
+                          aria-label={`Edit ${activeTopGoal.title}`}
+                          className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer p-1 -m-1"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+                          </svg>
+                        </button>
+                      </div>
                       {activeTopGoal.parent_match_pct > 0 && (
                         <div className="text-[0.6875rem] text-emerald-600 font-semibold mt-0.5">
                           🤝 Parent matches {activeTopGoal.parent_match_pct}% — you only need {formatCurrency(effTarget, cur)}!
@@ -208,6 +226,26 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                         <span className="font-semibold text-[var(--brand-accent)]">{arrivalDate}</span>
                       </div>
                     )}
+                    {activeTopGoal.deadline && (
+                      isOverdue ? (
+                        <div className="flex items-center gap-2 text-[0.75rem]">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-amber-500">
+                            <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+                          </svg>
+                          <span className="text-amber-600 font-semibold">
+                            {daysOverdue === 0 ? "You planned to save by today" : `You planned to save by ${daysOverdue} day${daysOverdue === 1 ? '' : 's'} ago`}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-[0.75rem]">
+                          <span>🗓️</span>
+                          <span className="text-[var(--color-text-muted)]">Save by:</span>
+                          <span className="font-semibold text-[var(--color-text)]">
+                            {new Date(activeTopGoal.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                      )
+                    )}
                   </div>
 
                   {isReady && (
@@ -243,6 +281,16 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
                       <span className="flex-1 text-[0.75rem] font-semibold text-[var(--color-text)] truncate">{g.title}</span>
                       <span className="text-[0.6875rem] text-[var(--color-text-muted)] shrink-0">{effortLabel(g.target_amount)}</span>
                       <button
+                        onClick={() => setEditingGoal(g)}
+                        aria-label={`Edit ${g.title}`}
+                        className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--brand-primary)] transition-colors cursor-pointer px-1"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+                        </svg>
+                      </button>
+                      <button
                         onClick={() => handleDelete(g.id, g.title)}
                         disabled={deleting === g.id}
                         aria-label={`Stop saving for ${g.title}`}
@@ -271,7 +319,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
         </div>
       </div>
 
-      {showGrove && (
+      {(showGrove || editingGoal) && (
         <SavingsGrove
           familyId={familyId}
           childId={childId}
@@ -279,8 +327,9 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
           chores={chores}
           appView={appView}
           weeklyAllowancePence={weeklyAllowancePence}
-          onCreated={() => { setShowGrove(false); load() }}
-          onClose={() => setShowGrove(false)}
+          goal={editingGoal}
+          onCreated={() => { setShowGrove(false); setEditingGoal(null); load() }}
+          onClose={() => { setShowGrove(false); setEditingGoal(null) }}
         />
       )}
     </div>

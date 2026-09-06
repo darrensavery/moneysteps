@@ -76,6 +76,26 @@ export default function AuthCallbackScreen() {
           avatar_id:      existingIdentity?.avatar_id,
           google_picture: result.user.google_picture ?? existingIdentity?.google_picture ?? undefined,
         })
+
+        // If this was a Google sign-in, the browser history now has Google's own
+        // pages sitting between here and /auth/login (e.g. its consent screen).
+        // Skip back over them first so a later swipe-back gesture on /parent lands
+        // on whatever the user was viewing before login, not on a Google page we
+        // don't control and can't redirect away from.
+        const preOauthLen = sessionStorage.getItem('mc_pre_oauth_history_len')
+        sessionStorage.removeItem('mc_pre_oauth_history_len')
+        const steps = preOauthLen ? window.history.length - Number(preOauthLen) : 0
+        if (steps > 0) {
+          await new Promise<void>(resolve => {
+            const onPop = () => { window.removeEventListener('popstate', onPop); resolve() }
+            window.addEventListener('popstate', onPop)
+            window.history.go(-steps)
+            // Fallback in case popstate never fires (e.g. crossing an origin boundary
+            // without one) — don't block the redirect indefinitely.
+            setTimeout(resolve, 300)
+          })
+        }
+
         // Full browser navigation — tears down React tree so RootGate
         // re-reads mc_device_identity from localStorage on remount.
         window.location.replace('/parent')

@@ -85,6 +85,12 @@ export default function LoginScreen() {
             {/* Google — styled like the primary CTA */}
             <a
               href={`${workerUrl}/auth/google`}
+              onClick={() => {
+                // Record how deep we are so AuthCallbackScreen can skip back over
+                // Google's own pages once sign-in completes, instead of leaving
+                // them in history where a swipe-back gesture would land on them.
+                sessionStorage.setItem('mc_pre_oauth_history_len', String(window.history.length))
+              }}
               className="
                 w-full h-14 rounded-2xl bg-[var(--brand-primary)] text-white
                 font-semibold text-[0.9375rem] tracking-tight
