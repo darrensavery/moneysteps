@@ -46,7 +46,7 @@ function DeviceIcon({ type, isCurrent }: { type: LoginEntry['device_type']; isCu
   const Icon = type === 'mobile' ? Smartphone : type === 'tablet' ? Tablet : Monitor
   return (
     <div className="relative shrink-0">
-      <span className="w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+      <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
         <Icon size={15} />
       </span>
       {isCurrent && (

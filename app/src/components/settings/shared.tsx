@@ -83,7 +83,7 @@ export function SettingsRow({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors',
+        'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors',
         'border-b border-[var(--color-border)] last:border-0',
         disabled
           ? 'opacity-40 cursor-not-allowed'
@@ -92,18 +92,18 @@ export function SettingsRow({
     >
       {icon && (
         <span className={cn(
-          'shrink-0 w-8 h-8 rounded-xl flex items-center justify-center',
+          'shrink-0 w-7 h-7 rounded-lg flex items-center justify-center',
           destructive ? 'bg-red-600 text-white' : 'bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]',
         )}>
           {icon}
         </span>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
+        <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">
           {label}
         </p>
         {description && (
-          <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">{description}</p>
+          <p className="text-[0.6875rem] text-[var(--color-text-muted)] leading-snug">{description}</p>
         )}
       </div>
       {badge && (
@@ -111,7 +111,7 @@ export function SettingsRow({
           {badge}
         </span>
       )}
-      {rightSlot ?? <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />}
+      {rightSlot ?? <ChevronRight size={14} className="shrink-0 text-[var(--color-text-muted)]" />}
     </button>
   )
 }

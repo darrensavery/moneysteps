@@ -159,7 +159,7 @@ function LinkRow({
       rel={external ? 'noopener noreferrer' : undefined}
       className="w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
     >
-      <span className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center ${iconBg}`}>
+      <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${iconBg}`}>
         {icon}
       </span>
       <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ export function SupportSettings({ toast, onBack }: Props) {
           onClick={() => { setShowContactModal(true); setContactSent(false); setContactError(null); setContactText('') }}
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
         >
-          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+          <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
             <Search size={15} />
           </span>
           <div className="flex-1 min-w-0">
@@ -280,7 +280,7 @@ export function SupportSettings({ toast, onBack }: Props) {
             onClick={() => setSub('whats-new')}
             className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
           >
-            <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+            <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
               <Sparkles size={15} />
             </span>
             <div className="flex-1 min-w-0">

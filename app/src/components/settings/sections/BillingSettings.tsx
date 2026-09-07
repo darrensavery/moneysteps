@@ -718,7 +718,7 @@ function HistoryView({ onBack }: { onBack: () => void }) {
               key={i}
               className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--color-border)] last:border-0"
             >
-              <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+              <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
                 <Receipt size={14} />
               </span>
               <div className="flex-1 min-w-0">

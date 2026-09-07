@@ -253,7 +253,7 @@ function ProLegalView({ onBack }: { onBack: () => void }) {
           href="mailto:hello@morechard.com?subject=Professional%20Access%20%E2%80%94%20Solicitor%2FMediator%20Enquiry&body=Name%3A%0AOrganisation%3A%0ASRA%20number%20or%20accreditation%3A%0AHow%20I%20plan%20to%20use%20Morechard%3A"
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
         >
-          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+          <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
             <ExternalLink size={15} />
           </span>
           <div className="flex-1 min-w-0">
@@ -324,7 +324,7 @@ function ProMediaView({ onBack }: { onBack: () => void }) {
           href="mailto:hello@morechard.com?subject=Affiliate%20Programme%20Application&body=Name%3A%0AChannel%2FBlog%20URL%3A%0AApproximate%20audience%20size%3A%0AContent%20type%3A"
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
         >
-          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-violet-100 text-violet-700">
+          <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-violet-100 text-violet-700">
             <ExternalLink size={15} />
           </span>
           <div className="flex-1 min-w-0">
@@ -416,7 +416,7 @@ function HardshipView({ onBack }: { onBack: () => void }) {
             : 'mailto:hello@morechard.com?subject=Hardship%20Licence%20%E2%80%94%20Charity%20Enquiry&body=Organisation%20name%3A%0AWebsite%3A%0ACharity%20number%3A%0AHow%20we%20support%20families%3A'}
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors"
         >
-          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-rose-100 text-rose-700">
+          <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-rose-100 text-rose-700">
             <Users size={15} />
           </span>
           <div className="flex-1 min-w-0">

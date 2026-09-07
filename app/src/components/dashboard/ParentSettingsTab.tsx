@@ -94,6 +94,7 @@ import { DataSettings }       from '../settings/sections/DataSettings'
 import { ReferralsSettings }  from '../settings/sections/ReferralsSettings'
 import { AboutSettings }      from '../settings/sections/AboutSettings'
 import { AvatarSVG }          from '../../lib/avatars'
+import { SettingsRow }        from '../settings/shared'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -404,12 +405,12 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
   const avatarEl = (() => {
     const avatarId = localStorage.getItem('mc_parent_avatar')
     if (identity?.google_picture) {
-      return <img src={identity.google_picture} alt={`${identity.display_name}'s profile photo`} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--brand-primary)]" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+      return <img src={identity.google_picture} alt={`${identity.display_name}'s profile photo`} className="w-10 h-10 rounded-full object-cover border-2 border-[var(--brand-primary)]" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
     }
     return avatarId ? (
-      <div className="w-12 h-12 rounded-full overflow-hidden border border-[var(--color-border)]"><AvatarSVG id={avatarId} size={48} /></div>
+      <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-border)]"><AvatarSVG id={avatarId} size={40} /></div>
     ) : (
-      <div className="w-12 h-12 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[0.9375rem] font-bold">{identity?.initials ?? 'P'}</div>
+      <div className="w-10 h-10 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[0.8125rem] font-bold">{identity?.initials ?? 'P'}</div>
     )
   })()
 
@@ -500,20 +501,12 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
 
   function MenuItem({ item }: { item: MenuItem }) {
     return (
-      <button
-        type="button"
+      <SettingsRow
+        icon={item.icon}
+        label={item.label}
+        description={item.description}
         onClick={() => item.onAction ? item.onAction() : setView({ type: 'section', section: item.id })}
-        className="w-full flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] cursor-pointer transition-colors text-left"
-      >
-        <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
-          {item.icon}
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">{item.label}</p>
-          <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">{item.description}</p>
-        </div>
-        <ChevronRight size={14} className="shrink-0 text-[var(--color-text-muted)]" />
-      </button>
+      />
     )
   }
 
@@ -539,12 +532,12 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
         {/* Identity + status */}
-        <div className="px-4 py-4 space-y-3">
+        <div className="px-4 py-3 space-y-3">
           {/* Avatar + name/email */}
           <div className="flex items-center gap-3">
             {avatarEl}
             <div className="flex-1 min-w-0">
-              <p className="text-[0.9375rem] font-bold text-[var(--color-text)] truncate">{identity?.display_name ?? 'Parent'}</p>
+              <p className="text-[0.875rem] font-bold text-[var(--color-text)] truncate">{identity?.display_name ?? 'Parent'}</p>
               <p className="text-[0.75rem] text-[var(--color-text-muted)] truncate">{profile?.email ?? ''}</p>
             </div>
             {/* System status */}

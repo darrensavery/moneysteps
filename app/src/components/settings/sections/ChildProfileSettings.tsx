@@ -631,7 +631,7 @@ export function ChildProfileSettings({
             {/* App View — two-option selector */}
             <div className="px-4 py-3.5 border-b border-[var(--color-border)]">
               <div className="flex items-center gap-3 mb-3">
-                <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+                <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
                   <TreePine size={15} />
                 </span>
                 <div>
@@ -671,7 +671,7 @@ export function ChildProfileSettings({
                 className="w-full flex items-center justify-between cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+                  <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
                     <TreePine size={15} />
                   </span>
                   <div className="text-left min-w-0">
