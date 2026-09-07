@@ -441,12 +441,12 @@ export function ChoresTab({ familyId, child, children }: Props) {
           {showArchived && (
             <div className="mt-2 space-y-2">
               {archived.map(chore => (
-                <div key={chore.id} className="bg-[var(--color-surface)] rounded-xl px-4 py-3 flex items-center justify-between opacity-60" style={{ boxShadow: 'var(--shadow-card)' }}>
+                <div key={chore.id} className="bg-[var(--color-surface)] rounded-xl px-4 py-2.5 flex items-center justify-between opacity-60" style={{ boxShadow: 'var(--shadow-card)' }}>
                   <div>
-                    <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">{chore.title}</p>
-                    <p className="text-[0.75rem] text-[var(--color-text-muted)]">{formatCurrency(chore.reward_amount, chore.currency)}</p>
+                    <p className="text-[0.8125rem] font-semibold text-[var(--color-text)]">{chore.title}</p>
+                    <p className="text-[0.6875rem] text-[var(--color-text-muted)]">{formatCurrency(chore.reward_amount, chore.currency)}</p>
                   </div>
-                  <button onClick={() => handleRestore(chore.id)} className="text-[0.8125rem] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
+                  <button onClick={() => handleRestore(chore.id)} className="text-[0.75rem] font-semibold text-[var(--brand-primary)] hover:underline cursor-pointer">
                     Restore
                   </button>
                 </div>
@@ -661,18 +661,18 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
       onMouseLeave={() => setHovered(false)}
     >
       <button
-        className="w-full px-4 py-3 flex items-start gap-3 cursor-pointer"
+        className="w-full px-4 py-2.5 flex items-start gap-3 cursor-pointer"
         onClick={onToggle}
       >
         {/* Category icon */}
-        <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center mt-0.5 ${
+        <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5 ${
           isOverdue || chore.is_flash
             ? 'bg-red-200 text-red-600 dark:bg-red-900/40 dark:text-red-400'
             : chore.is_priority
             ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400'
             : 'bg-[var(--color-surface-alt)] text-[var(--brand-primary)]'
         }`}>
-          <ChoreIcon title={chore.title} size={20} />
+          <ChoreIcon title={chore.title} size={18} />
         </div>
 
         {/* Title + metadata */}
@@ -680,7 +680,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
           <div className="flex items-center gap-2 flex-wrap">
             {!!chore.is_flash && <span className="text-[0.6875rem] font-bold text-red-600 bg-red-100 rounded px-1.5 py-0.5">FLASH</span>}
             {!!chore.is_priority && !chore.is_flash && <span className="text-[0.6875rem] font-bold text-amber-600 bg-amber-100 rounded px-1.5 py-0.5">PRIORITY</span>}
-            <span className="text-[0.9375rem] font-semibold text-[var(--color-text)]">{chore.title}</span>
+            <span className="text-[0.875rem] font-semibold text-[var(--color-text)]">{chore.title}</span>
             {!expanded && !!chore.description && (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-text-muted)] opacity-50 shrink-0" aria-label="Has instructions">
                 <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
@@ -712,12 +712,12 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
 
         {/* Price + chevron */}
         <div className="shrink-0 flex flex-col items-end gap-1 mt-0.5">
-          <span className="text-[0.875rem] font-bold text-[var(--color-text)] tabular-nums">
+          <span className="text-[0.8125rem] font-bold text-[var(--color-text)] tabular-nums">
             {formatCurrency(chore.reward_amount, chore.currency)}
           </span>
           {/* Chevron */}
           <svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             className={`text-[var(--color-text-muted)] transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
           >

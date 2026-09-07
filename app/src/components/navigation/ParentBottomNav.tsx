@@ -83,12 +83,12 @@ export function ParentBottomNav({ activeTab, onTabChange, badges = {}, disabled 
                   onKeyDown={e => handleKeyDown(e, index)}
                   aria-label={label}
                   aria-current={isActive ? 'page' : undefined}
-                  className="relative z-10 flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 cursor-pointer select-none transition-transform duration-75 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--brand-primary)]"
+                  className="relative z-10 flex-1 flex flex-col items-center justify-center gap-0.5 py-2 cursor-pointer select-none transition-transform duration-75 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--brand-primary)]"
                 >
                   {/* Icon wrapper — badge anchors to this */}
                   <div className="relative">
                     <Icon
-                      size={20}
+                      size={18}
                       strokeWidth={isActive ? 2.25 : 1.75}
                       className={`transition-colors duration-200 ${
                         isActive

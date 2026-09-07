@@ -279,12 +279,12 @@ export function ParentDashboard() {
       <DemoUpsellCard trialStatus={trialStatus} />
       {/* Header */}
       <header className="safe-top sticky top-0 z-40 glass-header">
-        <div className="max-w-[560px] mx-auto px-3.5 py-3 flex items-center justify-between">
-          <FullLogo iconSize={26} />
+        <div className="max-w-[560px] mx-auto px-3.5 py-2.5 flex items-center justify-between">
+          <FullLogo iconSize={22} />
           <div className="flex items-center gap-2">
             {/* Offline indicator — only visible when offline */}
             {!online && (
-              <span title="Offline" className="flex items-center justify-center w-8 h-8 rounded-lg text-amber-500">
+              <span title="Offline" className="flex items-center justify-center w-7 h-7 rounded-lg text-amber-500">
                 <OfflineIcon />
               </span>
             )}
@@ -295,14 +295,14 @@ export function ParentDashboard() {
                 return (
                   <button
                     onClick={() => setShowSettings(true)}
-                    className="shrink-0 w-9 h-9 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                    className="shrink-0 w-8 h-8 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                     title="Settings"
                     aria-label="Open settings"
                   >
                     <img
                       src={identity.google_picture}
                       alt={identity.display_name}
-                      className="w-9 h-9 rounded-full object-cover border-2 border-[var(--brand-primary)]"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-[var(--brand-primary)]"
                       onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                     />
                   </button>
@@ -311,16 +311,16 @@ export function ParentDashboard() {
               return avatarId ? (
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="tap-target-44 w-8 h-8 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)] cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+                  className="tap-target-44 w-7 h-7 rounded-full overflow-hidden shrink-0 border border-[var(--color-border)] cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                   title="Settings"
                   aria-label="Open settings"
                 >
-                  <AvatarSVG id={avatarId} size={32} />
+                  <AvatarSVG id={avatarId} size={28} />
                 </button>
               ) : (
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="tap-target-44 w-8 h-8 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[0.6875rem] font-bold tracking-wide shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--brand-primary)]"
+                  className="tap-target-44 w-7 h-7 rounded-full bg-[var(--brand-primary)] flex items-center justify-center text-white text-[0.625rem] font-bold tracking-wide shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--brand-primary)]"
                   title="Settings"
                   aria-label="Open settings"
                 >
@@ -333,7 +333,7 @@ export function ParentDashboard() {
 
         {/* Child selector */}
         {children.length > 1 && (
-          <div className="max-w-[560px] mx-auto px-3.5 pb-2.5 flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="max-w-[560px] mx-auto px-3.5 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
             {children.map(child => {
               const childPending = pendingByChild[child.id] ?? 0
               const showNavBadge = childPending > 0 && (child.id !== activeChild?.id || tab !== 'activity')
@@ -342,14 +342,14 @@ export function ParentDashboard() {
                   key={child.id}
                   onClick={() => handleSetActiveChild(child)}
                   className={`
-                    tap-target-44 shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.8125rem] font-semibold
+                    tap-target-44 shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.75rem] font-semibold
                     border transition-colors duration-100 cursor-pointer relative
                     ${activeChild?.id === child.id
                       ? 'bg-[var(--brand-primary)] border-[var(--brand-primary)] text-white'
                       : 'bg-[var(--color-surface-alt)] border-[var(--color-border)] text-[var(--color-text-muted)] hover:opacity-80'}
                   `}
                 >
-                  <AvatarSVG id={child.avatar_id ?? 'bottts:spark'} size={20} />
+                  <AvatarSVG id={child.avatar_id ?? 'bottts:spark'} size={18} />
                   {child.display_name}
                   {showNavBadge && (
                     <span className="bg-red-500 text-white text-[0.5625rem] font-bold rounded-full w-[16px] h-[16px] flex items-center justify-center leading-none shrink-0">
