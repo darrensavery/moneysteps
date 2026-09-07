@@ -109,14 +109,23 @@ async function request<T>(path: string, options: RequestInit = {}, _retries = 2,
     headers['X-Morechard-Client'] = '1';
   }
 
-  const res = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers,
-    // Web only: makes the browser send/receive the HttpOnly mc_token cookie.
-    // Harmless to set on native too (native uses an absolute cross-origin URL
-    // and doesn't rely on cookies either way).
-    credentials: isNative ? 'omit' : 'include',
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...options,
+      headers,
+      // Web only: makes the browser send/receive the HttpOnly mc_token cookie.
+      // Harmless to set on native too (native uses an absolute cross-origin URL
+      // and doesn't rely on cookies either way).
+      credentials: isNative ? 'omit' : 'include',
+    });
+  } catch {
+    // fetch() itself rejects (not a bad response) when the request never
+    // reached the network — offline, DNS failure, the request got aborted
+    // by navigation. Not a bug to report; give the caller something
+    // catchable and recognisable instead of the browser's raw TypeError.
+    throw Object.assign(new Error('No connection — check your internet and try again.'), { code: 'NETWORK_ERROR' });
+  }
 
   // D1 transient reset — retry up to twice with a short delay
   if (res.status === 503 && _retries > 0) {

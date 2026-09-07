@@ -55,6 +55,14 @@ if (import.meta.env.PROD) {
         Sentry.browserTracingIntegration(),
         ...(allowReplay ? [Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true })] : []),
       ],
+      // The browser's own wording for "the request never reached the network"
+      // (offline, flaky mobile signal, a request aborted by navigation) —
+      // a client network condition, not an app defect, on every browser engine.
+      ignoreErrors: [
+        'Failed to fetch',                             // Chromium
+        'NetworkError when attempting to fetch resource', // Firefox
+        'Load failed',                                  // Safari/WebKit
+      ],
       beforeSend(event) {
         if (event.extra) {
           for (const key of Object.keys(event.extra)) {
