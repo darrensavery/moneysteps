@@ -194,7 +194,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
         <div
-          className="pointer-events-auto w-full max-w-[560px] mx-3"
+          className="pointer-events-auto w-full max-w-[520px] mx-3"
           style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
         >
           <button
