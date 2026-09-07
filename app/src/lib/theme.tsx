@@ -19,6 +19,7 @@ import {
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { updateSettings } from './api'
+import { Toggle } from '../components/ui/Toggle'
 
 export type ThemePreference = 'light' | 'dark' | 'system'
 export type ResolvedTheme   = 'light' | 'dark'
@@ -238,23 +239,7 @@ export function HighContrastToggle() {
           Meets WCAG AA accessibility standards for text and interface contrast.
         </p>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={highContrast}
-        onClick={() => setHighContrast(!highContrast)}
-        className={`
-          tap-target-44 relative w-11 h-6 rounded-full border transition-colors duration-150 cursor-pointer shrink-0
-          ${highContrast ? 'bg-brand border-brand' : 'bg-surface-alt border-subtle'}
-        `}
-      >
-        <span
-          className={`
-            absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-150
-            ${highContrast ? 'translate-x-5' : 'translate-x-0'}
-          `}
-        />
-      </button>
+      <Toggle checked={highContrast} onChange={() => setHighContrast(!highContrast)} label="High Contrast" />
     </div>
   )
 }

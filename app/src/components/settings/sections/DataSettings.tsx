@@ -15,7 +15,7 @@ import { Toast, useToast, SettingsRow, SectionCard, SectionHeader } from '../sha
 import { getFamilyId, postAnalyticsConsent, type ShieldUpgradePrice } from '../../../lib/api'
 import { useExportManager } from '../../../hooks/useExportManager'
 import { hasAnalyticsConsent, grantAnalyticsConsent, revokeAnalyticsConsent } from '../../../lib/analytics'
-import { cn } from '../../../lib/utils'
+import { Toggle } from '../../ui/Toggle'
 
 interface Props {
   isLead:              boolean
@@ -124,7 +124,7 @@ export function DataSettings({
           </p>
         </div>
         <div className="flex items-start gap-3 px-4 py-3">
-          <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+          <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
             <BarChart3 size={15} />
           </span>
           <div className="flex-1 min-w-0">
@@ -134,24 +134,7 @@ export function DataSettings({
               and your children's screens are never recorded.
             </p>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={analyticsOn}
-            aria-label="Usage analytics"
-            onClick={toggleAnalytics}
-            className={cn(
-              'tap-target-44 relative w-11 h-6 rounded-full transition-colors shrink-0 cursor-pointer mt-0.5',
-              analyticsOn ? 'bg-teal-600' : 'bg-gray-300',
-            )}
-          >
-            <span
-              className={cn(
-                'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
-                analyticsOn && 'translate-x-5',
-              )}
-            />
-          </button>
+          <Toggle checked={analyticsOn} onChange={toggleAnalytics} label="Usage analytics" className="mt-0.5" />
         </div>
       </SectionCard>
 
@@ -295,7 +278,7 @@ export function DataSettings({
           {pruneStep === 'confirm' && (
             <div className="px-4 py-4 space-y-3">
               <div className="flex items-start gap-3">
-                <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-red-600 text-white">
+                <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-red-600 text-white">
                   <AlertTriangle size={15} />
                 </span>
                 <div>
@@ -329,7 +312,7 @@ export function DataSettings({
 
           {pruneStep === 'pruning' && (
             <div className="flex items-center gap-3 px-4 py-4">
-              <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
+              <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
                 <Spinner aria-hidden="true" />
               </span>
               <p className="text-[0.875rem] font-semibold text-[var(--color-text-muted)]">

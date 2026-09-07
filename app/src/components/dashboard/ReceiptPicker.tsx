@@ -12,18 +12,28 @@ type Props = {
 export function ReceiptPicker({ onFile, onClear, onError, existingReceiptKey }: Props) {
   const [preview, setPreview] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
+  // Kept on failure so "Try again" can retry the same file — the user
+  // already picked the right one, a failed compression shouldn't send them
+  // back to the camera roll to find it a second time.
+  const [failedFile, setFailedFile] = useState<File | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
     setCompressing(true);
+    setErrorMsg(null);
     try {
       const compressed = await compressImage(file);
       const url = URL.createObjectURL(compressed);
       setPreview(url);
+      setFailedFile(null);
       onFile(compressed);
     } catch (e) {
-      onError(e instanceof Error ? e.message : 'Could not process image');
+      const msg = e instanceof Error ? e.message : 'Could not process image';
+      setFailedFile(file);
+      setErrorMsg(msg);
+      onError(msg);
     } finally {
       setCompressing(false);
     }
@@ -31,6 +41,8 @@ export function ReceiptPicker({ onFile, onClear, onError, existingReceiptKey }: 
 
   function handleClear() {
     setPreview(null);
+    setFailedFile(null);
+    setErrorMsg(null);
     if (cameraRef.current) cameraRef.current.value = '';
     if (galleryRef.current) galleryRef.current.value = '';
     onClear();
@@ -74,6 +86,19 @@ export function ReceiptPicker({ onFile, onClear, onError, existingReceiptKey }: 
 
       {compressing && (
         <p className="text-xs text-[var(--color-text-muted)] text-center">Optimising image…</p>
+      )}
+
+      {failedFile && !compressing && (
+        <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30">
+          <p className="text-xs text-red-600 dark:text-red-400 flex-1 min-w-0">{errorMsg}</p>
+          <button
+            type="button"
+            onClick={() => handleFile(failedFile)}
+            className="shrink-0 text-xs font-bold text-red-600 dark:text-red-400 hover:opacity-80 cursor-pointer"
+          >
+            Try again
+          </button>
+        </div>
       )}
 
       {preview && !compressing && (

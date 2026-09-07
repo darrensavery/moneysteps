@@ -16,6 +16,7 @@ import { Toast, SettingsRow, SectionCard, SectionHeader, ReadOnlyBadge } from '.
 import { ChildProfileSettings } from './ChildProfileSettings'
 import { GovernanceConsentBanner } from './GovernanceConsentBanner'
 import { useTone } from '../../../lib/useTone'
+import { Toggle } from '../../ui/Toggle'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -250,16 +251,7 @@ export function FamilySettings({
                 Let children's balances go negative
               </p>
             </div>
-            <label className="tap-target-44 relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={localEnabled}
-                onChange={e => setLocalEnabled(e.target.checked)}
-                aria-label="Allow Overdraft"
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-[var(--color-border)] peer-checked:bg-[var(--brand-primary)] rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
-            </label>
+            <Toggle checked={localEnabled} onChange={() => setLocalEnabled(!localEnabled)} label="Allow Overdraft" />
           </div>
 
           {/* Limit input — shown only when enabled */}
