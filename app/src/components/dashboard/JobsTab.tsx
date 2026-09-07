@@ -221,7 +221,7 @@ export function ChoresTab({ familyId, child, children }: Props) {
   if (loading) return <SkeletonList count={4} className="space-y-2.5 pb-48" />
 
   return (
-    <div className="space-y-4 pb-48">
+    <div className="flex flex-col gap-4 pb-48">
       {/* Suggestion cards */}
       {suggestions.length > 0 && (
         <div className="space-y-3">

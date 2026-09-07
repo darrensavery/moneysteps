@@ -86,7 +86,7 @@ export function ChildMoneyTab({ familyId, childId, currency, appView, nudge, onN
   }
 
   return (
-    <div className="space-y-4 pb-48">
+    <div className="flex flex-col gap-4 pb-48">
 
       {/* AI Mentor money nudge */}
       {nudge && onNudgeDismiss && (
