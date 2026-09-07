@@ -11,6 +11,7 @@ import { JarSettingsSheet } from './JarSettingsSheet'
 import { JarOnboardingWizard } from './JarOnboardingWizard'
 import { GiveRequestSheet } from './GiveRequestSheet'
 import { Button } from '../ui/button'
+import { StickyActionBar } from '../ui/StickyActionBar'
 
 interface Props {
   familyId:       string
@@ -170,16 +171,11 @@ export function ChildMoneyTab({ familyId, childId, currency, appView, nudge, onN
       />
 
       {/* Log a spend — fixed above bottom nav dock */}
-      <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
-        <div
-          className="pointer-events-auto w-full max-w-[520px] mx-3"
-          style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
-        >
-          <Button onClick={() => setLogOpen(true)} className="w-full shadow-lg">
-            {appView === 'CLEAN' ? 'Log a spend' : '💸 Log a spend'}
-          </Button>
-        </div>
-      </div>
+      <StickyActionBar>
+        <Button onClick={() => setLogOpen(true)} className="w-full shadow-lg">
+          {appView === 'CLEAN' ? 'Log a spend' : '💸 Log a spend'}
+        </Button>
+      </StickyActionBar>
 
       <SpendGuideSheet
         open={logOpen}

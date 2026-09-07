@@ -8,6 +8,7 @@ import {
 import { CreateChoreSheet } from './CreateChoreSheet'
 import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
 import { SwipeRevealCard } from '../ui/SwipeRevealCard'
+import { StickyActionBar } from '../ui/StickyActionBar'
 import { Button } from '../ui/button'
 import { SkeletonList } from '../ui/Skeleton'
 import { useLocale } from '../../lib/locale'
@@ -393,16 +394,11 @@ export function ChoresTab({ familyId, child, children }: Props) {
       )}
 
       {/* Add chore — fixed above bottom nav dock */}
-      <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
-        <div
-          className="pointer-events-auto w-full max-w-[520px] mx-3"
-          style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
-        >
-          <Button onClick={() => setShowSheet(true)} className="w-full shadow-lg">
-            + Add chore
-          </Button>
-        </div>
-      </div>
+      <StickyActionBar>
+        <Button onClick={() => setShowSheet(true)} className="w-full shadow-lg">
+          + Add chore
+        </Button>
+      </StickyActionBar>
 
       {/* Create chore sheet */}
       {showSheet && (

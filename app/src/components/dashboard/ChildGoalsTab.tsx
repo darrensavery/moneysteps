@@ -7,6 +7,7 @@ import { GrowingTree } from '../ui/GrowingTree'
 import { SavingsGrove } from './SavingsGrove'
 import { Button } from '../ui/button'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { StickyActionBar } from '../ui/StickyActionBar'
 
 interface Props {
   familyId:        string
@@ -315,16 +316,11 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
       </div>
 
       {/* Add goal — fixed above bottom nav dock */}
-      <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
-        <div
-          className="pointer-events-auto w-full max-w-[520px] mx-3"
-          style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
-        >
-          <Button onClick={() => setShowGrove(true)} className="w-full shadow-lg">
-            {appView === 'CLEAN' ? '+ Add Goal' : '🎯 Add Goal'}
-          </Button>
-        </div>
-      </div>
+      <StickyActionBar>
+        <Button onClick={() => setShowGrove(true)} className="w-full shadow-lg">
+          {appView === 'CLEAN' ? '+ Add Goal' : '🎯 Add Goal'}
+        </Button>
+      </StickyActionBar>
 
       {(showGrove || editingGoal) && (
         <SavingsGrove

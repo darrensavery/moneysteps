@@ -22,6 +22,7 @@ import type { ChildRecord, InsightsData, MentorBriefing, TrialStatus } from '../
 import { getInsights, formatCurrency, getChildNudges } from '../../lib/api'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { PremiumShell, MentorAvatar, ProBadge, AiDisclosurePill, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
+import { StickyActionBar } from '../ui/StickyActionBar'
 import { SparklineCard } from './SparklineCard'
 import { SparklineExpanded } from './SparklineExpanded'
 import { LabSection } from './LabSection'
@@ -83,29 +84,24 @@ export function InsightsTab({ familyId, child, trialStatus, onUpgrade }: Props) 
       <FamilyAuditCard familyId={familyId} />
 
       {/* ── Period toggle — fixed in the thumb zone, just above the bottom nav ── */}
-      <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
-        <div
-          className="pointer-events-auto w-full max-w-[520px] mx-3"
-          style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
-        >
-          <div className="flex gap-1.5 bg-[var(--color-surface-alt)] rounded-xl p-1 shadow-lg border border-[var(--color-border)]">
-            {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`
-                  tap-target-44 flex-1 py-1.5 rounded-lg text-[0.75rem] font-semibold transition-all duration-150 cursor-pointer
-                  ${period === p
-                    ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm'
-                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}
-                `}
-              >
-                {PERIOD_LABELS[p]}
-              </button>
-            ))}
-          </div>
+      <StickyActionBar>
+        <div className="flex gap-1.5 bg-[var(--color-surface-alt)] rounded-xl p-1 shadow-lg border border-[var(--color-border)]">
+          {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`
+                tap-target-44 flex-1 py-1.5 rounded-lg text-[0.75rem] font-semibold transition-all duration-150 cursor-pointer
+                ${period === p
+                  ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}
+              `}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
         </div>
-      </div>
+      </StickyActionBar>
 
       {loading ? (
         <LoadingSkeleton />

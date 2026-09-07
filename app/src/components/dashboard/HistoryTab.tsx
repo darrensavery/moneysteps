@@ -14,6 +14,7 @@ import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLOR
 import { getDetails, type StoredBankDetails } from '../../lib/localBankDetails'
 import { useLocale, currencySymbol } from '../../lib/locale'
 import { ErrorBox } from '../ui/ErrorBox'
+import { StickyActionBar } from '../ui/StickyActionBar'
 
 interface Props {
   familyId: string
@@ -274,25 +275,20 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
       <GatekeeperModal />
 
       {/* ── Pay out + Bonus — fixed above bottom nav dock ─────────────────── */}
-      <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
-        <div
-          className="pointer-events-auto w-full max-w-[520px] mx-3 flex gap-2"
-          style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
+      <StickyActionBar className="flex gap-2">
+        <button
+          onClick={() => setShowPayout(true)}
+          className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
         >
-          <button
-            onClick={() => setShowPayout(true)}
-            className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
-          >
-            Pay out
-          </button>
-          <button
-            onClick={() => setShowBonus(true)}
-            className="flex-1 border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold py-3 rounded-xl text-[0.875rem] bg-[var(--color-surface)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)] active:scale-[0.98] transition-all cursor-pointer shadow-lg"
-          >
-            + Bonus
-          </button>
-        </div>
-      </div>
+          Pay out
+        </button>
+        <button
+          onClick={() => setShowBonus(true)}
+          className="flex-1 border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold py-3 rounded-xl text-[0.875rem] bg-[var(--color-surface)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)] active:scale-[0.98] transition-all cursor-pointer shadow-lg"
+        >
+          + Bonus
+        </button>
+      </StickyActionBar>
 
       {/* ── Cross-child pending notice ────────────────────────────────────────── */}
       {siblingsWithPending.length > 0 && (

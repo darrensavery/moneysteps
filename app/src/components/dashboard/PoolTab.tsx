@@ -6,6 +6,7 @@ import { VoidExpenseSheet } from './VoidExpenseSheet';
 import { ExpenseDetailSheet } from './ExpenseDetailSheet';
 import { SkeletonList } from '../ui/Skeleton';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { StickyActionBar } from '../ui/StickyActionBar';
 import { Receipt } from 'lucide-react';
 
 function CategoryIcon({ category, size = 14 }: { category: string; size?: number }) {
@@ -192,19 +193,14 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
     <div className="flex flex-col gap-4 pb-48">
 
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
-      <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
-        <div
-          className="pointer-events-auto w-full max-w-[520px] mx-3"
-          style={{ marginBottom: 'calc(max(12px, env(safe-area-inset-bottom)) + 68px)' }}
+      <StickyActionBar>
+        <button
+          onClick={onAddClick}
+          className="w-full bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
         >
-          <button
-            onClick={onAddClick}
-            className="w-full bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
-          >
-            {isCoParenting ? '+ Log shared expense' : '+ Log household expense'}
-          </button>
-        </div>
-      </div>
+          {isCoParenting ? '+ Log shared expense' : '+ Log household expense'}
+        </button>
+      </StickyActionBar>
 
       {/* Running balance / month summary chip */}
       {openExpenses.length > 0 && (
