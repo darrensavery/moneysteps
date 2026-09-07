@@ -458,7 +458,7 @@ export function ChildDashboard() {
       )}
       {/* Header */}
       <header className="safe-top sticky top-0 z-40 glass-header">
-        <div className="max-w-[560px] mx-auto px-3.5 py-3 flex items-center justify-between">
+        <div className="max-w-[520px] mx-auto px-3.5 py-3 flex items-center justify-between">
           <FullLogo iconSize={26} />
           <div className="flex items-center gap-3">
             <button
@@ -594,7 +594,7 @@ export function ChildDashboard() {
         </div>
       )}
 
-      <main className="flex-1 max-w-[560px] mx-auto w-full px-3.5 py-4 pb-28 flex flex-col gap-4">
+      <main className="flex-1 max-w-[520px] mx-auto w-full px-3.5 py-4 pb-28 flex flex-col gap-4">
         {childTab === 'home' && (
           tone.isChild ? (
             <OrchardView
