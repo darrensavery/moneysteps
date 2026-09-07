@@ -221,6 +221,15 @@
      own zoom/font-size handling (rem-based, see body below) takes over. */
   html {
     font-size: calc(16px * var(--os-font-scale, 1));
+    /* Android WebView auto-boosts font size on narrow viewports (Chromium
+       "font boosting"/text autosizing), independent of and additive to the
+       explicit textZoom MainActivity.java sets from Configuration.fontScale.
+       Left on, the two stack — worse the smaller the effective CSS viewport
+       gets (e.g. raising the OS "Display size" setting), making the app look
+       one accessibility "notch" oversized relative to native UI. Disabling
+       it here leaves textZoom as the single source of OS text scaling. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     background-color: hsl(var(--background));
