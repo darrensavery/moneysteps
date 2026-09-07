@@ -70,6 +70,11 @@ export function SwipeRevealCard({ onAction, actionLabel, children, className }: 
           transform: `translateX(${offsetX}px)`,
           transition: dragging ? 'none' : 'transform 200ms ease',
           touchAction: 'pan-y',
+          // Some card content (e.g. overdue/priority accents) uses a
+          // semi-transparent background. Without an opaque backdrop here,
+          // that translucency lets the revealed action button bleed
+          // through even while fully closed (offsetX 0).
+          backgroundColor: 'var(--color-bg)',
         }}
         // A tap while swiped open closes the reveal instead of activating
         // whatever's underneath (expand toggle, etc.) — matches native list UX.
