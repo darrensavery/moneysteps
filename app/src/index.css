@@ -407,6 +407,12 @@ body::before {
 .tab-panel        { animation: tab-fade-in 150ms ease; }
 .tab-panel.hidden { display: none; }
 
+/* ── Undo toast countdown ring ───────────────────────────────────────────
+   Ring stroke drains from full to empty over the undo window so the
+   remaining time is visible, not just implied by the toast's presence. */
+@keyframes undo-drain { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 44; } }
+.animate-undo-drain { animation: undo-drain 4000ms linear forwards; }
+
 /* ── Badge Almanac ─────────────────────────────────────────────────────────
    Trophy shimmer: a diagonal highlight sweeps across earned badge icons.  */
 @keyframes badge-shimmer {

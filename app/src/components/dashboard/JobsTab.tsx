@@ -459,6 +459,17 @@ export function ChoresTab({ familyId, child, children }: Props) {
       <div
         className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-[var(--color-text)] text-[var(--color-surface)] text-[0.8125rem] font-medium shadow-xl transition-all duration-300 ${toast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
       >
+        {/* Draining ring — visible countdown of the 4s undo window */}
+        {toast && (
+          <svg key={toast.choreId} width="18" height="18" viewBox="0 0 18 18" className="shrink-0 -rotate-90">
+            <circle cx="9" cy="9" r="7" fill="none" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2" />
+            <circle
+              cx="9" cy="9" r="7" fill="none" stroke="var(--brand-primary)" strokeWidth="2"
+              strokeDasharray={2 * Math.PI * 7}
+              className="animate-undo-drain"
+            />
+          </svg>
+        )}
         <span>Chore archived.</span>
         <button
           onClick={handleUndoArchive}

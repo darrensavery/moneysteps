@@ -165,8 +165,12 @@ export function CreateChoreSheet({
     (isEditMode || assignMode === 'anyone' || assignMode === 'everyone' || selectedIds.size > 0)
   )
 
-  const titleRef       = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLDivElement>(null)
+  const titleRef        = useRef<HTMLInputElement>(null)
+  const rewardRef       = useRef<HTMLInputElement>(null)
+  const assignSectionRef = useRef<HTMLDivElement>(null)
+  const suggestionsRef  = useRef<HTMLDivElement>(null)
+  const [blockedReason, setBlockedReason] = useState<string | null>(null)
+  const [shakeField, setShakeField]       = useState<'title' | 'reward' | 'assign' | null>(null)
 
   const { rates, loading: ratesLoading, error: ratesError } = useMarketRates(currency)
   const [searchQuery,     setSearchQuery]     = useState('')
@@ -253,9 +257,33 @@ export function CreateChoreSheet({
     setConflictMsg(false)
   }
 
+  // Clear the "what's missing" message the moment the user fixes it —
+  // don't make them re-submit to find out it's resolved.
+  useEffect(() => {
+    if (canSubmit) setBlockedReason(null)
+  }, [canSubmit])
+
+  function focusBlocker(ref: React.RefObject<HTMLElement | null>, field: 'title' | 'reward' | 'assign', reason: string) {
+    setBlockedReason(reason)
+    setShakeField(field)
+    setTimeout(() => setShakeField(null), 500)
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    ;(ref.current as HTMLInputElement | null)?.focus?.()
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!canSubmit) return
+    if (!canSubmit) {
+      void tick()
+      if (form.title.trim() === '') {
+        focusBlocker(titleRef, 'title', 'Give the chore a name first.')
+      } else if (form.reward_amount === '') {
+        focusBlocker(rewardRef, 'reward', 'Set a reward amount first.')
+      } else {
+        focusBlocker(assignSectionRef, 'assign', 'Pick who this chore is for.')
+      }
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -350,7 +378,8 @@ export function CreateChoreSheet({
         {/* Child selector pills — only shown when 2+ children and not editing */}
         {!isEditMode && children.length > 1 && (
           <div
-            className="px-5 pb-3 flex gap-2 overflow-x-auto shrink-0"
+            ref={assignSectionRef}
+            className={`px-5 pb-3 flex gap-2 overflow-x-auto shrink-0${shakeField === 'assign' ? ' animate-shake' : ''}`}
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
           >
             {children.map(c => {
@@ -476,7 +505,7 @@ export function CreateChoreSheet({
                 setShowSuggestions(val.length > 0)
                 setSelectedRate(null)
               }}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
+              className={`w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]${shakeField === 'title' ? ' animate-shake' : ''}`}
               required
             />
 
@@ -543,7 +572,8 @@ export function CreateChoreSheet({
                   {sym}
                 </span>
                 <input
-                  className={`w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-2.5 text-[0.9375rem] font-semibold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition${sparkActive ? ' ring-2 ring-[var(--brand-primary)]' : ''}`}
+                  ref={rewardRef}
+                  className={`w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-2.5 text-[0.9375rem] font-semibold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition${sparkActive ? ' ring-2 ring-[var(--brand-primary)]' : ''}${shakeField === 'reward' ? ' animate-shake' : ''}`}
                   placeholder="0.00"
                   type="number"
                   inputMode="decimal"
@@ -717,13 +747,21 @@ export function CreateChoreSheet({
           <div className="h-1" />
         </form>
 
-        {/* Sticky CTA — always visible, never scrolls away */}
+        {/* Sticky CTA — always visible, never scrolls away.
+            Stays enabled even when incomplete: tapping it points at what's
+            missing instead of leaving the user to guess why it won't go. */}
         <div className="shrink-0 px-4 py-3 bg-[var(--color-surface)] border-t border-[var(--color-border)]">
+          {blockedReason && (
+            <p className="mb-2 text-[0.75rem] font-semibold text-center text-red-500" role="status">
+              {blockedReason}
+            </p>
+          )}
           <button
             type="submit"
             form=""
             onClick={handleSubmit}
-            disabled={saving || !canSubmit}
+            disabled={saving}
+            aria-busy={saving}
             className="w-full h-13 bg-[var(--brand-primary)] disabled:opacity-40 text-white font-extrabold text-[0.9375rem] rounded-2xl shadow-lg hover:brightness-90 active:scale-[0.98] transition-all cursor-pointer disabled:cursor-not-allowed"
           >
             {saving ? (

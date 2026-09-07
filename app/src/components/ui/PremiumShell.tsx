@@ -15,6 +15,8 @@
  * See memory: project_premium_shell.md for full design token reference.
  */
 
+import { Tooltip } from './Tooltip'
+
 /**
  * Single source of truth for the "Orchard Mentor" dark-card palette — the
  * shell's background is a fixed dark surface regardless of light/dark theme,
@@ -133,15 +135,18 @@ export function ProBadge() {
  */
 export function AiDisclosurePill() {
   return (
-    <span
-      className="text-[0.5625rem] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap"
-      style={{
-        background: 'rgba(255,255,255,0.08)',
-        color:      'rgba(164,196,181,0.85)',
-        border:     '1px solid rgba(255,255,255,0.1)',
-      }}
-    >
-      AI-generated
-    </span>
+    <Tooltip content="Written by an AI model from your family's real data, not a person — reviewed for accuracy but not guaranteed.">
+      <span
+        tabIndex={0}
+        className="text-[0.5625rem] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap cursor-help"
+        style={{
+          background: 'rgba(255,255,255,0.08)',
+          color:      'rgba(164,196,181,0.85)',
+          border:     '1px solid rgba(255,255,255,0.1)',
+        }}
+      >
+        AI-generated
+      </span>
+    </Tooltip>
   )
 }

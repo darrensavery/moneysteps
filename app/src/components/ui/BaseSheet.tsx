@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock'
 import { useDragToClose } from '../../hooks/useDragToClose'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { tick } from '../../lib/haptics'
@@ -30,6 +31,9 @@ export function BaseSheet({ onClose, children, panelClassName, panelStyle, zInde
   const { sheetRef, handleProps } = useDragToClose(close)
   useAndroidBack(true, close)
   useFocusTrap(sheetRef, true)
+  // Underlying page must stay put while the sheet is open — only the sheet
+  // itself should move, per the bottom-sheet "lock body scroll" rule.
+  useBodyScrollLock(phase !== 'closing')
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
