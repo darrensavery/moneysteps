@@ -8,6 +8,7 @@
 
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { copyText } from '../../../lib/clipboard'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../../lib/utils'
 import { Users, Shield, Calendar, ChevronRight, AlertTriangle } from 'lucide-react'
 import type { ChildRecord, ChildGrowthSettings } from '../../../lib/api'
 import { getCoParents, removeCoParent } from '../../../lib/api'
@@ -274,6 +275,8 @@ export function FamilySettings({
                   aria-required="true"
                   value={(localLimitPence / 100).toFixed(0)}
                   onChange={e => setLocalLimitPence(Math.round(parseFloat(e.target.value || '0') * 100))}
+                  onWheel={blurOnWheel}
+                  onKeyDown={blockInvalidAmountKeys}
                   className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[0.875rem] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>
@@ -318,6 +321,8 @@ export function FamilySettings({
                 aria-required="true"
                 value={(sharedExpenseThreshold / 100).toFixed(0)}
                 onChange={e => onSharedExpenseThresholdChange(Math.round(parseFloat(e.target.value || '0') * 100))}
+                onWheel={blurOnWheel}
+                onKeyDown={blockInvalidAmountKeys}
                 className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[0.875rem] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               />
             </div>

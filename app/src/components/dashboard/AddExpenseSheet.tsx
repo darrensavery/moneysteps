@@ -4,6 +4,7 @@ import { createSharedExpense, uploadReceipt } from '../../lib/api';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { ErrorBox } from '../ui/ErrorBox';
 import { Input } from '../ui/input';
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils';
 import { useDragToClose } from '../../hooks/useDragToClose';
 import type { ExpensePreset, ExpenseCategory } from '../../lib/sharedExpensePresets';
 import {
@@ -335,6 +336,8 @@ export function AddExpenseSheet({ defaultSplitBp, currency, parentingMode, regio
                   value={amountStr}
                   onChange={e => setAmountStr(e.target.value)}
                   onBlur={() => setAmountTouched(true)}
+                  onWheel={blurOnWheel}
+                  onKeyDown={blockInvalidAmountKeys}
                   placeholder="0.00"
                   error={!!amountError}
                   className="mt-1.5 h-auto py-2.5 text-sm tabular-nums"

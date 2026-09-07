@@ -36,6 +36,7 @@ export function SettlementCard({ period, onClose, onReconciled }: Props) {
   const [result, setResult] = useState<ReconcileResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useAndroidBack(true, onClose);
 
@@ -84,7 +85,8 @@ export function SettlementCard({ period, onClose, onReconciled }: Props) {
       await navigator.share({ title: `Shared expenses ${r.period}`, text });
     } else {
       await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   }
 
@@ -114,7 +116,7 @@ export function SettlementCard({ period, onClose, onReconciled }: Props) {
 
         {result && (
           <>
-            <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 flex flex-col gap-2">
+            <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] card-depth p-4 flex flex-col gap-2">
               {result.expenses.map(e => (
                 <div key={e.id} className="flex justify-between text-sm">
                   <span className="text-[var(--color-text-muted)]">{e.description}</span>
@@ -139,9 +141,10 @@ export function SettlementCard({ period, onClose, onReconciled }: Props) {
 
             <button
               onClick={() => handleShare(result)}
-              className="w-full border border-[var(--brand-primary)] text-[var(--brand-primary)] font-semibold py-3 rounded-xl"
+              className="w-full border border-[var(--brand-primary)] text-[var(--brand-primary)] font-semibold py-3 rounded-xl transition-colors disabled:opacity-70"
+              disabled={copied}
             >
-              Share summary
+              {copied ? '✓ Copied to clipboard' : 'Share summary'}
             </button>
             <button onClick={onClose} className="text-sm text-[var(--color-text-muted)] text-center">
               Close

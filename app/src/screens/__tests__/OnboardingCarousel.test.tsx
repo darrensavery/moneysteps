@@ -72,14 +72,14 @@ describe('OnboardingCarousel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    expect(screen.getByText('A record nothing can quietly change')).toBeInTheDocument()
+    expect(screen.getByText('You approve everything')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument()
   })
 
   it('jumps directly to a slide when its dot is tapped', () => {
     renderCarousel()
     fireEvent.click(screen.getByRole('tab', { name: 'Go to slide 3' }))
-    expect(screen.getByText('You approve everything')).toBeInTheDocument()
+    expect(screen.getByText('25 lessons kids actually finish')).toBeInTheDocument()
   })
 
   it('marks onboarding seen and does not stay on /onboarding when Skip is tapped', () => {

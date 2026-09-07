@@ -82,6 +82,7 @@ export function RegistrationShell({ onComplete }: Props) {
   const [state,        setState]        = useState<RegistrationState>({})
   const [error,        setError]        = useState('')
   const [saving,       setSaving]       = useState(false)
+  const [savingLabel,  setSavingLabel]  = useState('Setting things up…')
   const [authMethod,   setAuthMethod]   = useState<'biometrics' | 'pin' | null>(null)
   const [pin,          setPin]          = useState<string | null>(null)
 
@@ -92,6 +93,7 @@ export function RegistrationShell({ onComplete }: Props) {
   async function advanceStep(patch: Partial<RegistrationState>) {
     setError('')
     setSaving(true)
+    setSavingLabel('Setting things up…')
 
     const merged: RegistrationState = { ...state, ...patch }
     setState(merged)
@@ -116,6 +118,7 @@ export function RegistrationShell({ onComplete }: Props) {
         // Create account only once — skip if already done (user went back)
         if (!merged.family_id) {
           const referredByCode = localStorage.getItem('morechard_referral_code') ?? undefined
+          setSavingLabel('Creating your account…')
           const familyResult = await createFamily({
             display_name:      merged.display_name!,
             email:             merged.email!,
@@ -145,6 +148,7 @@ export function RegistrationShell({ onComplete }: Props) {
             }
 
             // Send magic link — user must verify email before continuing
+            setSavingLabel('Sending your verification email…')
             await requestMagicLink(merged.email!)
           }
           // sent:true = existing verified account; magic link already sent server-side
@@ -238,7 +242,7 @@ export function RegistrationShell({ onComplete }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3 rounded-2xl bg-white border border-gray-200 p-8 shadow-lg">
             <span className="h-7 w-7 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
-            <p className="text-sm font-medium text-muted">Setting things up…</p>
+            <p className="text-sm font-medium text-muted">{savingLabel}</p>
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ import { ErrorBox } from '../ui/ErrorBox';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useDragToClose } from '../../hooks/useDragToClose';
 import { tick } from '../../lib/haptics';
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils';
 import { createSuggestion, suggestChore, getSuggestions } from '../../lib/api';
 import type { MarketRate, Suggestion } from '../../lib/api';
 import { currencySymbol } from '../../lib/locale';
@@ -506,6 +507,8 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                     placeholder="0.00"
                     value={newChore.amount}
                     onChange={e => setNewChore(f => ({ ...f, amount: e.target.value }))}
+                    onWheel={blurOnWheel}
+                    onKeyDown={blockInvalidAmountKeys}
                     className="w-full border border-[var(--color-border)] rounded-xl pl-7 pr-3 py-2.5 text-[0.875rem] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                   />
                 </div>
@@ -597,6 +600,8 @@ export function ChoreGuideSheet({ open, onClose, familyId, context = null, curre
                   autoFocus
                   value={editAmount}
                   onChange={e => setEditAmount(e.target.value)}
+                  onWheel={blurOnWheel}
+                  onKeyDown={blockInvalidAmountKeys}
                   className="w-full border border-[var(--color-border)] rounded-xl pl-7 pr-3 py-3 text-[0.9375rem] font-semibold bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />
               </div>

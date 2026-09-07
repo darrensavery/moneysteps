@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate }                  from 'react-router-dom'
-import { ShieldCheck, ChevronRight }    from 'lucide-react'
+import { ShieldCheck, ChevronRight, Eye, EyeOff } from 'lucide-react'
 import { FullLogo }                     from '@/components/ui/Logo'
 import { cn }                           from '@/lib/utils'
 import { getDeviceIdentity, setDeviceIdentity, toInitials, hashPin } from '@/lib/deviceIdentity'
@@ -68,6 +68,7 @@ export function JoinFamilyScreen() {
   const [displayName, setDisplayName] = useState('')
   const [email,       setEmail]       = useState('')
   const [password,    setPassword]    = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [detailError, setDetailError] = useState('')
   const [submitting,  setSubmitting]  = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | undefined>(undefined)
@@ -497,20 +498,31 @@ export function JoinFamilyScreen() {
                       text-main bg-white outline-none focus:border-teal-500 transition-colors
                     "
                   />
-                  <input
-                    type="password"
-                    placeholder="Password (min 8 characters)"
-                    value={password}
-                    onChange={e => { setPassword(e.target.value); setDetailError('') }}
-                    required
-                    aria-required="true"
-                    aria-invalid={!!detailError}
-                    aria-describedby={detailError ? 'join-detail-error' : undefined}
-                    className="
-                      w-full h-14 rounded-xl border-2 border-subtle px-4 text-[1rem]
-                      text-main bg-white outline-none focus:border-teal-500 transition-colors
-                    "
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Password (min 8 characters)"
+                      value={password}
+                      onChange={e => { setPassword(e.target.value); setDetailError('') }}
+                      required
+                      aria-required="true"
+                      aria-invalid={!!detailError}
+                      aria-describedby={detailError ? 'join-detail-error' : undefined}
+                      className="
+                        w-full h-14 rounded-xl border-2 border-subtle pl-4 pr-11 text-[1rem]
+                        text-main bg-white outline-none focus:border-teal-500 transition-colors
+                      "
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowPassword(s => !s)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </>
               )}
 

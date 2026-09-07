@@ -5,6 +5,7 @@ import { SaveJarIcon  } from '../icons/SaveJarIcon';
 import { GiveJarIcon  } from '../icons/GiveJarIcon';
 import { BaseSheet } from '../ui/BaseSheet';
 import { tick } from '../../lib/haptics';
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils';
 
 type JarType = 'spend' | 'save' | 'give';
 
@@ -234,6 +235,8 @@ export function JarDetailSheet({
               placeholder="Amount (e.g. 2.50)"
               value={moveAmt}
               onChange={e => setMoveAmt(e.target.value)}
+              onWheel={blurOnWheel}
+              onKeyDown={blockInvalidAmountKeys}
               style={{
                 padding: 12,
                 borderRadius: 10,

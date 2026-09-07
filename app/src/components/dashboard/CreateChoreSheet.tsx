@@ -7,6 +7,7 @@ import { tick } from '../../lib/haptics'
 import type { ChildRecord, Chore, MarketRate } from '../../lib/api'
 import { createChore, updateChore } from '../../lib/api'
 import { currencySymbol } from '../../lib/locale'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
@@ -584,6 +585,8 @@ export function CreateChoreSheet({
                     setSparkActive(false)
                     setField('reward_amount', e.target.value)
                   }}
+                  onWheel={blurOnWheel}
+                  onKeyDown={blockInvalidAmountKeys}
                   required
                 />
               </div>

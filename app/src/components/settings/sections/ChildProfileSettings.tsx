@@ -15,7 +15,7 @@ import {
 import type { ChildRecord, ChildGrowthSettings } from '../../../lib/api'
 import { renameChild, setChildPin as apiSetChildPin, setPaymentHandles, getFamilyId, regenerateChildInvite } from '../../../lib/api'
 import { getDetails, setDetails, clearDetails } from '../../../lib/localBankDetails'
-import { cn } from '../../../lib/utils'
+import { cn, blurOnWheel, blockInvalidAmountKeys } from '../../../lib/utils'
 import { SettingsRow, SectionCard, SectionHeader } from '../shared'
 import { useTone } from '../../../lib/useTone'
 import { useLocale } from '../../../lib/locale'
@@ -725,6 +725,8 @@ export function ChildProfileSettings({
                           id="child-growth-allowance-amount"
                           type="number" min={0} step={1}
                           defaultValue={Math.round((growth?.allowance_amount ?? 0) / minorDivisor)}
+                          onWheel={blurOnWheel}
+                          onKeyDown={blockInvalidAmountKeys}
                           onBlur={e => {
                             const whole = parseFloat(e.target.value)
                             if (!isNaN(whole) && whole >= 0)

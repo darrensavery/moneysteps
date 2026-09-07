@@ -15,6 +15,7 @@ import { useState, useMemo, useEffect } from 'react'
 import type { Chore, Goal } from '../../lib/api'
 import { createGoal, updateGoal, formatCurrency } from '../../lib/api'
 import { currencySymbol } from '../../lib/locale'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
 import { ErrorBox } from '../ui/ErrorBox'
@@ -213,6 +214,8 @@ export function SavingsGrove({
                 step="0.01"
                 value={amountStr}
                 onChange={e => setAmountStr(e.target.value)}
+                onWheel={blurOnWheel}
+                onKeyDown={blockInvalidAmountKeys}
                 placeholder="0.00"
                 className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] pl-8 pr-3.5 py-2.5 text-sm tabular-nums text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
               />

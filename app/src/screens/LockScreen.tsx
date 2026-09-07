@@ -17,6 +17,7 @@ import { AvatarSVG } from '@/lib/avatars'
 import { challengeBiometrics, hasBiometricCredential, clearBiometricCredential } from '@/lib/biometrics'
 import { analytics, track } from '@/lib/analytics'
 import { FullLogo } from '@/components/ui/Logo'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { childLogin, setToken, logout } from '@/lib/api'
 import { isAuthenticated } from '@/lib/authState'
 import * as Sentry from '@sentry/react'
@@ -38,6 +39,7 @@ export function LockScreen() {
   const [showAuth,            setShowAuth]           = useState(!isManualLock)
   const [pinAttempts,         setPinAttempts]        = useState(0)
   const [lockedUntil,         setLockedUntil]        = useState<number | null>(null)
+  const [confirmingLogout,    setConfirmingLogout]   = useState(false)
   // Tracks whether the JWT was absent when this screen mounted — drives re-auth logic
   const [tokenMissingOnMount] = useState(() => !isAuthenticated())
   // Parent-specific: shown after biometrics/PIN succeed but JWT is gone (rare — ~annual)
@@ -231,11 +233,13 @@ export function LockScreen() {
     await unlock('pin', entered)
   }
 
-  async function handleLogout() {
+  function handleLogout() {
     if (!identity) return
-    if (!window.confirm(
-      `Log out of ${identity.display_name}'s account?\n\nYour family's data stays safe — you'll need to log back in to use Morechard on this phone.`
-    )) return
+    setConfirmingLogout(true)
+  }
+
+  async function confirmLogout() {
+    setConfirmingLogout(false)
     clearDeviceIdentity()
     await logout().catch(() => undefined)
     navigate('/', { replace: true })
@@ -382,6 +386,16 @@ export function LockScreen() {
           Not {identity.display_name.split(' ')[0]}? Log out
         </button>
       </main>
+
+      {confirmingLogout && (
+        <ConfirmDialog
+          title={`Log out of ${identity.display_name}'s account?`}
+          description="Your family's data stays safe — you'll need to log back in to use Morechard on this phone."
+          confirmLabel="Log out"
+          onConfirm={confirmLogout}
+          onCancel={() => setConfirmingLogout(false)}
+        />
+      )}
     </div>
   )
 }

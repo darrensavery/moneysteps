@@ -403,7 +403,7 @@ function AuditCard({
 
   return (
     <div
-      className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden transition-all duration-[260ms] ease-out"
+      className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl card-depth overflow-hidden transition-all duration-[260ms] ease-out"
       style={isApproving ? { opacity: 0, transform: 'scale(0.97)', pointerEvents: 'none' } : undefined}
     >
 

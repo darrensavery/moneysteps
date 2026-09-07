@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import type { ChildRecord, Goal } from '../../lib/api'
 import { ErrorBox } from '../ui/ErrorBox'
 import { currencySymbol } from '../../lib/locale'
@@ -260,6 +261,8 @@ export function GoalBoostingTab({ familyId, child }: Props) {
                     placeholder="0.00"
                     value={contribAmt[goal.id] ?? ''}
                     onChange={e => setContribAmt(prev => ({ ...prev, [goal.id]: e.target.value }))}
+                    onWheel={blurOnWheel}
+                    onKeyDown={blockInvalidAmountKeys}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] pl-7 pr-3 py-2 text-[0.8125rem] tabular-nums text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                   />
                 </div>

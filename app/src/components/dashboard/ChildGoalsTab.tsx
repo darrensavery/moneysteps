@@ -6,6 +6,7 @@ import { ChildNudgeBanner } from '../child/ChildNudgeBanner'
 import { GrowingTree } from '../ui/GrowingTree'
 import { SavingsGrove } from './SavingsGrove'
 import { Button } from '../ui/button'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 interface Props {
   familyId:        string
@@ -131,7 +132,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
   )
 
   return (
-    <div className="space-y-4 pb-28">
+    <div className="space-y-4 pb-48">
       {/* AI Mentor goals nudge */}
       {nudge && onNudgeDismiss && (
         <ChildNudgeBanner nudge={nudge} appView={appView} onDismiss={onNudgeDismiss} />
@@ -342,33 +343,14 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
       {/* Confirm goal delete — in-app dialog instead of a native confirm(),
           so it matches the rest of the app's destructive-action styling. */}
       {confirmingGoal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmingGoal(null)} />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Stop saving for this goal"
-            tabIndex={-1}
-            className="relative bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4"
-          >
-            <div>
-              <p className="text-[1.125rem] font-extrabold text-[var(--color-text)] tracking-tight">
-                Stop saving for "{confirmingGoal.title}"?
-              </p>
-              <p className="text-[0.8125rem] text-[var(--color-text-muted)] mt-1 leading-relaxed">
-                Any money you've saved goes back to your balance.
-              </p>
-            </div>
-            <div className="flex gap-2.5">
-              <Button variant="outline" size="lg" className="flex-1" onClick={() => setConfirmingGoal(null)}>
-                Keep goal
-              </Button>
-              <Button variant="destructive" size="lg" className="flex-1" onClick={handleConfirmDelete}>
-                Stop saving
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title={`Stop saving for "${confirmingGoal.title}"?`}
+          description="Any money you've saved goes back to your balance."
+          confirmLabel="Stop saving"
+          cancelLabel="Keep goal"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmingGoal(null)}
+        />
       )}
     </div>
   )

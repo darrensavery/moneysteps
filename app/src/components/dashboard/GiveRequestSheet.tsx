@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils';
 import { postGiveRequest } from '../../lib/api';
 import { BaseSheet } from '../ui/BaseSheet';
 import { tick } from '../../lib/haptics';
@@ -76,6 +77,7 @@ export function GiveRequestSheet({ giveBalance, currency, familyId, childId, onC
             id="give-request-amount"
             type="number" min="0.01" max={giveBalance / 100} step="0.01" placeholder="0.00"
             value={amt} onChange={e => setAmt(e.target.value)}
+            onWheel={blurOnWheel} onKeyDown={blockInvalidAmountKeys}
             required aria-required="true" aria-invalid={!!err} aria-describedby={err ? 'give-request-error' : undefined}
             style={{ width: '100%', padding: '12px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 15, marginBottom: 20, boxSizing: 'border-box' }}
           />

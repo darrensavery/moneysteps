@@ -7,6 +7,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { logSpend, logImpulseOutcome } from '../../lib/api'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import { shouldTriggerImpulseSpeedBump } from '../../lib/impulseSpeedBump'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
@@ -558,6 +559,8 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
                   autoFocus={!entry.custom}
                   value={entry.amountStr}
                   onChange={e => setEntry(v => v && ({ ...v, amountStr: e.target.value }))}
+                  onWheel={blurOnWheel}
+                  onKeyDown={blockInvalidAmountKeys}
                   placeholder="0.00"
                   className="w-full border border-[var(--color-border)] rounded-xl pl-8 pr-3 py-3 text-[1.25rem] font-bold tabular-nums bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                 />

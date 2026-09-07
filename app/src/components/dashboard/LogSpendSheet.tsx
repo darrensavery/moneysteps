@@ -7,6 +7,7 @@ import { useDragToClose } from '../../hooks/useDragToClose'
 import { useEffect } from 'react'
 import { ErrorBox } from '../ui/ErrorBox'
 import { Input } from '../ui/input'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 
 const SVG_PROPS = {
   width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none',
@@ -236,6 +237,8 @@ export function LogSpendSheet({ familyId, childId, currency, onClose, onSaved }:
                   value={amountStr}
                   onChange={e => setAmountStr(e.target.value)}
                   onBlur={() => setAmountTouched(true)}
+                  onWheel={blurOnWheel}
+                  onKeyDown={blockInvalidAmountKeys}
                   placeholder="0.00"
                   error={!!amountError}
                   className="h-auto pl-8 pr-3 py-3 text-[1.375rem] font-bold tabular-nums"

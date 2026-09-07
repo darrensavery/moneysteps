@@ -14,7 +14,7 @@ import { Sprout, ChevronRight, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { addChild } from '@/lib/api'
 import { track } from '@/lib/analytics'
-import { cn } from '@/lib/utils'
+import { cn, blurOnWheel, blockInvalidAmountKeys } from '@/lib/utils'
 import { useTone } from '@/lib/useTone'
 
 interface Props {
@@ -214,6 +214,8 @@ export function WelcomeOrchardScreen({ displayName, onDone }: Props) {
                 step="0.01"
                 value={child.openingBalance}
                 onChange={e => setChild(c => ({ ...c, openingBalance: e.target.value }))}
+                onWheel={blurOnWheel}
+                onKeyDown={blockInvalidAmountKeys}
                 className="w-full h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] pl-8 pr-4 text-[0.875rem] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/30"
               />
             </div>

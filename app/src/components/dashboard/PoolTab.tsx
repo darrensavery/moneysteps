@@ -5,6 +5,7 @@ import { apiUrl, authHeaders, getSharedExpenses } from '../../lib/api';
 import { VoidExpenseSheet } from './VoidExpenseSheet';
 import { ExpenseDetailSheet } from './ExpenseDetailSheet';
 import { SkeletonList } from '../ui/Skeleton';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { Receipt } from 'lucide-react';
 
 function CategoryIcon({ category, size = 14 }: { category: string; size?: number }) {
@@ -72,6 +73,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
   const [detailExpense, setDetailExpense] = useState<SharedExpense | null>(null);
   const [archiveSort, setArchiveSort] = useState<SortKey>('date-desc');
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [removingExpense, setRemovingExpense] = useState<SharedExpense | null>(null);
 
   async function load() {
     setLoading(true);
@@ -98,7 +100,6 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
   }
 
   async function handleRemove(id: number) {
-    if (!confirm('Remove this flagged expense?')) return;
     await fetch(apiUrl(`/api/shared-expenses/${id}`), { method: 'DELETE', headers: await authHeaders() });
     load();
   }
@@ -188,7 +189,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
   const currency = expenses[0]?.currency ?? 'GBP';
 
   return (
-    <div className="flex flex-col gap-4 pb-36">
+    <div className="flex flex-col gap-4 pb-48">
 
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-20 flex justify-center pointer-events-none">
@@ -250,7 +251,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
               />
             ))}
             {pendingExpenses.filter(e => e.logged_by === currentUserId).map(e => (
-              <div key={e.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 opacity-70">
+              <div key={e.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] card-depth p-4 opacity-70">
                 <p className="font-semibold text-sm"><span className="inline-flex items-center gap-1.5"><CategoryIcon category={e.category} />{e.description}</span></p>
                 <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Awaiting other parent's approval</p>
                 <p className="text-sm font-bold tabular-nums mt-1">{formatAmount(e.total_amount, e.currency)}</p>
@@ -266,7 +267,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
           <h3 className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-2">Flagged</h3>
           <div className="flex flex-col gap-2">
             {flaggedExpenses.map(e => (
-              <div key={e.id} className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 p-4 opacity-80">
+              <div key={e.id} className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 card-depth p-4 opacity-80">
                 <div className="flex items-start gap-1.5">
                   <span className="mt-0.5 shrink-0"><CategoryIcon category={e.category} /></span>
                   <div className="min-w-0">
@@ -277,7 +278,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
                     </p>
                     {e.logged_by === currentUserId && (
                       <button
-                        onClick={() => handleRemove(e.id)}
+                        onClick={() => setRemovingExpense(e)}
                         className="mt-2 text-xs text-red-600 underline"
                       >
                         Remove
@@ -308,7 +309,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
                   key={e.id}
                   type="button"
                   onClick={() => setDetailExpense(e)}
-                  className="w-full text-left rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
+                  className="w-full text-left rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] card-depth p-4 hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0 flex items-start gap-1.5">
@@ -416,7 +417,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
                               key={e.id}
                               type="button"
                               onClick={() => setDetailExpense(e)}
-                              className="w-full text-left rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 opacity-75 hover:opacity-100 hover:bg-[var(--color-surface-alt)] hover:border-[var(--color-text-muted)] transition-all cursor-pointer"
+                              className="w-full text-left rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] card-depth p-4 opacity-75 hover:opacity-100 hover:bg-[var(--color-surface-alt)] hover:border-[var(--color-text-muted)] transition-all cursor-pointer"
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0 flex items-start gap-1.5">
@@ -505,6 +506,16 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
             setVoidingExpense(detailExpense);
             setDetailExpense(null);
           } : undefined}
+        />
+      )}
+
+      {removingExpense && (
+        <ConfirmDialog
+          title="Remove this flagged expense?"
+          description={`"${removingExpense.description}" will be permanently removed from the pool.`}
+          confirmLabel="Remove"
+          onConfirm={() => { handleRemove(removingExpense.id); setRemovingExpense(null); }}
+          onCancel={() => setRemovingExpense(null)}
         />
       )}
     </div>

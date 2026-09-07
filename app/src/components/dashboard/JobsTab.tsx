@@ -11,6 +11,7 @@ import { SwipeRevealCard } from '../ui/SwipeRevealCard'
 import { Button } from '../ui/button'
 import { SkeletonList } from '../ui/Skeleton'
 import { useLocale } from '../../lib/locale'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import { ErrorBox } from '../ui/ErrorBox'
 import { requestPushPermission, hasPromptedForPushPermission } from '../../lib/push.js'
 
@@ -216,10 +217,10 @@ export function ChoresTab({ familyId, child, children }: Props) {
     }
   }
 
-  if (loading) return <SkeletonList count={4} className="space-y-2.5 pb-28" />
+  if (loading) return <SkeletonList count={4} className="space-y-2.5 pb-48" />
 
   return (
-    <div className="space-y-4 pb-28">
+    <div className="space-y-4 pb-48">
       {/* Suggestion cards */}
       {suggestions.length > 0 && (
         <div className="space-y-3">
@@ -286,6 +287,8 @@ export function ChoresTab({ familyId, child, children }: Props) {
                           type="number" min="0.01" step="0.01"
                           value={editAmount}
                           onChange={e => setEditAmount(e.target.value)}
+                          onWheel={blurOnWheel}
+                          onKeyDown={blockInvalidAmountKeys}
                           className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2 text-[0.8125rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
                         />
                       </div>

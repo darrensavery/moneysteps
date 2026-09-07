@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { putJarConfig, type JarBalances } from '../../lib/api';
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils';
 import { SpendJarIcon } from '../icons/SpendJarIcon';
 import { SaveJarIcon  } from '../icons/SaveJarIcon';
 import { GiveJarIcon  } from '../icons/GiveJarIcon';
@@ -99,6 +100,8 @@ export function JarOnboardingWizard({
             step="1"
             value={(spend / 100).toFixed(2)}
             onChange={e => setSpendAdj(Math.round(parseFloat(e.target.value || '0') * 100))}
+            onWheel={blurOnWheel}
+            onKeyDown={blockInvalidAmountKeys}
             style={{
               width: '100%', padding: '10px 12px', borderRadius: 10,
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
@@ -122,6 +125,8 @@ export function JarOnboardingWizard({
             step="1"
             value={(save / 100).toFixed(2)}
             onChange={e => setSaveAdj(Math.round(parseFloat(e.target.value || '0') * 100))}
+            onWheel={blurOnWheel}
+            onKeyDown={blockInvalidAmountKeys}
             style={{
               width: '100%', padding: '10px 12px', borderRadius: 10,
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',

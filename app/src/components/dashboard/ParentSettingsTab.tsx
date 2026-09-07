@@ -95,6 +95,7 @@ import { ReferralsSettings }  from '../settings/sections/ReferralsSettings'
 import { AboutSettings }      from '../settings/sections/AboutSettings'
 import { AvatarSVG }          from '../../lib/avatars'
 import { SettingsRow }        from '../settings/shared'
+import { ConfirmDialog }      from '../ui/ConfirmDialog'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -182,6 +183,7 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose,
   const [threshold,      setThreshold]      = useState(5000) // 5000 pence = £50
   const [splitBp,        setSplitBp]        = useState(5000) // 5000 bp = 50%
   const [savingSettings, setSavingSettings] = useState(false)
+  const [confirmingLogout, setConfirmingLogout] = useState(false)
   const [pocketMoneyDay,       setPocketMoneyDay]       = useState<number>(6)
   const [overdraftEnabled,     setOverdraftEnabled]     = useState<boolean>(false)
   const [overdraftLimitPence,  setOverdraftLimitPence]  = useState<number>(0)
@@ -581,14 +583,7 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
           <div className="rounded-2xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] overflow-hidden">
             <button
               type="button"
-              onClick={async () => {
-                if (!window.confirm(pl ? 'Wylogować się? Dane rodziny są bezpieczne.' : "Log out? Your family's data stays safe.")) return
-                clearDeviceIdentity()
-                localStorage.removeItem('mc_parent_tab')
-                localStorage.removeItem('mc_parent_avatar')
-                await logout().catch(() => undefined)
-                window.location.replace('/')
-              }}
+              onClick={() => setConfirmingLogout(true)}
               className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 active:bg-red-50 cursor-pointer transition-colors text-left"
             >
               <span className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-red-600 text-white">
@@ -602,6 +597,24 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
           </div>
         </div>
       </div>
+
+      {confirmingLogout && (
+        <ConfirmDialog
+          title={pl ? 'Wylogować się?' : 'Log out?'}
+          description={pl ? 'Dane rodziny są bezpieczne.' : "Your family's data stays safe."}
+          confirmLabel={pl ? 'Wyloguj się' : 'Log out'}
+          cancelLabel={pl ? 'Anuluj' : 'Cancel'}
+          onConfirm={async () => {
+            setConfirmingLogout(false)
+            clearDeviceIdentity()
+            localStorage.removeItem('mc_parent_tab')
+            localStorage.removeItem('mc_parent_avatar')
+            await logout().catch(() => undefined)
+            window.location.replace('/')
+          }}
+          onCancel={() => setConfirmingLogout(false)}
+        />
+      )}
     </div>
   )
 }

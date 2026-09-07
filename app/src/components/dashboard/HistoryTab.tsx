@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import { createPortal } from 'react-dom'
 import type { Completion, PayoutRecord, ChildRecord, UnpaidSummaryRow } from '../../lib/api'
 import {
@@ -269,7 +270,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
   }
 
   return (
-    <div className="space-y-4 pb-28">
+    <div className="space-y-4 pb-48">
       <GatekeeperModal />
 
       {/* ── Pay out + Bonus — fixed above bottom nav dock ─────────────────── */}
@@ -459,6 +460,8 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                 placeholder="0.00"
                 value={payoutAmount}
                 onChange={e => setPayoutAmount(e.target.value)}
+                onWheel={blurOnWheel}
+                onKeyDown={blockInvalidAmountKeys}
               />
             </div>
             <input
@@ -501,6 +504,8 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                 placeholder="0.00"
                 value={bonusAmount}
                 onChange={e => setBonusAmount(e.target.value)}
+                onWheel={blurOnWheel}
+                onKeyDown={blockInvalidAmountKeys}
               />
             </div>
             <input
