@@ -204,7 +204,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
 
       {/* Running balance / month summary chip */}
       {openExpenses.length > 0 && (
-        <div className="mx-4 mt-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 flex items-center justify-between">
+        <div className="mt-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 flex items-center justify-between">
           <div className="flex-1 text-center">
             <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wide">This month</p>
             {isCoParenting ? (
@@ -232,7 +232,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
 
       {/* Pending approvals — only relevant in co-parenting mode */}
       {isCoParenting && pendingExpenses.length > 0 && (
-        <section className="px-4">
+        <section>
           <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             Needs your approval
           </h3>
@@ -259,7 +259,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
 
       {/* Flagged (rejected) expenses */}
       {flaggedExpenses.length > 0 && (
-        <section className="px-4">
+        <section>
           <h3 className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-2">Flagged</h3>
           <div className="flex flex-col gap-2">
             {flaggedExpenses.map(e => (
@@ -290,7 +290,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
 
       {/* Open period committed expenses */}
       {openExpenses.length > 0 && (
-        <section className="px-4">
+        <section>
           <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
             {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h3>
@@ -336,7 +336,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
 
       {/* Voided expenses — only relevant in co-parenting mode */}
       {isCoParenting && voidedExpenses.length > 0 && (
-        <section className="px-4">
+        <section>
           <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">Voided</h3>
           <div className="flex flex-col gap-2">
             {voidedExpenses.map(e => (
@@ -352,7 +352,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
 
       {/* Archive — all historical committed expenses, grouped by month */}
       {archiveBase.length > 0 && (
-        <section className="px-4">
+        <section>
           <div className="flex items-center justify-between mb-2">
             <button
               type="button"
@@ -446,7 +446,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
       )}
 
       {expenses.length === 0 && (
-        <div className="px-4 pt-2">
+        <div className="pt-2">
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3" style={{ boxShadow: 'var(--shadow-card)' }}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 shrink-0 rounded-xl bg-[var(--color-surface-alt)] flex items-center justify-center">

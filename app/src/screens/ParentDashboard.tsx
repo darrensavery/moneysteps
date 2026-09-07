@@ -279,7 +279,7 @@ export function ParentDashboard() {
       <DemoUpsellCard trialStatus={trialStatus} />
       {/* Header */}
       <header className="safe-top sticky top-0 z-40 glass-header">
-        <div className="max-w-[520px] mx-auto px-3.5 py-2.5 flex items-center justify-between">
+        <div className="max-w-[560px] mx-auto px-3.5 py-2.5 flex items-center justify-between">
           <FullLogo iconSize={22} />
           <div className="flex items-center gap-2">
             {/* Offline indicator — only visible when offline */}
@@ -333,7 +333,7 @@ export function ParentDashboard() {
 
         {/* Child selector */}
         {children.length > 1 && (
-          <div className="max-w-[520px] mx-auto px-3.5 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="max-w-[560px] mx-auto px-3.5 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
             {children.map(child => {
               const childPending = pendingByChild[child.id] ?? 0
               const showNavBadge = childPending > 0 && (child.id !== activeChild?.id || tab !== 'activity')
@@ -363,7 +363,7 @@ export function ParentDashboard() {
         )}
         {/* Active child streak chip */}
         {activeChild && (
-          <div className="max-w-[520px] mx-auto px-3.5 pb-2">
+          <div className="max-w-[560px] mx-auto px-3.5 pb-2">
             <StreakChip
               currentStreak={streaksByChild[activeChild.id]?.current_streak ?? 0}
               graceRemaining={streaksByChild[activeChild.id]?.grace_days_remaining ?? 0}
@@ -377,7 +377,7 @@ export function ParentDashboard() {
 
       {/* Trial nudge — one-time, shown after first child added */}
       {showTrialNudge && (
-        <div className="max-w-[520px] mx-auto w-full px-3.5 pt-3">
+        <div className="max-w-[560px] mx-auto w-full px-3.5 pt-3">
           <div className="rounded-2xl bg-[color-mix(in_srgb,var(--brand-primary)_8%,white)] border border-[color-mix(in_srgb,var(--brand-primary)_20%,transparent)] px-4 py-3.5 flex items-start gap-3">
             <span className="text-xl shrink-0 mt-0.5">🌳</span>
             <div className="flex-1 min-w-0">
@@ -429,7 +429,7 @@ export function ParentDashboard() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 max-w-[520px] mx-auto w-full px-3.5 py-4 pb-28">
+      <main className="flex-1 max-w-[560px] mx-auto w-full px-3.5 py-4 pb-28">
         {!childrenLoaded ? <DashboardSkeleton /> : activeChild ? (
           <>
             <div className={tab === 'chores'   ? 'tab-panel' : 'tab-panel hidden'}><ChoresTab       familyId={familyId} child={activeChild} children={children} /></div>
