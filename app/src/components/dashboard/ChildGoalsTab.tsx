@@ -317,7 +317,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
 
       {/* Add goal — fixed above bottom nav dock */}
       <StickyActionBar>
-        <Button onClick={() => setShowGrove(true)} className="w-full shadow-lg">
+        <Button onClick={() => setShowGrove(true)} className="w-full h-11 shadow-lg">
           {appView === 'CLEAN' ? '+ Add Goal' : '🎯 Add Goal'}
         </Button>
       </StickyActionBar>

@@ -172,7 +172,7 @@ export function ChildMoneyTab({ familyId, childId, currency, appView, nudge, onN
 
       {/* Log a spend — fixed above bottom nav dock */}
       <StickyActionBar>
-        <Button onClick={() => setLogOpen(true)} className="w-full shadow-lg">
+        <Button onClick={() => setLogOpen(true)} className="w-full h-11 shadow-lg">
           {appView === 'CLEAN' ? 'Log a spend' : '💸 Log a spend'}
         </Button>
       </StickyActionBar>

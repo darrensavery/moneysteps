@@ -278,13 +278,13 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
       <StickyActionBar className="flex gap-2">
         <button
           onClick={() => setShowPayout(true)}
-          className="flex-1 bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
+          className="flex-1 h-11 flex items-center justify-center bg-[var(--brand-primary)] text-white font-bold rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
         >
           Pay out
         </button>
         <button
           onClick={() => setShowBonus(true)}
-          className="flex-1 border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold py-3 rounded-xl text-[0.875rem] bg-[var(--color-surface)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)] active:scale-[0.98] transition-all cursor-pointer shadow-lg"
+          className="flex-1 h-11 flex items-center justify-center border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold rounded-xl text-[0.875rem] bg-[var(--color-surface)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_6%,transparent)] active:scale-[0.98] transition-all cursor-pointer shadow-lg"
         >
           + Bonus
         </button>

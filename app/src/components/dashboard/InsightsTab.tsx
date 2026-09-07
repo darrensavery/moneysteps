@@ -85,13 +85,13 @@ export function InsightsTab({ familyId, child, trialStatus, onUpgrade }: Props) 
 
       {/* ── Period toggle — fixed in the thumb zone, just above the bottom nav ── */}
       <StickyActionBar>
-        <div className="flex gap-1.5 bg-[var(--color-surface-alt)] rounded-xl p-1 shadow-lg border border-[var(--color-border)]">
+        <div className="flex h-11 gap-1.5 bg-[var(--color-surface-alt)] rounded-xl p-1 shadow-lg border border-[var(--color-border)]">
           {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={`
-                tap-target-44 flex-1 py-1.5 rounded-lg text-[0.75rem] font-semibold transition-all duration-150 cursor-pointer
+                tap-target-44 flex-1 flex items-center justify-center rounded-lg text-[0.75rem] font-semibold transition-all duration-150 cursor-pointer
                 ${period === p
                   ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm'
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}

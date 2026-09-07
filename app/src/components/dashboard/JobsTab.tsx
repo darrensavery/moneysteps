@@ -395,7 +395,7 @@ export function ChoresTab({ familyId, child, children }: Props) {
 
       {/* Add chore — fixed above bottom nav dock */}
       <StickyActionBar>
-        <Button onClick={() => setShowSheet(true)} className="w-full shadow-lg">
+        <Button onClick={() => setShowSheet(true)} className="w-full h-11 shadow-lg">
           + Add chore
         </Button>
       </StickyActionBar>

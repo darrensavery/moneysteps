@@ -196,7 +196,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
       <StickyActionBar>
         <button
           onClick={onAddClick}
-          className="w-full bg-[var(--brand-primary)] text-white font-bold py-3 rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
+          className="w-full h-11 flex items-center justify-center bg-[var(--brand-primary)] text-white font-bold rounded-xl text-[0.875rem] hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg"
         >
           {isCoParenting ? '+ Log shared expense' : '+ Log household expense'}
         </button>
