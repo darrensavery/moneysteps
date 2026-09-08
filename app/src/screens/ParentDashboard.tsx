@@ -132,6 +132,26 @@ export function ParentDashboard() {
     consistency_score: number
   }>>({})
 
+  // Child selector edge-fades — only shown when the strip actually overflows,
+  // so a 3rd/4th child added later is discoverable without a redesign.
+  const childScrollRef = useRef<HTMLDivElement>(null)
+  const [childScrollEdges, setChildScrollEdges] = useState({ left: false, right: false })
+  useEffect(() => {
+    const el = childScrollRef.current
+    if (!el) return
+    const update = () => {
+      setChildScrollEdges({
+        left: el.scrollLeft > 4,
+        right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
+      })
+    }
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => { el.removeEventListener('scroll', update); ro.disconnect() }
+  }, [children.length])
+
   async function refreshUnpaid() {
     if (!familyId) return
     try { setUnpaid((await getUnpaidSummary(familyId)).children) }
@@ -333,7 +353,14 @@ export function ParentDashboard() {
 
         {/* Child selector */}
         {children.length > 1 && (
-          <div className="max-w-[560px] mx-auto px-3.5 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="max-w-[560px] mx-auto relative">
+            {childScrollEdges.left && (
+              <div className="pointer-events-none absolute left-0 top-0 bottom-2 w-6 z-10 bg-gradient-to-r from-[var(--color-surface)] to-transparent" />
+            )}
+            {childScrollEdges.right && (
+              <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-6 z-10 bg-gradient-to-l from-[var(--color-surface)] to-transparent" />
+            )}
+            <div ref={childScrollRef} className="px-3.5 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
             {children.map(child => {
               const childPending = pendingByChild[child.id] ?? 0
               const showNavBadge = childPending > 0 && (child.id !== activeChild?.id || tab !== 'activity')
@@ -359,6 +386,7 @@ export function ParentDashboard() {
                 </button>
               )
             })}
+            </div>
           </div>
         )}
         {/* Active child streak chip */}
