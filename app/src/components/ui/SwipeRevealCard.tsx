@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { tick } from '../../lib/haptics'
 
 // How far the card must travel before it snaps fully open (vs springing back
@@ -6,6 +6,9 @@ import { tick } from '../../lib/haptics'
 // actions in most native list UIs: the action still needs an explicit tap.
 const OPEN_THRESHOLD = 40
 const REVEAL_WIDTH = 84
+// How far the one-time coachmark nudges the card open — a "peek", not a
+// full reveal, so it reads as a hint rather than an accidental open state.
+const PEEK_WIDTH = 32
 
 interface Props {
   onAction: () => void
@@ -13,15 +16,30 @@ interface Props {
   children: ReactNode
   /** Applied to the outer (non-sliding) wrapper — put rounding/overflow-hidden here. */
   className?: string
+  /** Plays a one-time "peek" animation on mount to teach the swipe gesture. */
+  autoPeek?: boolean
+  /** Fires once the peek animation has finished (used to set the "seen" flag). */
+  onPeekComplete?: () => void
 }
 
 /** Swipe left to reveal a destructive action button (e.g. Archive) behind the card. */
-export function SwipeRevealCard({ onAction, actionLabel, children, className }: Props) {
+export function SwipeRevealCard({ onAction, actionLabel, children, className, autoPeek, onPeekComplete }: Props) {
   const startX = useRef<number | null>(null)
   const startOffset = useRef(0)
   const [offsetX, setOffsetX] = useState(0) // 0 = closed, -REVEAL_WIDTH = fully open
   const dragging = startX.current !== null
   const isOpen = offsetX !== 0
+
+  // One-time coachmark: nudge the card open briefly, then spring it back.
+  useEffect(() => {
+    if (!autoPeek) return
+    const openTimer = setTimeout(() => setOffsetX(-PEEK_WIDTH), 500)
+    const closeTimer = setTimeout(() => setOffsetX(0), 1400)
+    const doneTimer = setTimeout(() => onPeekComplete?.(), 1700)
+    return () => { clearTimeout(openTimer); clearTimeout(closeTimer); clearTimeout(doneTimer) }
+    // Runs once on mount only — re-triggering on prop identity changes would replay the hint.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function clamp(v: number) {
     return Math.max(-REVEAL_WIDTH, Math.min(0, v))

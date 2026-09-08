@@ -777,7 +777,7 @@ function ChoreRow({
       <div className="flex items-center gap-3">
         {/* Icon */}
         <div className="w-9 h-9 rounded-full bg-[var(--color-surface-alt)] flex items-center justify-center shrink-0 text-[var(--color-text-muted)]">
-          <ChoreIcon title={chore.title} size={18} />
+          <ChoreIcon title={chore.title} iconKey={chore.icon_key} size={18} />
         </div>
         {/* Info */}
         <div className="flex-1 min-w-0">

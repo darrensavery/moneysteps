@@ -55,6 +55,7 @@ const choreCreateSchema = z.object({
   flash_deadline: z.string().optional(),
   proof_required: z.unknown().optional(),
   auto_approve:   z.unknown().optional(),
+  icon_key:       z.string().optional(),
 });
 
 export async function handleChoreCreate(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -65,7 +66,7 @@ export async function handleChoreCreate(request: Request, env: Env, ctx: Executi
   const {
     family_id, assigned_to, title, reward_amount, currency,
     frequency, due_date, description, is_priority, is_flash, flash_deadline,
-    proof_required, auto_approve,
+    proof_required, auto_approve, icon_key,
   } = parsed;
 
   if (family_id !== auth.family_id) return error('Forbidden', 403);
@@ -102,8 +103,8 @@ export async function handleChoreCreate(request: Request, env: Env, ctx: Executi
     INSERT INTO chores
       (id, family_id, assigned_to, created_by, title, description, reward_amount,
        currency, frequency, due_date, is_priority, is_flash, flash_deadline,
-       proof_required, auto_approve, created_at, updated_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       proof_required, auto_approve, icon_key, created_at, updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).bind(
     id, family_id, assigned_to, auth.sub,
     title.trim(),
@@ -117,6 +118,7 @@ export async function handleChoreCreate(request: Request, env: Env, ctx: Executi
     flash_deadline ?? null,
     proofRequired,
     autoApprove,
+    icon_key ?? null,
     now, now,
   ).run();
 
@@ -248,6 +250,7 @@ const choreUpdateSchema = z.object({
   flash_deadline: z.string().nullable().optional(),
   proof_required: z.unknown().optional(),
   auto_approve:   z.unknown().optional(),
+  icon_key:       z.string().nullable().optional(),
 });
 
 export async function handleChoreUpdate(request: Request, env: Env, id: string): Promise<Response> {
@@ -269,7 +272,7 @@ export async function handleChoreUpdate(request: Request, env: Env, id: string):
   const allowed = [
     'title','description','reward_amount','currency','frequency',
     'due_date','is_priority','is_flash','flash_deadline',
-    'proof_required','auto_approve',
+    'proof_required','auto_approve','icon_key',
   ];
   const updates: string[] = [];
   const values: unknown[] = [];

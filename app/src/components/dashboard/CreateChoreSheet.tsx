@@ -12,6 +12,7 @@ import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
 import { RateGuideSheet } from './RateGuideSheet'
+import { CHORE_CATEGORIES, renderCategoryIcon, guessChoreCategory } from '../../lib/choreIcons'
 
 interface Props {
   familyId: string
@@ -33,11 +34,14 @@ interface Form {
   due_date: string
   proof_required: boolean
   auto_approve: boolean
+  /** null = not explicitly chosen; falls back to a guess from the title. */
+  icon_key: string | null
 }
 
 const BLANK: Form = {
   title: '', reward_amount: '', frequency: 'as_needed', weekly_day: 1,
   description: '', due_date: '', proof_required: false, auto_approve: false,
+  icon_key: null,
 }
 
 const FREQUENCY_OPTIONS = [
@@ -51,34 +55,8 @@ const FREQUENCY_OPTIONS = [
 
 const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-// ── Tile SVG icons — monochromatic line art ────────────────────────────────────
-
-function IconTidying()  { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> }
-function IconDishes()   { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/><path d="M2 12h20"/></svg> }
-function IconVacuum()   { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="12" r="3"/><path d="M12 9V3"/><path d="M6.6 6.6 4.5 4.5"/><path d="M9 12H3"/><path d="M6.6 17.4l-2.1 2.1"/><path d="M12 15v6"/><path d="M17.4 17.4l2.1 2.1"/><path d="M15 12h6"/><path d="M17.4 6.6l2.1-2.1"/></svg> }
-function IconBins()     { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> }
-function IconDog()      { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 2.115"/><path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 2.115"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75z"/><path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.084-.22-2.2-.682-3.31"/></svg> }
-function IconCar()      { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h10l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg> }
-function IconBook()     { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> }
-function IconBed()      { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M2 4v16"/><path d="M22 4v16"/><path d="M2 8h20"/><path d="M2 20h20"/><path d="M2 12h6a2 2 0 0 1 2 2v4H2v-6z"/><path d="M16 12h6v8h-8v-4a2 2 0 0 1 2-2z"/></svg> }
-
-const TILE_ICONS: Record<string, () => React.ReactElement> = {
-  'Tidy the Room':      IconTidying,
-  'Wash the Dishes':    IconDishes,
-  'Vacuum the House':   IconVacuum,
-  'Take Out the Bins':  IconBins,
-  'Walk the Dog':       IconDog,
-  'Wash the Car':       IconCar,
-  'Do Homework / Read': IconBook,
-  'Make the Bed':       IconBed,
-}
-
-function TileIcon({ name }: { name: string }) {
-  const Icon = TILE_ICONS[name]
-  return Icon
-    ? <Icon />
-    : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" className="w-6 h-6"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
-}
+// Tile icons come from the shared category library (keyed by market_rates.category)
+// so Quick Pick, the manual icon picker, and the chore card all agree on the same icon.
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -102,6 +80,7 @@ export function CreateChoreSheet({
         due_date:       editChore.due_date ?? '',
         proof_required: !!editChore.proof_required,
         auto_approve:   !!editChore.auto_approve,
+        icon_key:       editChore.icon_key ?? null,
       }
     }
     return {
@@ -114,6 +93,7 @@ export function CreateChoreSheet({
   const [error,        setError]        = useState<string | null>(null)
   const [showDesc,     setShowDesc]     = useState(false)
   const [rateGuideOpen, setRateGuideOpen] = useState(false)
+  const [iconPickerOpen, setIconPickerOpen] = useState(false)
   // Conflict message: shown when parent tries to enable Auto-pay while Photo Proof is on
   const [conflictMsg, setConflictMsg] = useState(false)
   // Tooltip visibility for Skip Approval card
@@ -216,7 +196,7 @@ export function CreateChoreSheet({
   }, [])
 
   const selectRate = useCallback((rate: MarketRate) => {
-    setField('title', rate.canonical_name)
+    setForm(f => ({ ...f, title: rate.canonical_name, icon_key: rate.category }))
     setSelectedRate(rate)
     setSearchQuery('')
     setShowSuggestions(false)
@@ -297,6 +277,7 @@ export function CreateChoreSheet({
         frequency:    form.frequency,
         description:  form.description.trim() || undefined,
         due_date:     isRecurring ? null : (form.due_date || null),
+        icon_key:     form.icon_key ?? guessChoreCategory(form.title),
       }
 
       if (isEditMode) {
@@ -477,7 +458,7 @@ export function CreateChoreSheet({
                             : 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
                           }`}
                       >
-                        <TileIcon name={rate.canonical_name} />
+                        {renderCategoryIcon(rate.category, 24)}
                         <span className="text-[0.5625rem] font-semibold leading-tight text-center">
                           {rate.canonical_name.split('/')[0]}
                         </span>
@@ -493,22 +474,68 @@ export function CreateChoreSheet({
             <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
               Chore name <span className="text-red-500">*</span>
             </label>
-            <input
-              ref={titleRef}
-              type="text"
-              value={form.title}
-              placeholder="Or type a chore name…"
-              onFocus={() => { /* only open on typing, not focus */ }}
-              onChange={e => {
-                const val = e.target.value
-                setField('title', val)
-                setSearchQuery(val)
-                setShowSuggestions(val.length > 0)
-                setSelectedRate(null)
-              }}
-              className={`w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]${shakeField === 'title' ? ' animate-shake' : ''}`}
-              required
-            />
+            <div className="flex gap-2">
+              {/* Icon swatch — shows the chosen/guessed category icon; tap to override */}
+              <button
+                type="button"
+                onClick={() => setIconPickerOpen(v => !v)}
+                aria-label="Choose chore icon"
+                aria-expanded={iconPickerOpen}
+                className={`shrink-0 w-[42px] h-[42px] rounded-xl border flex items-center justify-center transition-colors cursor-pointer
+                  ${iconPickerOpen
+                    ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]'
+                    : 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]'
+                  }`}
+              >
+                {renderCategoryIcon(form.icon_key ?? guessChoreCategory(form.title), 20)}
+              </button>
+              <input
+                ref={titleRef}
+                type="text"
+                value={form.title}
+                placeholder="Or type a chore name…"
+                onFocus={() => { /* only open on typing, not focus */ }}
+                onChange={e => {
+                  const val = e.target.value
+                  setField('title', val)
+                  setSearchQuery(val)
+                  setShowSuggestions(val.length > 0)
+                  setSelectedRate(null)
+                }}
+                className={`flex-1 min-w-0 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]${shakeField === 'title' ? ' animate-shake' : ''}`}
+                required
+              />
+            </div>
+
+            {/* Icon picker — collapsed by default so the sheet stays zero-scroll */}
+            <div
+              className="grid transition-[grid-template-rows] duration-200 ease-out"
+              style={{ gridTemplateRows: iconPickerOpen ? '1fr' : '0fr' }}
+              inert={!iconPickerOpen}
+            >
+              <div className="overflow-hidden">
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {CHORE_CATEGORIES.map(cat => {
+                    const active = (form.icon_key ?? guessChoreCategory(form.title)) === cat.key
+                    return (
+                      <button
+                        key={cat.key}
+                        type="button"
+                        title={cat.label}
+                        onClick={() => { setField('icon_key', cat.key); setIconPickerOpen(false) }}
+                        className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-colors cursor-pointer
+                          ${active
+                            ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]'
+                            : 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
+                          }`}
+                      >
+                        {cat.render(16)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
 
             {/* Suggestions dropdown — only when user is typing */}
             {showSuggestions && rates.length > 0 && (

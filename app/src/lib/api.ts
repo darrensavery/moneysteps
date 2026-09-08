@@ -474,6 +474,7 @@ export interface Chore {
   frequency: string; due_date: string | null; is_priority: number; is_flash: number;
   flash_deadline: string | null; archived: number;
   proof_required: number; auto_approve: number;
+  icon_key: string | null;
   child_name: string; parent_name: string;
   created_at: number; updated_at: number;
 }
@@ -491,7 +492,7 @@ export async function createChore(body: {
   reward_amount: number; currency: string; frequency?: string;
   due_date?: string; description?: string; is_priority?: boolean;
   is_flash?: boolean; flash_deadline?: string;
-  proof_required?: boolean; auto_approve?: boolean;
+  proof_required?: boolean; auto_approve?: boolean; icon_key?: string;
 }): Promise<Chore> {
   return request('/api/chores', { method: 'POST', body: JSON.stringify(body) });
 }

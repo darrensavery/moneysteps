@@ -133,6 +133,7 @@ const MOCK_CHORE = {
   title: 'Tidy room', description: null, reward_amount: 100, currency: 'GBP',
   frequency: 'weekly', due_date: null, is_priority: 0, is_flash: 0,
   flash_deadline: null, archived: 0, proof_required: 0, auto_approve: 0,
+  icon_key: null,
   child_name: 'Kid', parent_name: 'Parent', created_at: 0, updated_at: 0,
 }
 

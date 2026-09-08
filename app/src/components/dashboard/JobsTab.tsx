@@ -16,6 +16,7 @@ import { useLocale } from '../../lib/locale'
 import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import { ErrorBox } from '../ui/ErrorBox'
 import { requestPushPermission, hasPromptedForPushPermission } from '../../lib/push.js'
+import { hasSeenSwipeArchiveHint, markSwipeArchiveHintSeen } from '../../lib/swipeHint'
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -50,6 +51,8 @@ export function ChoresTab({ familyId, child, children }: Props) {
   const [choreSort, setChoreSort]         = useState<'default' | 'amount-desc' | 'name-asc'>('default')
   const [toast, setToast]                 = useState<{ choreId: string; title: string } | null>(null)
   const toastTimerRef                     = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // One-time swipe-to-archive coachmark — peeks the first card, then never again.
+  const [showSwipeHint, setShowSwipeHint] = useState(() => !hasSeenSwipeArchiveHint())
   const weekStart = getMondayISO()
 
   // Suggestion review state
@@ -406,7 +409,7 @@ export function ChoresTab({ familyId, child, children }: Props) {
               </select>
             </div>
           )}
-          {sortedChores.map(chore => (
+          {sortedChores.map((chore, i) => (
             <ChoreCard
               key={chore.id}
               chore={chore}
@@ -416,6 +419,8 @@ export function ChoresTab({ familyId, child, children }: Props) {
               onArchive={() => handleArchive(chore.id)}
               onEdit={() => setEditingChore(chore)}
               onTogglePlan={(day) => togglePlan(chore, day)}
+              autoPeek={i === 0 && showSwipeHint}
+              onPeekComplete={() => { markSwipeArchiveHintSeen(); setShowSwipeHint(false) }}
             />
           ))}
         </div>
@@ -603,7 +608,7 @@ function EmptyChoresState({ childName, onAdd }: { childName: string; onAdd: () =
   )
 }
 
-function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogglePlan }: {
+function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogglePlan, autoPeek, onPeekComplete }: {
   chore: Chore
   plans: Plan[]
   expanded: boolean
@@ -611,6 +616,8 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
   onArchive: () => void
   onEdit: () => void
   onTogglePlan: (dayIndex: number) => void
+  autoPeek?: boolean
+  onPeekComplete?: () => void
 }) {
   const [hovered, setHovered] = useState(false)
   const dueDateObj = chore.due_date && /^\d{4}-\d{2}-\d{2}$/.test(chore.due_date) ? new Date(chore.due_date + 'T00:00:00') : null
@@ -649,7 +656,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
   }
 
   return (
-    <SwipeRevealCard onAction={onArchive} actionLabel="Archive" className="rounded-xl overflow-hidden">
+    <SwipeRevealCard onAction={onArchive} actionLabel="Archive" className="rounded-xl overflow-hidden" autoPeek={autoPeek} onPeekComplete={onPeekComplete}>
     <div
       className={`rounded-xl ${bgClass} ${accentBorderClass}`}
       style={shadowStyle}
@@ -668,7 +675,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
             ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400'
             : 'bg-[var(--color-surface-alt)] text-[var(--brand-primary)]'
         }`}>
-          <ChoreIcon title={chore.title} size={18} />
+          <ChoreIcon title={chore.title} iconKey={chore.icon_key} size={18} />
         </div>
 
         {/* Title + metadata */}
@@ -733,7 +740,7 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
         inert={!expanded}
       >
         <div className="overflow-hidden">
-        <div className="px-4 pb-4 space-y-3 border-t border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] pt-3 bg-[color-mix(in_srgb,var(--color-surface-alt)_55%,transparent)]">
           {chore.description && (
             <p className="text-[0.8125rem] text-[var(--color-text-muted)]">{chore.description}</p>
           )}
@@ -774,25 +781,16 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
             </div>
           </div>
 
-          {/* Edit + Archive row */}
-          <div className="flex items-center justify-between pt-1">
+          {/* Edit — Archive lives behind the swipe-left gesture on the card, not duplicated here */}
+          <div className="pt-1">
             <button
               onClick={onEdit}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.75rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-[var(--brand-primary)] text-[var(--brand-primary)] text-[0.75rem] font-semibold hover:bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] transition-colors cursor-pointer"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
               Edit chore
-            </button>
-            <button
-              onClick={onArchive}
-              className="inline-flex items-center gap-1.5 text-[0.75rem] text-[var(--color-text-muted)] hover:text-red-500 transition-colors cursor-pointer"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
-              </svg>
-              Archive
             </button>
           </div>
         </div>
