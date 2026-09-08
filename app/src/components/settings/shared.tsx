@@ -10,7 +10,10 @@ import { cn } from '../../lib/utils'
 import { Tooltip } from '../ui/Tooltip'
 
 // ── Swipe-back hook ───────────────────────────────────────────────────────────
-// Fires onBack when the user swipes right ≥40px with < 60px vertical drift.
+// Fires onBack when the user swipes left ≥40px with < 60px vertical drift.
+// Matches the direction of the native WebView edge-swipe-back gesture used on
+// the main tabs (swipe left, starting near the right edge) so the gesture
+// feels the same everywhere in the app.
 
 export function useSwipeBack(onBack: (() => void) | undefined) {
   const startX = useRef<number | null>(null)
@@ -29,7 +32,7 @@ export function useSwipeBack(onBack: (() => void) | undefined) {
       if (startX.current === null || startY.current === null) return
       const dx = e.changedTouches[0].clientX - startX.current
       const dy = Math.abs(e.changedTouches[0].clientY - startY.current)
-      if (dx > 40 && dy < 60) back()
+      if (dx < -40 && dy < 60) back()
       startX.current = null
       startY.current = null
     }
