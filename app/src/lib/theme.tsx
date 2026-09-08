@@ -207,7 +207,7 @@ export function ThemePicker() {
                 flex-1 flex flex-col items-center gap-1 py-2.5 text-[0.75rem] font-semibold
                 transition-colors duration-150 cursor-pointer
                 ${active
-                  ? 'bg-brand text-on-brand shadow-sm'
+                  ? 'bg-[var(--brand-primary)] text-white shadow-sm'
                   : 'text-muted hover:text-main'}
               `}
               aria-pressed={active}

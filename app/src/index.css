@@ -230,6 +230,11 @@
        it here leaves textZoom as the single source of OS text scaling. */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Stops the page itself rubber-banding/dragging vertically past its
+       content on iOS/Android when a list (e.g. Chores) is shorter than the
+       viewport — native elastic overscroll otherwise makes a short list feel
+       "draggable" even though nothing is actually scrollable. */
+    overscroll-behavior-y: none;
   }
   body {
     background-color: hsl(var(--background));

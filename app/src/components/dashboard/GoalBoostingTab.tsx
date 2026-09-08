@@ -157,9 +157,7 @@ export function GoalBoostingTab({ familyId, child }: Props) {
         return (
           <div key={goal.id} className="space-y-2">
           <div
-            className={`bg-[var(--color-surface)] rounded-2xl border overflow-hidden ${
-              isOverdue ? 'border-[var(--color-border)] border-l-4 border-l-amber-400' : 'border-[var(--color-border)]'
-            }`}
+            className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden"
           >
             {/* Goal header */}
             <div className="px-4 pt-4 pb-3 space-y-2">
@@ -210,7 +208,7 @@ export function GoalBoostingTab({ familyId, child }: Props) {
               {/* Progress */}
               <div className="space-y-1">
                 <div className="w-full h-3 bg-[var(--color-surface-alt)] rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all duration-700 ${isOverdue ? 'bg-amber-400' : 'bg-[var(--brand-primary)]'}`} style={{ width: `${pct}%` }} />
+                  <div className="h-full rounded-full transition-all duration-700 bg-[var(--brand-primary)]" style={{ width: `${pct}%` }} />
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[0.6875rem] text-[var(--color-text-muted)] tabular-nums">{formatCurrency(saved, currency)} saved</span>
@@ -239,7 +237,7 @@ export function GoalBoostingTab({ familyId, child }: Props) {
                 ))}
               </div>
               {goal.parent_match_pct > 0 && (
-                <p className="text-[0.6875rem] text-emerald-600 font-semibold">
+                <p className="text-[0.6875rem] text-[var(--brand-primary)] font-semibold">
                   🤝 {child.display_name} only needs to earn {formatCurrency(effTarget, currency)} — you'll top up the rest!
                 </p>
               )}
@@ -269,13 +267,13 @@ export function GoalBoostingTab({ familyId, child }: Props) {
                 <button
                   onClick={() => handleContribute(goal)}
                   disabled={isContrib || !contribAmt[goal.id]}
-                  className="shrink-0 rounded-xl bg-emerald-500 text-white font-bold px-4 py-2 text-[0.8125rem] hover:bg-emerald-600 disabled:opacity-50 transition-colors cursor-pointer"
+                  className="shrink-0 rounded-xl bg-[var(--brand-primary)] text-white font-bold px-4 py-2 text-[0.8125rem] hover:opacity-90 disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {isContrib ? '…' : 'Gift'}
                 </button>
               </div>
               {msg && (
-                <p className={`text-[0.75rem] font-semibold ${msg.startsWith('+') ? 'text-emerald-600' : 'text-red-600'}`}>
+                <p className={`text-[0.75rem] font-semibold ${msg.startsWith('+') ? 'text-[var(--brand-primary)]' : 'text-red-600'}`}>
                   {msg}
                 </p>
               )}

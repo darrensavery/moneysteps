@@ -381,7 +381,7 @@ export function CreateChoreSheet({
           <div
             ref={assignSectionRef}
             className={`px-5 pb-3 flex gap-2 overflow-x-auto shrink-0${shakeField === 'assign' ? ' animate-shake' : ''}`}
-            style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+            style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
           >
             {children.map(c => {
               const active = assignMode === 'named' && selectedIds.has(c.id)
@@ -608,7 +608,7 @@ export function CreateChoreSheet({
               ) : form.frequency === 'weekly' ? (
                 <div
                   className="flex gap-1.5 overflow-x-auto py-0.5"
-                  style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+                  style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
                 >
                   {DAYS_SHORT.map((d, i) => (
                     <button
@@ -642,7 +642,7 @@ export function CreateChoreSheet({
             </label>
             <div
               className="flex gap-2 overflow-x-auto"
-              style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+              style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
             >
               {FREQUENCY_OPTIONS.map(opt => (
                 <button

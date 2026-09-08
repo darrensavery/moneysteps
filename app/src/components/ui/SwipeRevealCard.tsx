@@ -66,6 +66,7 @@ export function SwipeRevealCard({ onAction, actionLabel, children, className }: 
         </button>
       </div>
       <div
+        className="rounded-xl"
         style={{
           transform: `translateX(${offsetX}px)`,
           transition: dragging ? 'none' : 'transform 200ms ease',

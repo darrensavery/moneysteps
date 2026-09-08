@@ -417,6 +417,11 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
   let mentorBriefing: MentorBriefing | null = null;
 
   if (!isDiscoveryPhase) {
+    // The cached row (one per ISO week) only ever stores the "this week"
+    // briefing — "This month"/"All time" always regenerate fresh below, since
+    // the schema has no room to cache more than one briefing per week and a
+    // stale cache hit was why switching the time-horizon control never
+    // changed the AI Mentor's text.
     const snapshotRow = await env.DB.prepare(`
       SELECT id, observation, behavioral_root, the_nudge
       FROM insight_snapshots
@@ -424,7 +429,7 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
     `).bind(effectiveChildId, weekKey)
       .first<{ id: number; observation: string | null; behavioral_root: string | null; the_nudge: string | null }>();
 
-    if (snapshotRow?.observation) {
+    if (period === 'week' && snapshotRow?.observation) {
       // Cache hit — return stored briefing immediately.
       mentorBriefing = {
         observation:      snapshotRow.observation,
@@ -433,7 +438,8 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
         source:           'cache',
       };
     } else if (snapshotRow) {
-      // Cache miss — run AI inference with 5-second timeout.
+      // Cache miss (or a non-"week" horizon, which always regenerates) — run
+      // AI inference with a timeout, falling back to the rule-based briefing.
       mentorBriefing = await generateBriefing(env, effectiveChildId, {
         consistencyScore,
         firstTimePassRate,
@@ -450,19 +456,24 @@ export async function handleInsights(request: Request, env: Env): Promise<Respon
         familyId: family_id,
         jarSignals,
         weeksOfHistory,
+        period,
       });
 
-      // Persist to D1 so the next call within this week is instant.
-      await env.DB.prepare(`
-        UPDATE insight_snapshots
-        SET observation = ?, behavioral_root = ?, the_nudge = ?
-        WHERE id = ?
-      `).bind(
-        mentorBriefing.observation,
-        mentorBriefing.behavioral_root,
-        mentorBriefing.the_nudge,
-        snapshotRow.id,
-      ).run();
+      // Persist to D1 so the next "this week" call is instant. Only the
+      // "week" horizon is cached this way — "month"/"all" briefings are
+      // generated fresh on every request.
+      if (period === 'week') {
+        await env.DB.prepare(`
+          UPDATE insight_snapshots
+          SET observation = ?, behavioral_root = ?, the_nudge = ?
+          WHERE id = ?
+        `).bind(
+          mentorBriefing.observation,
+          mentorBriefing.behavioral_root,
+          mentorBriefing.the_nudge,
+          snapshotRow.id,
+        ).run();
+      }
     }
   }
 
@@ -845,6 +856,7 @@ interface BriefingInput {
   familyId:               string;
   jarSignals:             JarSignals | null;
   weeksOfHistory:         number;
+  period:                 string;   // 'week' | 'month' | 'all' — the parent's selected time horizon
 }
 
 function buildInsightsFamilyBlock(familyCtx: FamilyContext, childName: string, locale: 'en' | 'pl'): string {
@@ -921,7 +933,7 @@ MATRYCA EDUKACJI FINANSOWEJ (obowiązkowy program nauczania):
 - Filar 5 — Honor i Obowiązek Zbiorów ("Nawis"): Nadwyżka plonów jako obowiązek wobec wspólnoty — nie opcjonalna dobroczynność, lecz kulturowy obowiązek zarządcy. Używaj języka, który przywołuje odpowiedzialność grupową i dziedzictwo rodzinne ("obowiązek wobec wspólnoty", "wspólnotowe korzenie").
 
 ZASADY WYBORU FILARU (zastosuj Filar o najwyższym priorytecie):
-1. available_balance_pence > 10000 LUB goals_locked_pence = 0 przy dodatnim saldzie → Filar 5. PRIORYTET NADRZĘDNY.
+1. available_balance > 100 LUB goals_locked = 0 przy dodatnim saldzie → Filar 5. PRIORYTET NADRZĘDNY.
 2. planning_horizon < 20 → Filar 3 (Koszt Alternatywny).
 3. Spójność lub odpowiedzialność spada → Filar 1 (Wartość Pracy). Ton: wzrostowy, nie karcący — "kalibracja", nie "błąd".
 4. planning_horizon rośnie → Filar 2 (Odroczona Gratyfikacja).
@@ -937,6 +949,8 @@ OGRANICZENIA:
 - Używaj pierwszej osoby liczby mnogiej ("Zauważyliśmy", "Nasze", "Możemy").
 - Ton: biznesowo-neutralny, bezpośredni, spokojny. Zero chatu, zero nadmiernych pochwał.
 - Architektura Wyboru: przedstawiaj opcje dla rodzica ("Możesz rozważyć..."); nigdy nie nakazuj.
+- Kwoty podane są w dziesiętnych złotówkach (np. 24.20, nie 2420). ZAWSZE zapisuj kwoty z symbolem waluty i dwoma miejscami po przecinku (np. "24,20 zł") — nigdy nie podawaj surowej, niesformatowanej liczby.
+- Osadź briefing w podanym time_horizon (ten tydzień / ostatni miesiąc / cały czas) — odnieś się do niego naturalnie w obserwacji, aby briefing wyraźnie odzwierciedlał wybrany okres.
 - behavioral_root MUSI wyraźnie nazwać Filar (np. "Filar 3 — Koszt Alternatywny").
 - Odpowiadaj WYŁĄCZNIE poprawnym obiektem JSON. Bez markdown, bez komentarzy, bez dodatkowych pól.
 
@@ -963,7 +977,7 @@ THE LITERACY MATRIX (your mandatory syllabus):
 - Pillar 5 — Social Responsibility ("The Overhang"): A Community Opportunity — use surplus harvest to contribute to the Community Forest (Gifting/Charity). Tone: warm, optional, collaborative.
 
 PILLAR SELECTION RULES (apply the highest-priority matching Pillar):
-1. available_balance_pence > 10000 OR goals_locked_pence = 0 with positive balance → Pillar 5. PRIORITY OVERRIDE.
+1. available_balance > 100 OR goals_locked = 0 with positive balance → Pillar 5. PRIORITY OVERRIDE.
 2. planning_horizon < 20 → Pillar 3 (Opportunity Cost).
 3. Responsibility or consistency declining → Pillar 1 (Labour Value).
 4. planning_horizon rising → Pillar 2 (Delayed Gratification).
@@ -978,6 +992,8 @@ CONSTRAINTS:
 - Tone: supportive, egalitarian, collaborative — first-name based. No chatbot fluff or excessive praise.
 - Choice Architecture: present options for the parent ("You might consider..."); never dictate.
 - UK English: "Wellbeing", "Pence", "Organise", "Behaviour", "Recognise".
+- Money is given to you as decimal pounds (e.g. 24.20, not 2420). ALWAYS write amounts with a currency symbol and two decimals (e.g. "£24.20") — never print a raw unformatted number.
+- Ground the briefing in the given time_horizon (this week / the past month / all time) — reference it naturally in the observation so the briefing clearly reflects the selected period, not just a generic snapshot.
 - behavioral_root MUST name the Pillar explicitly (e.g., "Pillar 3 — Opportunity Cost").
 - Respond ONLY with a valid JSON object. No markdown, no commentary, no extra fields.
 
@@ -1351,8 +1367,12 @@ async function generateBriefing(env: Env, childId: string, input: BriefingInput)
     consistency_score:       input.consistencyScore,
     responsibility_score:    input.firstTimePassRate,
     planning_horizon:        input.planningHorizon,
-    available_balance_pence: input.availableBalancePence,
-    goals_locked_pence:      input.goalsLockedPence,
+    // Sent as decimal currency (not pence) so the model never has to do the
+    // pence→pounds conversion itself — it can just echo these values with a
+    // currency symbol.
+    available_balance:       Math.round(input.availableBalancePence) / 100,
+    goals_locked:            Math.round(input.goalsLockedPence) / 100,
+    time_horizon:            input.period === 'month' ? 'the past month' : input.period === 'all' ? 'all time' : 'this week',
     trends: {
       consistency:    input.trends.consistency,
       responsibility: input.trends.responsibility,
@@ -1390,8 +1410,8 @@ async function generateBriefing(env: Env, childId: string, input: BriefingInput)
   }
 
   const userPrompt = input.locale === 'pl'
-    ? `Przeanalizuj te tygodniowe dane finansowego zachowania dziecka i zwróć briefing JSON:\n\n${userMessage}${jarParagraph ? `\n\n${jarParagraph}` : ''}`
-    : `Analyse this child's weekly financial behaviour data and return the JSON briefing:\n\n${userMessage}${jarParagraph ? `\n\n${jarParagraph}` : ''}`;
+    ? `Przeanalizuj te dane finansowego zachowania dziecka za wskazany okres (${input.period === 'month' ? 'ostatni miesiąc' : input.period === 'all' ? 'cały czas' : 'ten tydzień'}) i zwróć briefing JSON:\n\n${userMessage}${jarParagraph ? `\n\n${jarParagraph}` : ''}`
+    : `Analyse this child's financial behaviour data for the selected time period (${input.period === 'month' ? 'the past month' : input.period === 'all' ? 'all time' : 'this week'}) and return the JSON briefing:\n\n${userMessage}${jarParagraph ? `\n\n${jarParagraph}` : ''}`;
 
   const messages = [
     { role: 'system', content: systemPrompt },

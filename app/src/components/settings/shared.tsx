@@ -1,7 +1,7 @@
 /**
  * settings/shared.tsx — Shared atoms for all Settings section components.
  *
- * Exported: useToast, Toast, SettingsRow, SectionCard, SectionHeader, ReadOnlyBadge
+ * Exported: useToast, Toast, SettingsRow, SectionCard, SectionHeader, ReadOnlyBadge, useSwipeBack
  */
 
 import { useState, useEffect, useRef } from 'react'
@@ -12,7 +12,7 @@ import { Tooltip } from '../ui/Tooltip'
 // ── Swipe-back hook ───────────────────────────────────────────────────────────
 // Fires onBack when the user swipes right ≥40px with < 60px vertical drift.
 
-function useSwipeBack(onBack: (() => void) | undefined) {
+export function useSwipeBack(onBack: (() => void) | undefined) {
   const startX = useRef<number | null>(null)
   const startY = useRef<number | null>(null)
 

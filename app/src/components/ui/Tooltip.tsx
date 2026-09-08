@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 interface Props {
   /** One short sentence — this is not a place for documentation. */
@@ -8,6 +9,8 @@ interface Props {
 }
 
 const SHOW_DELAY_MS = 300
+const BUBBLE_MAX_WIDTH = 300
+const VIEWPORT_MARGIN = 8
 
 /**
  * Lightweight tooltip following the designmotionhq "Tooltip Design" rules:
@@ -15,19 +18,43 @@ const SHOW_DELAY_MS = 300
  * anchored to the trigger, a flip off the nearest viewport edge, dismissal
  * from every input path (mouse leave, Escape, blur, tap outside), and a
  * single-sentence, width-capped bubble.
+ *
+ * Rendered via a portal into document.body, positioned with `fixed` coords
+ * computed from the trigger's bounding rect — an absolutely-positioned child
+ * would get silently clipped by any ancestor with `overflow-hidden` (e.g.
+ * PremiumShell's rounded card), which is what made this tooltip fail to
+ * display on Orchard Mentor cards.
  */
 export function Tooltip({ content, children, className }: Props) {
   const [open, setOpen] = useState(false)
-  const [flipUp, setFlipUp] = useState(true)
+  const [pos, setPos] = useState<{ top: number; left: number; flipUp: boolean; arrowLeft: number } | null>(null)
   const wrapRef = useRef<HTMLSpanElement>(null)
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function computePosition() {
+    const rect = wrapRef.current?.getBoundingClientRect()
+    if (!rect) return null
+    const flipUp = rect.top > 60
+    const halfWidth = BUBBLE_MAX_WIDTH / 2
+    const centerX = rect.left + rect.width / 2
+    const clampedCenterX = Math.min(
+      Math.max(centerX, VIEWPORT_MARGIN + halfWidth),
+      window.innerWidth - VIEWPORT_MARGIN - halfWidth,
+    )
+    return {
+      top: flipUp ? rect.top - 8 : rect.bottom + 8,
+      left: clampedCenterX,
+      flipUp,
+      // Arrow stays anchored to the trigger even if the bubble itself got
+      // shifted to stay on-screen.
+      arrowLeft: centerX - clampedCenterX,
+    }
+  }
 
   function scheduleShow() {
     if (showTimer.current) clearTimeout(showTimer.current)
     showTimer.current = setTimeout(() => {
-      const rect = wrapRef.current?.getBoundingClientRect()
-      // Flip below the trigger when there isn't room above it.
-      setFlipUp(!rect || rect.top > 60)
+      setPos(computePosition())
       setOpen(true)
     }, SHOW_DELAY_MS)
   }
@@ -43,11 +70,16 @@ export function Tooltip({ content, children, className }: Props) {
     function onPointerDown(e: PointerEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) hide()
     }
+    function onReposition() { setPos(computePosition()) }
     document.addEventListener('keydown', onKeyDown)
     document.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('scroll', onReposition, true)
+    window.addEventListener('resize', onReposition)
     return () => {
       document.removeEventListener('keydown', onKeyDown)
       document.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('scroll', onReposition, true)
+      window.removeEventListener('resize', onReposition)
     }
   }, [open])
 
@@ -64,20 +96,23 @@ export function Tooltip({ content, children, className }: Props) {
       onClick={() => (open ? hide() : scheduleShow())}
     >
       {children}
-      {open && (
+      {open && pos && createPortal(
         <span
           role="tooltip"
-          className={`absolute left-1/2 -translate-x-1/2 z-50 max-w-[300px] w-max px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-medium leading-snug text-white bg-[var(--color-text)] shadow-lg pointer-events-none whitespace-normal ${
-            flipUp ? 'bottom-full mb-2' : 'top-full mt-2'
+          className={`fixed z-[100] max-w-[300px] w-max px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-medium leading-snug text-white bg-[var(--color-text)] shadow-lg pointer-events-none whitespace-normal ${
+            pos.flipUp ? '-translate-x-1/2 -translate-y-full' : '-translate-x-1/2'
           }`}
+          style={{ top: pos.top, left: pos.left }}
         >
           {content}
           <span
-            className={`absolute left-1/2 -translate-x-1/2 w-2 h-2 bg-[var(--color-text)] rotate-45 ${
-              flipUp ? '-bottom-1' : '-top-1'
+            className={`absolute w-2 h-2 bg-[var(--color-text)] rotate-45 ${
+              pos.flipUp ? '-bottom-1' : '-top-1'
             }`}
+            style={{ left: `calc(50% + ${pos.arrowLeft}px)`, transform: 'translateX(-50%) rotate(45deg)' }}
           />
-        </span>
+        </span>,
+        document.body,
       )}
     </span>
   )

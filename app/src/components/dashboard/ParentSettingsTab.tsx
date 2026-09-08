@@ -94,7 +94,7 @@ import { DataSettings }       from '../settings/sections/DataSettings'
 import { ReferralsSettings }  from '../settings/sections/ReferralsSettings'
 import { AboutSettings }      from '../settings/sections/AboutSettings'
 import { AvatarSVG }          from '../../lib/avatars'
-import { SettingsRow }        from '../settings/shared'
+import { SettingsRow, useSwipeBack } from '../settings/shared'
 import { ConfirmDialog }      from '../ui/ConfirmDialog'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -176,6 +176,9 @@ export function ParentSettingsTab({ familyId, online, onChildrenChange, onClose,
     if (view.type === 'section') setView({ type: 'menu' })
     else onClose()
   })
+  // Swipe-right-to-close on the root Settings menu — sub-sections already get
+  // this via SectionHeader's onBack; the menu itself only had the X button.
+  useSwipeBack(view.type === 'menu' ? onClose : undefined)
   const [children,      setChildren]      = useState<ChildRecord[]>([])
   const [family,        setFamily]        = useState<Record<string, unknown>>({})
   const [settings,      setSettings]      = useState<{ avatar_id: string; theme: string; locale: string } | null>(null)
