@@ -124,16 +124,14 @@ export function ChildHistoryTab({ familyId, childId, currency, variant }: Props)
               ({history.length})
             </span>
           </p>
-          <button
-            type="button"
-            onClick={() => setHistorySort(s => s === 'date-desc' ? 'date-asc' : 'date-desc')}
-            className="tap-target-44 flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-[var(--color-surface-alt)]"
+          <select
+            value={historySort}
+            onChange={e => setHistorySort(e.target.value as typeof historySort)}
+            className="text-[0.6875rem] font-semibold bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2 py-1 text-[var(--color-text)] focus:outline-none cursor-pointer"
           >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M3 6h18M7 12h10M11 18h2"/>
-            </svg>
-            {historySort === 'date-desc' ? 'Newest first' : 'Oldest first'}
-          </button>
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+          </select>
         </div>
 
         {/* Month groups */}

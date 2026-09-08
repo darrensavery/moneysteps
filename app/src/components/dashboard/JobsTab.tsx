@@ -226,12 +226,11 @@ export function ChoresTab({ familyId, child, children }: Props) {
     return chores
   })()
 
-  const SORT_LABELS: Record<typeof choreSort, string> = {
-    'default':     'Default order',
-    'amount-desc': 'Highest pay',
-    'name-asc':    'A–Z',
-  }
-  const SORT_CYCLE: (typeof choreSort)[] = ['default', 'amount-desc', 'name-asc']
+  const SORT_OPTIONS: { value: typeof choreSort; label: string }[] = [
+    { value: 'default',     label: 'Default order' },
+    { value: 'amount-desc', label: 'Highest pay' },
+    { value: 'name-asc',    label: 'A–Z' },
+  ]
 
   if (loading) return <SkeletonList count={4} className="space-y-2.5 pb-48" />
 
@@ -394,17 +393,17 @@ export function ChoresTab({ familyId, child, children }: Props) {
       ) : (
         <div className="space-y-2.5">
           {chores.length > 1 && (
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setChoreSort(SORT_CYCLE[(SORT_CYCLE.indexOf(choreSort) + 1) % SORT_CYCLE.length])}
-                className="tap-target-44 flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-[var(--color-surface-alt)]"
+            <div className="flex items-center justify-end gap-2">
+              <span className="text-[0.6875rem] text-[var(--color-text-muted)]">Sort:</span>
+              <select
+                value={choreSort}
+                onChange={e => setChoreSort(e.target.value as typeof choreSort)}
+                className="text-[0.6875rem] font-semibold bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2 py-1 text-[var(--color-text)] focus:outline-none cursor-pointer"
               >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M3 6h18M7 12h10M11 18h2"/>
-                </svg>
-                {SORT_LABELS[choreSort]}
-              </button>
+                {SORT_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
             </div>
           )}
           {sortedChores.map(chore => (
