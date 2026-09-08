@@ -58,14 +58,29 @@ export function InsightsTab({ familyId, child, trialStatus, onUpgrade }: Props) 
   const [loading,       setLoading]       = useState(true)
   const [error,         setError]         = useState(false)
 
+  // In-memory cache of already-fetched child/period combos for this session —
+  // switching between children or timeline horizons you've already viewed
+  // shows instantly instead of re-hitting the API and flashing the skeleton.
+  // Cleared naturally on full page reload; never persisted across sessions.
+  const cache = useRef<Map<string, InsightsData>>(new Map())
+
   useEffect(() => { injectPremiumStyles() }, [])
   useEffect(() => { setSelectedChild(child) }, [child.id])
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (force = false) => {
+    const key = `${selectedChild.id}:${period}`
+    const cached = cache.current.get(key)
+    if (cached && !force) {
+      setData(cached)
+      setLoading(false)
+      setError(false)
+      return
+    }
     setLoading(true)
     setError(false)
     try {
       const d = await getInsights(familyId, selectedChild.id, period)
+      cache.current.set(key, d)
       setData(d)
     } catch {
       setError(true)
