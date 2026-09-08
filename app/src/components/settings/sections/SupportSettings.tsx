@@ -18,6 +18,9 @@ import { useFocusTrap } from '../../../hooks/useFocusTrap'
 
 declare const __APP_VERSION__: string | undefined
 
+const CONTACT_DRAFT_KEY = 'mc_support_contact_draft'
+const DRAFT_SAVE_DELAY_MS = 600
+
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const PRIVACY_URL          = 'https://morechard.com/privacy-policy'
@@ -190,9 +193,27 @@ export function SupportSettings({ toast, onBack }: Props) {
   const [contactSubmitting, setContactSubmitting] = useState(false)
   const [contactError, setContactError] = useState<string | null>(null)
   const [contactSent, setContactSent] = useState(false)
+  const [draftSaved, setDraftSaved] = useState(false)
 
   const contactModalRef = useRef<HTMLDivElement>(null)
   useFocusTrap(contactModalRef, showContactModal)
+
+  // Autosave the in-progress message as a local draft — closing the modal by
+  // accident (or backgrounding the app) shouldn't lose what was typed. Kept
+  // to a low-stakes free-text field only; nothing financial autosaves.
+  const draftSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (!showContactModal) return
+    if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current)
+    if (!contactText.trim()) { setDraftSaved(false); return }
+    draftSaveTimer.current = setTimeout(() => {
+      try {
+        localStorage.setItem(CONTACT_DRAFT_KEY, contactText)
+        setDraftSaved(true)
+      } catch { /* private-browsing / storage full — draft just won't persist */ }
+    }, DRAFT_SAVE_DELAY_MS)
+    return () => { if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current) }
+  }, [contactText, showContactModal])
 
   useEffect(() => {
     if (!showContactModal) return
@@ -216,6 +237,8 @@ export function SupportSettings({ toast, onBack }: Props) {
       })
       if (!res.ok) throw new Error('Request failed')
       setContactSent(true)
+      try { localStorage.removeItem(CONTACT_DRAFT_KEY) } catch { /* ignore */ }
+      setDraftSaved(false)
     } catch {
       setContactError('Could not send your message — please try again.')
     } finally {
@@ -253,7 +276,13 @@ export function SupportSettings({ toast, onBack }: Props) {
       <SectionCard>
         <button
           type="button"
-          onClick={() => { setShowContactModal(true); setContactSent(false); setContactError(null); setContactText('') }}
+          onClick={() => {
+            setShowContactModal(true); setContactSent(false); setContactError(null)
+            let draft = ''
+            try { draft = localStorage.getItem(CONTACT_DRAFT_KEY) ?? '' } catch { /* ignore */ }
+            setContactText(draft)
+            setDraftSaved(!!draft)
+          }}
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
         >
           <span className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]">
@@ -363,6 +392,9 @@ export function SupportSettings({ toast, onBack }: Props) {
                   aria-describedby={contactError ? 'support-contact-error' : undefined}
                   className="w-full rounded-xl border border-[var(--color-border)] px-3 py-2 text-[0.8125rem] text-[var(--color-text)] bg-[var(--color-surface)]"
                 />
+                {draftSaved && (
+                  <p className="text-[0.6875rem] text-[var(--color-text-muted)] -mt-1">Draft saved</p>
+                )}
                 {contactError && (
                   <p id="support-contact-error" role="alert" className="text-[0.75rem] text-red-600">{contactError}</p>
                 )}

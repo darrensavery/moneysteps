@@ -5,6 +5,7 @@ import { useMarketRates, fuzzyMatch } from '../../hooks/useMarketRates';
 import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useDragToClose } from '../../hooks/useDragToClose';
 import { currencySymbol } from '../../lib/locale';
+import { Badge } from '../ui/badge';
 import type { MarketRate } from '../../lib/api';
 
 type SortKey = 'alpha' | 'category' | 'price_asc' | 'price_desc' | 'popularity';
@@ -115,6 +116,16 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
     });
     return sortRates(base, sort);
   }, [rates, search, category, sort]);
+
+  // Von Restorff isolation: badge the single most-trusted rate (highest
+  // Morechard-family sample count) so it stands out from the list, not the
+  // whole "Popular" sort order — isolating one item is what makes it register.
+  const mostPopularId = useMemo(() => {
+    if (search.length > 0 || filtered.length < 4) return null;
+    const eligible = filtered.filter(r => r.median_is_local && r.sample_count >= 5);
+    if (eligible.length === 0) return null;
+    return eligible.reduce((best, r) => (r.sample_count > best.sample_count ? r : best)).id;
+  }, [filtered, search]);
 
   if (!open) return null;
 
@@ -257,7 +268,12 @@ export function RateGuideSheet({ open, onClose, currency = 'GBP', onUse }: Props
                   >
                     {/* Chore name + category */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[0.875rem] font-semibold text-[var(--color-text)] leading-snug">{rate.canonical_name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[0.875rem] font-semibold text-[var(--color-text)] leading-snug">{rate.canonical_name}</p>
+                        {rate.id === mostPopularId && (
+                          <Badge variant="highlight" className="shrink-0 text-[0.5625rem] px-1.5 py-0">Most trusted</Badge>
+                        )}
+                      </div>
                       <p className="text-[0.6875rem] text-[var(--color-text-muted)] mt-0.5">{rate.category}</p>
                     </div>
 

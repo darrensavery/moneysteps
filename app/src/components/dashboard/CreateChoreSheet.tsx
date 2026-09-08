@@ -606,15 +606,26 @@ export function CreateChoreSheet({
                   min={new Date().toISOString().split('T')[0]}
                 />
               ) : form.frequency === 'weekly' ? (
-                <select
-                  className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.875rem] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition"
-                  value={form.weekly_day}
-                  onChange={e => setField('weekly_day', Number(e.target.value))}
+                <div
+                  className="flex gap-1.5 overflow-x-auto py-0.5"
+                  style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
                 >
                   {DAYS_SHORT.map((d, i) => (
-                    <option key={d} value={i + 1}>{d}</option>
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setField('weekly_day', i + 1)}
+                      aria-pressed={form.weekly_day === i + 1}
+                      className={`tap-target-44 shrink-0 px-2.5 py-1.5 rounded-full text-[0.6875rem] font-semibold border transition-all cursor-pointer
+                        ${form.weekly_day === i + 1
+                          ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
+                          : 'bg-[var(--color-surface-alt)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
+                        }`}
+                    >
+                      {d}
+                    </button>
                   ))}
-                </select>
+                </div>
               ) : (
                 <div className="w-full border border-[var(--color-border)] rounded-xl px-3 py-2.5 text-[0.8125rem] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
                   Recurring

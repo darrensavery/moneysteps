@@ -15,6 +15,12 @@ import { clearDeviceIdentity, getDeviceIdentity, verifyPinHash } from '../../../
 import { cn } from '../../../lib/utils'
 import { Toast, SettingsRow, SectionCard, SectionHeader } from '../shared'
 import { useFocusTrap } from '../../../hooks/useFocusTrap'
+import { useDebouncedValidation } from '../../../hooks/useDebouncedValidation'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+function validateEmailFormat(value: string): string | null {
+  return EMAIL_PATTERN.test(value) ? null : 'Enter a valid email address'
+}
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -58,6 +64,7 @@ export function ProfileSettings({
   const [emailSaving,     setEmailSaving]     = useState(false)
   const [emailError,      setEmailError]      = useState<string | null>(null)
   const [emailSentTo,     setEmailSentTo]     = useState<string | null>(null)
+  const emailFormatError = useDebouncedValidation(emailInput, validateEmailFormat)
 
   // Danger zone modal state
   const [showLeaveModal,  setShowLeaveModal]  = useState(false)
@@ -373,16 +380,17 @@ export function ProfileSettings({
               autoFocus
               required
               aria-required="true"
-              aria-invalid={!!emailError}
-              aria-describedby={emailError ? 'profile-email-error' : undefined}
+              aria-invalid={!!(emailError || emailFormatError)}
+              aria-describedby={emailError ? 'profile-email-error' : emailFormatError ? 'profile-email-format-error' : undefined}
               placeholder="your@email.com"
               className="w-full px-3 py-2 text-[0.875rem] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
             />
             {emailError && <p id="profile-email-error" role="alert" className="text-[0.75rem] text-red-500">{emailError}</p>}
+            {!emailError && emailFormatError && <p id="profile-email-format-error" role="alert" className="text-[0.75rem] text-red-500">{emailFormatError}</p>}
             <div className="flex gap-2">
               <button
                 type="submit"
-                disabled={emailSaving || !emailInput.trim() || emailInput.trim() === (profile?.email ?? '')}
+                disabled={emailSaving || !emailInput.trim() || emailInput.trim() === (profile?.email ?? '') || !!emailFormatError}
                 className="flex-1 py-2 rounded-xl text-[0.8125rem] font-bold bg-[var(--brand-primary)] text-white disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
               >
                 {emailSaving ? 'Saving…' : 'Save'}

@@ -104,7 +104,7 @@ export function InsightsTab({ familyId, child, trialStatus, onUpgrade }: Props) 
       </StickyActionBar>
 
       {loading ? (
-        <LoadingSkeleton />
+        <LoadingSkeleton period={period} />
       ) : error ? (
         <ErrorState onRetry={load} />
       ) : data ? (
@@ -884,9 +884,20 @@ function SupportingStats({ data, currency }: { data: InsightsData; currency: str
 
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 
-function LoadingSkeleton() {
+const LOADING_COPY: Record<Period, string> = {
+  week:  "Analyzing this week's chores…",
+  month: "Analyzing this month's activity…",
+  all:   'Analyzing all-time activity…',
+}
+
+function LoadingSkeleton({ period }: { period: Period }) {
   return (
     <div className="space-y-4 animate-pulse">
+      {/* "Behind the Button": name what's actually happening (the AI
+          briefing being generated/fetched) instead of a bare pulse. */}
+      <p className="text-[0.75rem] font-medium text-[var(--color-text-muted)] text-center">
+        {LOADING_COPY[period]}
+      </p>
       <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-16" />
       <div className="grid grid-cols-3 gap-2.5">
         {[0,1,2].map(i => <div key={i} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl h-28" />)}

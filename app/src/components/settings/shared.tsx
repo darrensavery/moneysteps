@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { ChevronRight, ChevronLeft, Lock } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { Tooltip } from '../ui/Tooltip'
 
 // ── Swipe-back hook ───────────────────────────────────────────────────────────
 // Fires onBack when the user swipes right ≥40px with < 60px vertical drift.
@@ -66,7 +67,7 @@ export function Toast({ message }: { message: string }) {
 // ── Row atoms ─────────────────────────────────────────────────────────────────
 
 export function SettingsRow({
-  icon, label, description, onClick, destructive = false, disabled = false, badge, rightSlot,
+  icon, label, description, onClick, destructive = false, disabled = false, disabledReason, badge, rightSlot,
 }: {
   icon?: React.ReactNode
   label: string
@@ -74,10 +75,12 @@ export function SettingsRow({
   onClick?: () => void
   destructive?: boolean
   disabled?: boolean
+  /** Shown in a tooltip on hover/focus when disabled — a greyed-out row with no explanation just reads as broken. */
+  disabledReason?: string
   badge?: string
   rightSlot?: React.ReactNode
 }) {
-  return (
+  const row = (
     <button
       type="button"
       onClick={onClick}
@@ -114,6 +117,11 @@ export function SettingsRow({
       {rightSlot ?? <ChevronRight size={14} className="shrink-0 text-[var(--color-text-muted)]" />}
     </button>
   )
+
+  if (disabled && disabledReason) {
+    return <Tooltip content={disabledReason} className="w-full">{row}</Tooltip>
+  }
+  return row
 }
 
 export function SectionCard({ children }: { children: React.ReactNode }) {

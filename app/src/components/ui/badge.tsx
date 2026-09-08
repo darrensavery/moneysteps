@@ -12,6 +12,9 @@ const badgeVariants = cva(
         outline:   'text-foreground',
         success:   'border-transparent bg-green-100 text-green-800',
         warning:   'border-transparent bg-amber-100 text-amber-800',
+        // Von Restorff isolation — reserve for exactly one element per view;
+        // using it on several badges at once cancels the "stands out" effect.
+        highlight: 'border-transparent bg-[var(--brand-primary)] text-white shadow-[0_0_0_3px_color-mix(in_srgb,var(--brand-primary)_20%,transparent)]',
       },
     },
     defaultVariants: { variant: 'default' },

@@ -5,6 +5,7 @@ import { apiUrl, authHeaders, getSharedExpenses } from '../../lib/api';
 import { VoidExpenseSheet } from './VoidExpenseSheet';
 import { ExpenseDetailSheet } from './ExpenseDetailSheet';
 import { SkeletonList } from '../ui/Skeleton';
+import { ErrorBox } from '../ui/ErrorBox';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { StickyActionBar } from '../ui/StickyActionBar';
 import { Receipt } from 'lucide-react';
@@ -139,7 +140,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
   }
 
   if (loading) return <div className="p-1"><SkeletonList count={4} withIcon={false} /></div>;
-  if (error) return <div className="p-6 text-center text-red-500 text-sm">{error}</div>;
+  if (error) return <div className="p-6"><ErrorBox message={error} onRetry={load} /></div>;
 
   const openExpenses = expenses.filter(
     e => !e.settlement_period && ['committed_auto', 'committed_manual'].includes(e.verification_status)

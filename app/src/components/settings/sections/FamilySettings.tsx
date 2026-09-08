@@ -8,7 +8,7 @@
 
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { copyText } from '../../../lib/clipboard'
-import { blurOnWheel, blockInvalidAmountKeys } from '../../../lib/utils'
+import { CurrencyAmountInput } from '../../ui/CurrencyAmountInput'
 import { Users, Shield, Calendar, ChevronRight, AlertTriangle } from 'lucide-react'
 import type { ChildRecord, ChildGrowthSettings } from '../../../lib/api'
 import { getCoParents, removeCoParent } from '../../../lib/api'
@@ -262,24 +262,14 @@ export function FamilySettings({
               <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-2.5 leading-snug">
                 Maximum amount a child can go into the negative.
               </p>
-              <div className="flex items-center gap-2">
-                <span className="text-[0.875rem] text-[var(--color-text-muted)]">£</span>
-                <label htmlFor="overdraft-limit-input" className="sr-only">Overdraft limit</label>
-                <input
-                  id="overdraft-limit-input"
-                  type="number"
-                  inputMode="decimal"
-                  step="1"
-                  min="0"
-                  required
-                  aria-required="true"
-                  value={(localLimitPence / 100).toFixed(0)}
-                  onChange={e => setLocalLimitPence(Math.round(parseFloat(e.target.value || '0') * 100))}
-                  onWheel={blurOnWheel}
-                  onKeyDown={blockInvalidAmountKeys}
-                  className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[0.875rem] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-                />
-              </div>
+              <label htmlFor="overdraft-limit-input" className="sr-only">Overdraft limit</label>
+              <CurrencyAmountInput
+                id="overdraft-limit-input"
+                symbol="£"
+                valuePence={localLimitPence}
+                onChangePence={setLocalLimitPence}
+                inputProps={{ required: true, 'aria-required': true }}
+              />
             </div>
           )}
         </SectionCard>
@@ -308,24 +298,14 @@ export function FamilySettings({
             <p className="text-[0.75rem] text-[var(--color-text-muted)] mb-2.5">
               Expenses above this amount require the other parent's approval (Verification mode only).
             </p>
-            <div className="flex items-center gap-2">
-              <span className="text-[0.875rem] text-[var(--color-text-muted)]">£</span>
-              <label htmlFor="shared-expense-threshold-input" className="sr-only">Approval threshold</label>
-              <input
-                id="shared-expense-threshold-input"
-                type="number"
-                inputMode="decimal"
-                step="1"
-                min="0"
-                required
-                aria-required="true"
-                value={(sharedExpenseThreshold / 100).toFixed(0)}
-                onChange={e => onSharedExpenseThresholdChange(Math.round(parseFloat(e.target.value || '0') * 100))}
-                onWheel={blurOnWheel}
-                onKeyDown={blockInvalidAmountKeys}
-                className="border border-[var(--color-border)] rounded-xl px-4 py-2 text-[0.875rem] bg-[var(--color-surface)] w-28 tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]"
-              />
-            </div>
+            <label htmlFor="shared-expense-threshold-input" className="sr-only">Approval threshold</label>
+            <CurrencyAmountInput
+              id="shared-expense-threshold-input"
+              symbol="£"
+              valuePence={sharedExpenseThreshold}
+              onChangePence={onSharedExpenseThresholdChange}
+              inputProps={{ required: true, 'aria-required': true }}
+            />
           </div>
 
           {/* Default split */}
@@ -580,8 +560,8 @@ export function FamilySettings({
           {!isLead && <ReadOnlyBadge />}
         </div>
         <SectionCard>
-          <SettingsRow icon={<Calendar size={15} />} label={`${terminology.allowanceLabel} Day`} description={`Weekly day for automated ${terminology.money} drops — your family's harvest day`} onClick={() => { setSelectedDay(pocketMoneyDay); setShowPocketMoneyDay(true) }} disabled={!isLead} />
-          <SettingsRow icon={<Shield size={15} />} label="Global Overdraft Policy" description="Toggle bailouts — default: off / £0" onClick={() => { setLocalEnabled(overdraftEnabled); setLocalLimitPence(overdraftLimitPence); setShowOverdraftPolicy(true) }} disabled={!isLead} />
+          <SettingsRow icon={<Calendar size={15} />} label={`${terminology.allowanceLabel} Day`} description={`Weekly day for automated ${terminology.money} drops — your family's harvest day`} onClick={() => { setSelectedDay(pocketMoneyDay); setShowPocketMoneyDay(true) }} disabled={!isLead} disabledReason="Only the family lead can change this" />
+          <SettingsRow icon={<Shield size={15} />} label="Global Overdraft Policy" description="Toggle bailouts — default: off / £0" onClick={() => { setLocalEnabled(overdraftEnabled); setLocalLimitPence(overdraftLimitPence); setShowOverdraftPolicy(true) }} disabled={!isLead} disabledReason="Only the family lead can change this" />
         </SectionCard>
       </div>
     </div>

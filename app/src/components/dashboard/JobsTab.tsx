@@ -643,7 +643,8 @@ function ChoreCard({ chore, plans, expanded, onToggle, onArchive, onEdit, onTogg
 
   const shadowStyle = {
     border: borderColor,
-    transition: 'box-shadow 200ms ease',
+    transition: 'box-shadow 200ms ease, transform 200ms ease',
+    transform: hovered ? 'translateY(-1px)' : 'translateY(0)',
     boxShadow: hovered
       ? 'var(--shadow-card-hover)'
       : (isOverdue || chore.is_flash)
