@@ -94,7 +94,7 @@ export function InsightsTab({ familyId, child, trialStatus, onUpgrade }: Props) 
   const currency = 'GBP'
 
   return (
-    <div className="flex flex-col gap-4 pb-48">
+    <div className="flex flex-col gap-4 pb-4">
 
       <FamilyAuditCard familyId={familyId} />
 

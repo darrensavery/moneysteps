@@ -133,7 +133,7 @@ export function ChildGoalsTab({ familyId, childId, currency, appView, nudge, onN
   )
 
   return (
-    <div className="flex flex-col gap-4 pb-48">
+    <div className="flex flex-col gap-4 pb-4">
       {/* AI Mentor goals nudge */}
       {nudge && onNudgeDismiss && (
         <ChildNudgeBanner nudge={nudge} appView={appView} onDismiss={onNudgeDismiss} />

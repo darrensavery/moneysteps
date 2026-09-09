@@ -58,6 +58,46 @@ export const CHORE_CATEGORIES: ChoreCategoryDef[] = [
     render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.6 6.6L21 9l-5 4.4L17.4 20 12 16.5 6.6 20 8 13.4 3 9l6.4-.4z"/></svg>,
   },
   {
+    key: 'Sports & Exercise', label: 'Sports & Exercise',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/><line x1="6" y1="12" x2="18" y2="12"/></svg>,
+  },
+  {
+    key: 'Screen Time', label: 'Screen Time',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>,
+  },
+  {
+    key: 'Art & Crafts', label: 'Art & Crafts',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20c1.3 0 2-1 2-2 0-.5-.2-1-.5-1.4-.3-.4-.5-.9-.5-1.4 0-1 .8-1.8 1.8-1.8H17a5 5 0 0 0 5-5A9.9 9.9 0 0 0 12 2z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="10.5" cy="7.2" r="1"/><circle cx="15" cy="8" r="1"/><circle cx="17" cy="12" r="1"/></svg>,
+  },
+  {
+    key: 'Music', label: 'Music',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><path d="M11 18V4l10-2v14"/></svg>,
+  },
+  {
+    key: 'Cooking & Baking', label: 'Cooking & Baking',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M4 13h16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M12 3v3"/></svg>,
+  },
+  {
+    key: 'Recycling', label: 'Recycling',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3 21 7l-4 4"/><path d="M21 7H8a4 4 0 0 0-4 4v1"/><path d="M7 21 3 17l4-4"/><path d="M3 17h13a4 4 0 0 0 4-4v-1"/></svg>,
+  },
+  {
+    key: 'Money & Savings', label: 'Money & Savings',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>,
+  },
+  {
+    key: 'Technology', label: 'Technology',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>,
+  },
+  {
+    key: 'Sibling Care', label: 'Sibling Care',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>,
+  },
+  {
+    key: 'Self Care', label: 'Self Care',
+    render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9C1 8.5 2 5 5.5 5c2 0 3.3 1.2 4 2.2C10.2 6.2 11.5 5 13.5 5 17 5 18 8.5 16.5 12 14 16.5 12 21 12 21z"/></svg>,
+  },
+  {
     key: 'General', label: 'General',
     render: size => <svg width={s(size)} height={s(size)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="9 12 11 14 15 10"/></svg>,
   },

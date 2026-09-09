@@ -101,7 +101,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
   const [history, setHistory]   = useState<Completion[]>([])
   const [payouts, setPayouts]   = useState<PayoutRecord[]>([])
   const [loading, setLoading]   = useState(true)
-  const [historySort, setHistorySort] = useState<'date-desc' | 'date-asc'>('date-desc')
+  const [historySort, setHistorySort] = useState<'date' | 'name-asc' | 'name-desc' | 'amount-desc' | 'amount-asc'>('date')
   const [historyOpen, setHistoryOpen] = useState(false)
   const [openMonths, setOpenMonths]   = useState<Set<string>>(new Set())
 
@@ -271,7 +271,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-48">
+    <div className="flex flex-col gap-4 pb-4">
       <GatekeeperModal />
 
       {/* ── Pay out + Bonus — fixed above bottom nav dock ─────────────────── */}
@@ -554,22 +554,25 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
 
       {/* ── Chore history archive ─────────────────────────────────────────────── */}
       {(() => {
-        // Group by YYYY-MM from submitted_at
-        const sorted = [...history].sort((a, b) =>
-          historySort === 'date-desc'
-            ? b.submitted_at - a.submitted_at
-            : a.submitted_at - b.submitted_at
-        )
+        // Group by YYYY-MM from submitted_at (months always newest-first);
+        // historySort controls the order of items within each month.
+        function sortItems(items: Completion[]) {
+          if (historySort === 'name-asc')    return [...items].sort((a, b) => a.chore_title.localeCompare(b.chore_title))
+          if (historySort === 'name-desc')   return [...items].sort((a, b) => b.chore_title.localeCompare(a.chore_title))
+          if (historySort === 'amount-desc') return [...items].sort((a, b) => b.reward_amount - a.reward_amount)
+          if (historySort === 'amount-asc')  return [...items].sort((a, b) => a.reward_amount - b.reward_amount)
+          return [...items].sort((a, b) => b.submitted_at - a.submitted_at)
+        }
         const groupMap = new Map<string, Completion[]>()
-        for (const item of sorted) {
+        for (const item of history) {
           const d = new Date(item.submitted_at * 1000)
           const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
           if (!groupMap.has(key)) groupMap.set(key, [])
           groupMap.get(key)!.push(item)
         }
-        const groups = [...groupMap.entries()].sort((a, b) =>
-          historySort === 'date-desc' ? b[0].localeCompare(a[0]) : a[0].localeCompare(b[0])
-        )
+        const groups = [...groupMap.entries()]
+          .sort((a, b) => b[0].localeCompare(a[0]))
+          .map(([key, items]) => [key, sortItems(items)] as const)
 
         return (
           <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden">
@@ -600,8 +603,11 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
                   onChange={e => setHistorySort(e.target.value as typeof historySort)}
                   className="text-[0.6875rem] font-semibold bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-lg px-2 py-1 text-[var(--color-text)] focus:outline-none cursor-pointer"
                 >
-                  <option value="date-desc">Newest first</option>
-                  <option value="date-asc">Oldest first</option>
+                  <option value="date">Date</option>
+                  <option value="name-asc">A–Z</option>
+                  <option value="name-desc">Z–A</option>
+                  <option value="amount-desc">Amount (Highest first)</option>
+                  <option value="amount-asc">Amount (Lowest first)</option>
                 </select>
               )}
             </div>

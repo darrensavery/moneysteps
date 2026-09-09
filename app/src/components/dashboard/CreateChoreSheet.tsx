@@ -216,7 +216,6 @@ export function CreateChoreSheet({
   // ── Completion Rules toggle logic ──────────────────────────────────────────
 
   function toggleProofRequired() {
-    void tick()
     const next = !form.proof_required
     setForm(f => ({
       ...f,
@@ -233,7 +232,6 @@ export function CreateChoreSheet({
       setConflictMsg(true)
       return
     }
-    void tick()
     setField('auto_approve', !form.auto_approve)
     setConflictMsg(false)
   }
@@ -361,7 +359,7 @@ export function CreateChoreSheet({
         {!isEditMode && children.length > 1 && (
           <div
             ref={assignSectionRef}
-            className={`px-5 pb-3 flex gap-2 overflow-x-auto shrink-0${shakeField === 'assign' ? ' animate-shake' : ''}`}
+            className={`px-5 pb-4 flex gap-2 overflow-x-auto shrink-0${shakeField === 'assign' ? ' animate-shake' : ''}`}
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
           >
             {children.map(c => {
@@ -409,7 +407,7 @@ export function CreateChoreSheet({
         )}
 
         {/* Scrollable body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-4 pb-3 space-y-4">
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-4 pt-3 pb-3 space-y-4">
 
           {error && (
             <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-4 py-2.5">
@@ -427,7 +425,7 @@ export function CreateChoreSheet({
                 <button
                   type="button"
                   onClick={() => setRateGuideOpen(true)}
-                  className="inline-flex items-center gap-1 text-[0.6875rem] font-semibold text-[var(--brand-primary)] hover:opacity-80 transition-opacity cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-full border border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_8%,transparent)] px-2.5 py-1 text-[0.6875rem] font-semibold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_16%,transparent)] transition-colors cursor-pointer"
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
@@ -482,7 +480,7 @@ export function CreateChoreSheet({
                 aria-label="Choose chore icon"
                 aria-expanded={iconPickerOpen}
                 className={`shrink-0 w-[42px] h-[42px] rounded-xl border flex items-center justify-center transition-colors cursor-pointer
-                  ${iconPickerOpen
+                  ${iconPickerOpen || form.icon_key
                     ? 'border-[var(--brand-primary)] bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] text-[var(--brand-primary)]'
                     : 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]'
                   }`}
@@ -514,7 +512,7 @@ export function CreateChoreSheet({
               inert={!iconPickerOpen}
             >
               <div className="overflow-hidden">
-                <div className="flex flex-wrap gap-1.5 pt-2">
+                <div className="grid grid-cols-7 gap-1.5 pt-2">
                   {CHORE_CATEGORIES.map(cat => {
                     const active = (form.icon_key ?? guessChoreCategory(form.title)) === cat.key
                     return (
@@ -588,10 +586,12 @@ export function CreateChoreSheet({
             )}
           </div>
 
-          {/* ── Reward + Due Date inline row ─────────────────────── */}
-          <div className="flex gap-3">
-            {/* Reward — left half */}
-            <div className="flex-1">
+          {/* ── Reward + Due Date / Day row ───────────────────────── */}
+          {/* Weekly stacks the day-of-week picker on its own full-width row so all
+              7 day chips fit without cropping or horizontal scroll. */}
+          <div className={form.frequency === 'weekly' ? 'flex flex-col gap-3' : 'flex gap-3'}>
+            {/* Reward */}
+            <div className={form.frequency === 'weekly' ? 'w-full' : 'flex-1'}>
               <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
                 Reward <span className="text-red-500">*</span>
               </label>
@@ -619,8 +619,8 @@ export function CreateChoreSheet({
               </div>
             </div>
 
-            {/* Due Date / Day — right half */}
-            <div className="flex-1">
+            {/* Due Date / Day */}
+            <div className={form.frequency === 'weekly' ? 'w-full' : 'flex-1'}>
               <label className="text-[0.625rem] font-bold text-[var(--color-text-muted)] uppercase tracking-widest block mb-1.5">
                 {form.frequency === 'as_needed' ? 'Due date' : form.frequency === 'weekly' ? 'Day' : 'Schedule'}
               </label>
@@ -633,10 +633,7 @@ export function CreateChoreSheet({
                   min={new Date().toISOString().split('T')[0]}
                 />
               ) : form.frequency === 'weekly' ? (
-                <div
-                  className="flex gap-1.5 overflow-x-auto py-0.5"
-                  style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
-                >
+                <div className="flex flex-wrap gap-1.5 py-0.5">
                   {DAYS_SHORT.map((d, i) => (
                     <button
                       key={d}
