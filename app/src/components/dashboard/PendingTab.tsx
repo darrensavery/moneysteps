@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { confirm as hapticConfirm, warn as hapticWarn } from '../../lib/haptics'
+import { confirm as hapticConfirm } from '../../lib/haptics'
 import { useGatekeeper } from '../../hooks/useGatekeeper'
 import type { Completion, ChildRecord } from '../../lib/api'
 import {
