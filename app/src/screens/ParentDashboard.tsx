@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { ChildRecord } from '../lib/api'
 import { getChildren, getCompletions, clearToken, getUnpaidSummary, getFamily, getTrialStatus, authHeaders, apiUrl, type UnpaidSummaryRow, type TrialStatus } from '../lib/api'
 import { getDeviceIdentity } from '../lib/deviceIdentity'
+import { tick } from '../lib/haptics'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { StreakChip } from '../components/dashboard/StreakChip'
 import { useLocale, isPolish } from '../lib/locale'
@@ -367,7 +368,7 @@ export function ParentDashboard() {
               return (
                 <button
                   key={child.id}
-                  onClick={() => handleSetActiveChild(child)}
+                  onClick={() => { void tick(); handleSetActiveChild(child) }}
                   className={`
                     tap-target-44 shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.75rem] font-semibold
                     border transition-colors duration-100 cursor-pointer relative

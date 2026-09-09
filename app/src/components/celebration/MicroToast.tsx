@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils'
 import type { MilestoneEvent } from './types'
 import { CONFIGS } from './registry'
 import { SwipeDismissCard } from '../ui/SwipeDismissCard'
+import { tick } from '../../lib/haptics'
 
 interface Props {
   event:     MilestoneEvent
@@ -30,6 +31,7 @@ export function MicroToast({ event, onDismiss }: Props) {
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
+    void tick()
   }, [])
 
   useEffect(() => {

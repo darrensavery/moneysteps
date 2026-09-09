@@ -24,6 +24,7 @@ import {
   uploadProof, formatCurrency,
 } from '../../lib/api'
 import { track } from '../../lib/analytics'
+import { warn } from '../../lib/haptics'
 import { ChoreGuideSheet } from './ChoreGuideSheet'
 import { ErrorBox } from '../ui/ErrorBox'
 import { ChoreIcon } from './ChoreIcon'
@@ -422,6 +423,7 @@ function RevisionCard({
   // Track how long the child spends looking at the revision card
   useEffect(() => {
     const viewedAt = Date.now()
+    void warn()
     track.revisionViewed({ chore_id: c.chore_id, attempt_count: c.attempt_count ?? 1 })
     return () => {
       const dwellMs = Date.now() - viewedAt

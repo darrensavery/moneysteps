@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { tick } from '../../lib/haptics';
+import { tick, warn } from '../../lib/haptics';
 import { markPaid, markPaidBatch, formatCurrency } from '../../lib/api';
 
 type Props = {
@@ -31,6 +31,7 @@ export function PaymentConfirmSheet({
       }
       onDone();
     } catch (e) {
+      void warn();
       setErr(e instanceof Error ? e.message : 'Network error');
       setBusy(false);
     }

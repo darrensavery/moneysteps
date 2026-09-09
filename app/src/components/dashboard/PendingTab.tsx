@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { tick } from '../../lib/haptics'
+import { confirm as hapticConfirm, warn as hapticWarn } from '../../lib/haptics'
 import { useGatekeeper } from '../../hooks/useGatekeeper'
 import type { Completion, ChildRecord } from '../../lib/api'
 import {
@@ -90,7 +90,7 @@ export function PendingTab({ familyId, child, onCountChange }: Props) {
   const APPROVE_EXIT_MS = 260
 
   async function handleApprove(id: string) {
-    void tick()
+    void hapticConfirm()
     const approved = completions.find((c) => c.id === id)
     if (!approved) return
     const indexInList = completions.findIndex((c) => c.id === id)

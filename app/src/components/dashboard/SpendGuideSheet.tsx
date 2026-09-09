@@ -11,7 +11,7 @@ import { blurOnWheel, blockInvalidAmountKeys } from '../../lib/utils'
 import { shouldTriggerImpulseSpeedBump } from '../../lib/impulseSpeedBump'
 import { useAndroidBack } from '../../hooks/useAndroidBack'
 import { useDragToClose } from '../../hooks/useDragToClose'
-import { tick } from '../../lib/haptics'
+import { tick, confirm as hapticConfirm } from '../../lib/haptics'
 import { ErrorBox } from '../ui/ErrorBox'
 import { currencySymbol } from '../../lib/locale'
 import { SPEND_CATEGORIES } from '../../lib/spendCategories'
@@ -224,6 +224,7 @@ export function SpendGuideSheet({ open, familyId, childId, currency, appView, av
   }
 
   function handleSaveClick() {
+    void hapticConfirm()
     if (!entry) return
     const title = entry.title.trim()
     if (!title) { setSaveErr('Please add a description.'); return }

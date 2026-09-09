@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils'
 import type { MilestoneEvent } from './types'
 import { CONFIGS } from './registry'
 import { StreakRing } from './StreakRing'
+import { celebrate } from '../../lib/haptics'
 
 interface Props {
   event:      MilestoneEvent
@@ -68,6 +69,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
     if (!confettiSpawned.current && containerRef.current && hasPayoff) {
       confettiSpawned.current = true
       if (reducedMotion) return
+      void celebrate(config?.tier === 'landmark' ? 'landmark' : 'standard')
       if (flashRef.current) {
         flashRef.current.style.animation = 'none'
         void flashRef.current.offsetWidth
@@ -75,7 +77,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
       }
       spawnConfetti(containerRef.current)
     }
-  }, [hasPayoff, reducedMotion])
+  }, [hasPayoff, reducedMotion, config])
 
   // Reset button visibility on each new stage
   useEffect(() => {
