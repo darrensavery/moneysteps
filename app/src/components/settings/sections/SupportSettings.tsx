@@ -10,7 +10,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   Search, Sparkles,
   FileText, ShieldCheck, ChevronRight, ExternalLink,
-  Tag, Wrench,
+  Tag, Wrench, Activity,
 } from 'lucide-react'
 import { Toast, SectionCard, SectionHeader } from '../shared'
 import { apiUrl, authHeaders } from '../../../lib/api'
@@ -37,7 +37,57 @@ type ReleaseEntry = {
 
 const RELEASE_NOTES: ReleaseEntry[] = [
   {
-    version: '1.7',
+    version: '1.13',
+    date:    'September 2026',
+    tag:     'Improved',
+    items: [
+      'Tiered haptic feedback across the app, wired into celebrations',
+      'Chores tab redesign — unified icon system, sort options, swipe hints',
+      'Insights tab loads faster with client-side caching',
+    ],
+  },
+  {
+    version: '1.12',
+    date:    'August 2026',
+    tag:     'New',
+    items: [
+      'AI Mentor + Learning Lab upsell for Core plan families',
+      'High Contrast mode (WCAG 2.1 AA) for parent and child accounts',
+      'Native push notifications for chores, approvals, and goals',
+    ],
+  },
+  {
+    version: '1.11',
+    date:    'July 2026',
+    tag:     'Improved',
+    items: [
+      'Secure login rebuilt on HttpOnly cookies with real WebAuthn verification',
+      'Face ID / Touch ID unlock now backed by native biometric key storage',
+      'Court-ready PDF audit export with scannable ledger verification QR code',
+    ],
+  },
+  {
+    version: '1.10',
+    date:    'June 2026',
+    tag:     'New',
+    items: [
+      'Family Audit — AI-driven monthly spending trends across all children',
+      'Consent controls for separated families, with veto protection',
+      'Schools strategy groundwork for the Pocket Money Index',
+    ],
+  },
+  {
+    version: '1.9',
+    date:    'May 2026',
+    tag:     'Improved',
+    items: [
+      'One-time pricing replaces subscriptions — no more renewals to manage',
+      'Delete Account (Uproot) with full data anonymisation',
+      'Faster, more reliable co-parent invites',
+    ],
+  },
+  {
+    version: '1.8',
     date:    'April 2026',
     tag:     'New',
     items: [
@@ -176,17 +226,46 @@ function LinkRow({
   )
 }
 
+// ── System Status sub-view ─────────────────────────────────────────────────────
+
+function SystemStatusView({ online, onBack }: { online: boolean; onBack: () => void }) {
+  return (
+    <div className="space-y-4">
+      <SectionHeader title="System Status" onBack={onBack} />
+
+      <SectionCard>
+        <div className="px-4 py-3.5 flex items-center gap-3">
+          <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${online ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+            <Activity size={15} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">
+              {online ? 'System online' : 'Offline'}
+            </p>
+            <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+              {online
+                ? 'Connected — chores, ledger entries, and approvals are syncing normally.'
+                : "No connection right now. Changes you make will sync once you're back online."}
+            </p>
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+  )
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
-type SubView = 'menu' | 'whats-new'
+type SubView = 'menu' | 'whats-new' | 'system-status'
 
 interface Props {
   toast:        string | null
   onBack:       () => void
   onComingSoon: () => void
+  online?:      boolean
 }
 
-export function SupportSettings({ toast, onBack }: Props) {
+export function SupportSettings({ toast, onBack, online = true }: Props) {
   const [sub, setSub] = useState<SubView>('menu')
   const [showContactModal, setShowContactModal] = useState(false)
   const [contactText, setContactText] = useState('')
@@ -255,6 +334,15 @@ export function SupportSettings({ toast, onBack }: Props) {
     )
   }
 
+  if (sub === 'system-status') {
+    return (
+      <div className="space-y-4">
+        {toast && <Toast message={toast} />}
+        <SystemStatusView online={online} onBack={() => setSub('menu')} />
+      </div>
+    )
+  }
+
   const version = __APP_VERSION__ ?? '—'
 
   return (
@@ -316,6 +404,22 @@ export function SupportSettings({ toast, onBack }: Props) {
               <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">What's New</p>
               <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                 Recent updates and improvements
+              </p>
+            </div>
+            <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setSub('system-status')}
+            className="w-full flex items-center gap-3 px-4 py-3.5 text-left border-t border-[var(--color-border)] hover:bg-[var(--color-surface-alt)] active:bg-[var(--color-surface-alt)] transition-colors cursor-pointer"
+          >
+            <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${online ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+              <Activity size={15} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[0.875rem] font-semibold text-[var(--color-text)]">System Status</p>
+              <p className="text-[0.75rem] text-[var(--color-text-muted)] mt-0.5 leading-snug">
+                {online ? 'System online' : 'Offline'}
               </p>
             </div>
             <ChevronRight size={15} className="shrink-0 text-[var(--color-text-muted)]" />

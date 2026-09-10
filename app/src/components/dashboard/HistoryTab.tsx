@@ -271,7 +271,7 @@ export function ActivityTab({ familyId, child, childCount, onCountChange, unpaid
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-10">
       <GatekeeperModal />
 
       {/* ── Pay out + Bonus — fixed above bottom nav dock ─────────────────── */}

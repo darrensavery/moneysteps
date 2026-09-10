@@ -68,8 +68,10 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
   const triggerPayoff = useCallback(() => {
     if (!confettiSpawned.current && containerRef.current && hasPayoff) {
       confettiSpawned.current = true
-      if (reducedMotion) return
+      // Reduced-motion only suppresses the visual flash/confetti — haptic
+      // feedback isn't motion and shouldn't be silenced by that preference.
       void celebrate(config?.tier === 'landmark' ? 'landmark' : 'standard')
+      if (reducedMotion) return
       if (flashRef.current) {
         flashRef.current.style.animation = 'none'
         void flashRef.current.offsetWidth

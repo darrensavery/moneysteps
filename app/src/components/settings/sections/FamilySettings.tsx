@@ -533,7 +533,7 @@ export function FamilySettings({
               <button
                 onClick={handleGenerateInvite}
                 disabled={genningInvite}
-                className="w-full border border-[var(--color-border)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--color-text-muted)] hover:bg-[var(--color-surface-alt)] disabled:opacity-50 cursor-pointer"
+                className="w-full border border-[var(--brand-primary)] rounded-xl py-2.5 text-[0.875rem] font-semibold text-[var(--brand-primary)] hover:bg-[color-mix(in_srgb,var(--brand-primary)_10%,transparent)] disabled:opacity-50 cursor-pointer"
               >
                 {genningInvite ? 'Generating…' : 'Generate invite code'}
               </button>

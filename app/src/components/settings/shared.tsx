@@ -61,8 +61,8 @@ export function useToast() {
 
 export function Toast({ message }: { message: string }) {
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface text-main text-[0.8125rem] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
-      🌱 {message}
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] text-[0.8125rem] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
+      {message}
     </div>
   )
 }

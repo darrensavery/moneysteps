@@ -564,7 +564,7 @@ function OpenChoreCard({
         className="w-full px-4 py-3 flex items-center gap-3 text-left cursor-pointer"
       >
         <div className="w-9 h-9 rounded-full bg-[var(--color-surface-alt)] flex items-center justify-center shrink-0 text-[var(--color-text-muted)]">
-          <ChoreIcon title={chore.title} iconKey={chore.icon_key} size={18} />
+          <ChoreIcon title={chore.title} iconKey={chore.icon_key} size={18} appView={appView} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">

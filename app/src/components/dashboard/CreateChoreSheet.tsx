@@ -407,7 +407,7 @@ export function CreateChoreSheet({
         )}
 
         {/* Scrollable body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-4 pt-3 pb-3 space-y-4">
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-4 pt-3 pb-3 space-y-3">
 
           {error && (
             <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-4 py-2.5">
@@ -564,7 +564,7 @@ export function CreateChoreSheet({
           </div>
 
           {/* ── Smart Suggestion banner — reserved height so layout never shifts ── */}
-          <div className="h-8 flex items-center justify-center">
+          <div className="h-6 flex items-center justify-center">
             {suggestion && suggestion.median_amount != null ? (
               <div className="flex items-center gap-2">
                 {/* Dim label — price pill is the star */}

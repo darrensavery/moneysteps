@@ -139,8 +139,8 @@ function useToast() {
 
 function Toast({ message }: { message: string }) {
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-surface text-main text-[0.8125rem] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
-      🌱 {message}
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] text-[0.8125rem] font-semibold shadow-xl max-w-xs text-center animate-fade-in-up">
+      {message}
     </div>
   )
 }
@@ -398,7 +398,7 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
     if (view.section === 'billing')    return <ProfileSection><BillingSettings    toast={toast} onBack={back} onComingSoon={comingSoon} initialView={view.billingSubView} shieldUpgradePrice={shieldUpgradePrice} /></ProfileSection>
     if (view.section === 'data')       return <ProfileSection><DataSettings       isLead={isLead} hasAiMentor={Boolean(trial?.has_lifetime_license) && (Boolean(trial?.has_ai_mentor) || Boolean(trial?.has_shield))} hasShield={Boolean(trial?.has_lifetime_license) && Boolean(trial?.has_shield)} toast={toast} onBack={back} onNavigateToPlan={() => setView({ type: 'section', section: 'billing', billingSubView: 'plan' })} shieldUpgradePrice={shieldUpgradePrice} /></ProfileSection>
     if (view.section === 'referrals')  return <ProfileSection><ReferralsSettings  toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
-    if (view.section === 'about')      return <ProfileSection><AboutSettings      toast={toast} onBack={back} onComingSoon={comingSoon} /></ProfileSection>
+    if (view.section === 'about')      return <ProfileSection><AboutSettings      toast={toast} onBack={back} onComingSoon={comingSoon} online={online} /></ProfileSection>
   }
 
   // ── Drawer: identity header + trial banner + grouped menu ───────────────────
@@ -544,17 +544,6 @@ onCoParentRemoved={handleCoParentRemoved} /></ProfileSection>
             <div className="flex-1 min-w-0">
               <p className="text-[0.875rem] font-bold text-[var(--color-text)] truncate">{identity?.display_name ?? 'Parent'}</p>
               <p className="text-[0.75rem] text-[var(--color-text-muted)] truncate">{profile?.email ?? ''}</p>
-            </div>
-            {/* System status */}
-            <div className="flex items-center gap-1 shrink-0">
-              {online ? (
-                <svg width="10" height="10" viewBox="0 0 10 10" className="text-emerald-500" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
-              ) : (
-                <svg width="10" height="10" viewBox="0 0 10 10" className="text-red-500" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
-              )}
-              <span className="text-[0.6875rem] text-[var(--color-text-muted)]">
-                {online ? (pl ? 'System online' : 'System online') : (pl ? 'Offline' : 'Offline')}
-              </span>
             </div>
           </div>
 

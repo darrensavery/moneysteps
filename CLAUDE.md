@@ -30,6 +30,7 @@ Before answering or making changes:
 2. Consult the relevant file(s) based on the task:
    - Coding, data models, APIs, storage, auth, hosting → developer-bible.md
    - UI copy, wording, tone, UX text → ai-personality.md, brand-book.md
+   - UI components, design tokens, interaction/motion/haptics/accessibility patterns → 10-ui-ux-design-system.md
    - Roadmap, monetisation, positioning → business-strategy.md
    - Market comparison, differentiation → competitor-analysis.md
 

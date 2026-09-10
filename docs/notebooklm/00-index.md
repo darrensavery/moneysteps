@@ -6,6 +6,7 @@ Files:
 - developer-bible.md — tech stack, architecture, data model, flows, constraints
 - ai-personality.md — tone, voice, guardrails, response templates
 - brand-book.md — visual identity, messaging, copy rules
+- 10-ui-ux-design-system.md — master UI/UX reference: design tokens, component conventions, accessibility, motion/haptics, Premium Shell. Distinct from brand-book.md (that's tone/copy; this is component/interaction patterns).
 - business-strategy.md — goals, roadmap, metrics, monetisation assumptions
 - competitor-analysis.md — market landscape, differentiation, opportunities
 - 07-ai-literacy-matrix.md — Financial Literacy Matrix: 5 Pillars, 4-tier age structure (Sprout/Sapling/Oak/Canopy), Choice Architect constraint, family-neutral language rule
@@ -15,6 +16,7 @@ Files:
 When to use:
 - Coding / architecture / Firebase / hosting → developer-bible.md
 - UX copy, assistant tone, microcopy → ai-personality.md + brand-book.md
+- UI components, design tokens, interaction/motion/haptics/a11y patterns → 10-ui-ux-design-system.md
 - Roadmap, pricing, positioning → business-strategy.md + competitor-analysis.md
 - AI mentor briefings, nudge content, Pillar selection, age-mode tone → 07-ai-literacy-matrix.md
 - Curriculum spec, trigger logic, module library → 08-learning-lab.md

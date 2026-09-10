@@ -16,7 +16,7 @@ import { ErrorBox } from '../ui/ErrorBox'
 import { currencySymbol } from '../../lib/locale'
 import {
   getGoals, updateGoal, contributeToGoal,
-  formatCurrency, effectiveTarget, getTrialStatus,
+  formatCurrency, effectiveTarget, getTrialStatus, getChildSettings,
 } from '../../lib/api'
 import { GoalMentorNudge } from './GoalMentorNudge'
 import { PremiumShell, MentorAvatar, ProBadge, injectPremiumStyles, MENTOR_COLORS } from '../ui/PremiumShell'
@@ -38,6 +38,7 @@ export function GoalBoostingTab({ familyId, child }: Props) {
   const [contributing, setContributing] = useState<string | null>(null)
   const [contribMsg,   setContribMsg]   = useState<Record<string, string>>({})
   const [hasAiMentor, setHasAiMentor] = useState(false)
+  const [appView, setAppView] = useState<'ORCHARD' | 'CLEAN'>('ORCHARD')
 
   useEffect(() => { injectPremiumStyles() }, [])
 
@@ -46,6 +47,12 @@ export function GoalBoostingTab({ familyId, child }: Props) {
       .then(s => setHasAiMentor(s.has_ai_mentor))
       .catch(() => { /* non-fatal — defaults to false */ })
   }, [])
+
+  useEffect(() => {
+    getChildSettings(child.id)
+      .then(cs => setAppView((cs.app_view ?? 'ORCHARD') as 'ORCHARD' | 'CLEAN'))
+      .catch(() => setAppView('ORCHARD'))
+  }, [child.id])
 
   async function load() {
     setLoading(true)
@@ -107,9 +114,11 @@ export function GoalBoostingTab({ familyId, child }: Props) {
     return (
       <div className="space-y-4">
         <div className="py-12 text-center space-y-2">
-          <p className="text-[1.75rem]">🌱</p>
+          {appView !== 'CLEAN' && <p className="text-[1.75rem]">🌱</p>}
           <p className="text-[0.9375rem] font-semibold text-[var(--color-text)]">{child.display_name} has no active goals</p>
-          <p className="text-[0.8125rem] text-[var(--color-text-muted)]">They can plant a goal from their Savings Grove.</p>
+          <p className="text-[0.8125rem] text-[var(--color-text-muted)]">
+            {appView === 'CLEAN' ? 'They can add a goal from their Goals tab.' : 'They can plant a goal from their Savings Grove.'}
+          </p>
         </div>
         {hasAiMentor && (
           <PremiumShell>
@@ -124,7 +133,7 @@ export function GoalBoostingTab({ familyId, child }: Props) {
                 <ProBadge />
               </div>
               <p className="text-[0.8125rem] leading-relaxed" style={{ color: MENTOR_COLORS.body }}>
-                {child.display_name} has no active goals yet. Goals unlock Learning Lab lessons on delayed gratification and needs vs. wants — two of the most important financial habits we can build. You can create one together from their Savings Grove.
+                {child.display_name} has no active goals yet. Goals unlock Learning Lab lessons on delayed gratification and needs vs. wants — two of the most important financial habits we can build. You can create one together from their {appView === 'CLEAN' ? 'Goals tab' : 'Savings Grove'}.
               </p>
             </div>
           </PremiumShell>
@@ -138,7 +147,9 @@ export function GoalBoostingTab({ familyId, child }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <h2 className="text-[1rem] font-bold text-[var(--color-text)]">🌳 {child.display_name}'s Savings Grove</h2>
+        <h2 className="text-[1rem] font-bold text-[var(--color-text)]">
+          {appView === 'CLEAN' ? `${child.display_name}'s Goals` : `🌳 ${child.display_name}'s Savings Grove`}
+        </h2>
         <span className="text-[0.75rem] text-[var(--color-text-muted)]">— {goals.length} goal{goals.length !== 1 ? 's' : ''}</span>
       </div>
 

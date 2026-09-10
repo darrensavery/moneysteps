@@ -191,7 +191,7 @@ export function PoolTab({ familyId, currentUserId, parentingMode, refreshKey, on
   const currency = expenses[0]?.currency ?? 'GBP';
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-10">
 
       {/* ── Sticky bottom action bar ─────────────────────────────────────────── */}
       <StickyActionBar>
