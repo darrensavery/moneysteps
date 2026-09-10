@@ -18,7 +18,11 @@ export function MicroToast({ event, onDismiss }: Props) {
   const [visible, setVisible] = useState(false)
   const [paused, setPaused] = useState(false)
 
-  function close() {
+  // userInitiated distinguishes a real tap/swipe (a valid gesture context for
+  // navigator.vibrate — see haptics.ts) from the auto-dismiss timer, which
+  // isn't a gesture and would silently drop the vibrate call anyway.
+  function close(userInitiated = false) {
+    if (userInitiated) void tick()
     setVisible(false)
     setTimeout(onDismiss, 400)
   }
@@ -31,7 +35,6 @@ export function MicroToast({ event, onDismiss }: Props) {
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
-    void tick()
   }, [])
 
   useEffect(() => {
@@ -45,7 +48,7 @@ export function MicroToast({ event, onDismiss }: Props) {
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90]">
-      <SwipeDismissCard onDismiss={close}>
+      <SwipeDismissCard onDismiss={() => close(true)}>
         <div
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
@@ -70,7 +73,7 @@ export function MicroToast({ event, onDismiss }: Props) {
             </p>
           </div>
           <button
-            onClick={close}
+            onClick={() => close(true)}
             className="text-white/30 hover:text-white/60 text-lg leading-none ml-1"
             aria-label="Dismiss"
           >×</button>

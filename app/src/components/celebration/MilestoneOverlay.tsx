@@ -51,6 +51,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
   const flashRef         = useRef<HTMLDivElement>(null)
   const buttonRef        = useRef<HTMLButtonElement>(null)
   const confettiSpawned  = useRef(false)
+  const hapticFired      = useRef(false)
   const onCompleteRef    = useRef(onComplete)
   const buttonTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -65,12 +66,12 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
 
   useEffect(() => { onCompleteRef.current = onComplete })
 
+  // Visual payoff only (confetti + flash). Fires automatically as each stage
+  // settles — no user gesture involved, so it can't drive haptics (see
+  // fireHapticOnGesture below).
   const triggerPayoff = useCallback(() => {
     if (!confettiSpawned.current && containerRef.current && hasPayoff) {
       confettiSpawned.current = true
-      // Reduced-motion only suppresses the visual flash/confetti — haptic
-      // feedback isn't motion and shouldn't be silenced by that preference.
-      void celebrate(config?.tier === 'landmark' ? 'landmark' : 'standard')
       if (reducedMotion) return
       if (flashRef.current) {
         flashRef.current.style.animation = 'none'
@@ -79,12 +80,29 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
       }
       spawnConfetti(containerRef.current)
     }
-  }, [hasPayoff, reducedMotion, config])
+  }, [hasPayoff, reducedMotion])
+
+  // Haptic payoff, fired from the Continue/Let's-go tap instead of automatically
+  // on mount. Browsers gate navigator.vibrate() behind a live user-gesture
+  // window (most visibly on Android Chrome); an auto-fired call outside that
+  // window is silently dropped, which is what made haptics on app open
+  // intermittent on installed PWAs (the native app's own retry, above,
+  // doesn't apply here — Capacitor.isNativePlatform() is false in a PWA).
+  // A real click always carries a valid gesture, so hooking the haptic to it
+  // instead is reliable on every platform, at the cost of the buzz landing on
+  // tap-to-continue rather than the instant the overlay appears.
+  const fireHapticOnGesture = useCallback(() => {
+    if (!hapticFired.current && hasPayoff) {
+      hapticFired.current = true
+      void celebrate(config?.tier === 'landmark' ? 'landmark' : 'standard')
+    }
+  }, [hasPayoff, config])
 
   // Reset button visibility on each new stage
   useEffect(() => {
     if (!config || stages.length === 0) { onCompleteRef.current(); return }
     confettiSpawned.current = false
+    hapticFired.current = false
     setShowButton(false)
     setBtnReady(false)
 
@@ -120,6 +138,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
   }, [btnReady])
 
   const advance = useCallback(() => {
+    fireHapticOnGesture()
     if (stageIdx < stages.length - 1) {
       setPhase('transition')
       setTimeout(() => {
@@ -131,7 +150,7 @@ export function MilestoneOverlay({ event, onComplete }: Props) {
       setVisible(false)
       setTimeout(() => onCompleteRef.current(), 500)
     }
-  }, [stageIdx, stages.length])
+  }, [stageIdx, stages.length, fireHapticOnGesture])
 
   const dismiss = useCallback(() => {
     setPhase('exit')
